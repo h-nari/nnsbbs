@@ -1,0 +1,23 @@
+@import "../node_modules/bootstrap/scss/bootstrap";
+@import "titles.scss";
+@import "article.scss";
+
+BODY {
+  background-color: #eee;
+}
+
+.pane {
+  @extend .list-group;
+  padding: 5px;
+  border: solid darkgray 1px;
+}
+
+.pane > button {
+  @extend .list-group-item;
+  // @extend .list-group-item-action;
+  text-align: left;
+  font-size: 12pt;
+  padding: 2px;
+  white-space: pre;
+  overflow: hidden;
+}

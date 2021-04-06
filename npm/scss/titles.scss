@@ -1,0 +1,33 @@
+.titles button {
+  display: inline-flex;
+  > div {
+    display: inline-block;
+  }
+}
+
+.article-id {
+  width: 30px;
+  color: darkgreen;
+  font-size: small;
+  margin-right: 5px;
+  text-align: right;
+  flex: 0 0 auto;
+}
+.article-title {
+  flex-grow: 10;
+  font-weight: bold;
+  position: relative;
+}
+
+.article-from {
+  width: 60px;
+  overflow: hidden;
+  font-weight: bold;
+  margin-right: 5px;
+  flex: 0 0 auto;
+}
+
+.article-time {
+  margin-right: 5px;
+  flex: 0 0 auto;
+}

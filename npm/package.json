@@ -1,0 +1,27 @@
+{
+  "name": "nnsbbs",
+  "version": "1.0.0",
+  "description": "NetNews styled BBS",
+  "main": "index.js",
+  "scripts": {
+    "watch": "npx webpack -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Hiroshi Narimatsu",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jquery": "^3.5.5",
+    "css-loader": "^5.2.0",
+    "mini-css-extract-plugin": "^1.4.0",
+    "sass": "^1.32.8",
+    "sass-loader": "^11.0.1",
+    "ts-loader": "^8.1.0",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.3",
+    "webpack-cli": "^4.6.0"
+  },
+  "dependencies": {
+    "bootstrap": "^5.0.0-beta3",
+    "npm": "^7.8.0"
+  }
+}

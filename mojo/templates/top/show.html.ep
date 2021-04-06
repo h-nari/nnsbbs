@@ -1,0 +1,6 @@
+% layout 'default';
+% title 'NNSBBS';
+<div class="message"><%= $msg %></div>
+<div id="newsgroups">NewsGroup</div>
+<div id="titles">Titles</div>
+<div id="article">Article</div>
