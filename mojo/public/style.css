@@ -10729,6 +10729,16 @@ textarea.form-control-lg {
     display: none !important;
   }
 }
+#newsgroups {
+  max-height: 150px;
+  overflow: scroll;
+}
+
+#titles {
+  max-height: 300px;
+  overflow: scroll;
+}
+
 .titles button {
   display: inline-flex;
 }
@@ -10764,26 +10774,40 @@ textarea.form-control-lg {
   flex: 0 0 auto;
 }
 
+#article-pane {
+  max-height: 600px;
+}
+
 .article-header {
+  width: 100%;
   background-color: #eee;
   color: #686;
   font-size: small;
   font-family: monospace;
   margin-bottom: 5px;
+  white-space: pre;
+  overflow: scroll;
+  max-height: 100px;
 }
 
 .article-body {
+  width: 100%;
   background-color: white;
   white-space: pre;
+  overflow: scroll;
 }
 
 BODY {
   background-color: #eee;
 }
+BODY > div {
+  height: 100%;
+}
 
 .pane {
   padding: 5px;
   border: solid darkgray 1px;
+  overflow: scroll;
 }
 
 .pane > button {

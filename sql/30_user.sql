@@ -14,6 +14,7 @@ create table user (
   banned_at   datetime,  
   profile     text          default ""      -- プロフィール
 );
+create unique index user_mail on user(mail);
 
 insert into user (disp_name,mail,password)
 values

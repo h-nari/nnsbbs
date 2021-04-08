@@ -5,7 +5,7 @@ use Data::Dumper;
 use utf8;
 
 sub newsgroup ($self) {
-    my $db  = NnsBbs::Db::new();
+    my $db  = NnsBbs::Db::new($self);
     my $sql = "select id,name,comment from newsgroup";
     $sql .= " order by ord,name";
     my $sth  = $db->{conn}->prepare($sql);
@@ -22,7 +22,7 @@ sub titles($self) {
     my $newsgroup_id = $self->param("newsgroup_id");
 
     if ($newsgroup_id) {
-        my $db  = NnsBbs::Db::new();
+        my $db  = NnsBbs::Db::new($self);
         my $sql = "select a.id as article_id ,title,reply_to,user_id";
         $sql .= ",a.created_at as date, disp_name";
         $sql .= " from article as a,user as u";
@@ -63,7 +63,7 @@ sub article($self) {
         );
     }
     else {
-        my $db  = NnsBbs::Db::new();
+        my $db  = NnsBbs::Db::new($self);
         my $sql = "select content";
         $sql .= " from article as a";
         $sql .= " where newsgroup_id = ? and id = ?";

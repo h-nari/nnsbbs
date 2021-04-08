@@ -1,9 +1,12 @@
 package NnsBbs::Controller::Top;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use NnsBbs::Db;
+use Data::Dumper;
 
 sub show ($self) {
-  my $db = NnsBbs::Db::new();
+
+  print STDERR "++++ self:", $self,"\n";
+  my $db = NnsBbs::Db::new($self);
   my $newsgroup = $self->param('newsgroup') || "";
   my $article_id = $self->param('article_id') || "";
 

@@ -4,7 +4,7 @@ use Data::Dumper;
     
 # This method will run once at server start
 sub startup ($self) {
-
+  
   my $config = $self->plugin('NotYAMLConfig');
   $self->secrets($config->{secrets});
 
@@ -24,7 +24,15 @@ sub startup ($self) {
 
 sub _load_config {
   my $self = shift;
-  my $f = $self->home->to_string . "/etc/db.conf";
+  my $f;
+
+  my $env_db = $ENV{'NNSBBS_DB'};
+  
+  if($env_db eq 'fj') {
+    $f = $self->home->to_string . "/etc/fj-db.conf";
+  } else {
+    $f = $self->home->to_string . "/etc/db.conf";
+  }
   if( -f $f){
     print STDERR "*** exists: $f \n";
     $self->plugin('Config', { 'file' => $f}); 

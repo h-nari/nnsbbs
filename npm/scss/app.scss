@@ -1,15 +1,21 @@
 @import "../node_modules/bootstrap/scss/bootstrap";
+@import "newsgroup.scss";
 @import "titles.scss";
 @import "article.scss";
 
 BODY {
   background-color: #eee;
+
+  > div {
+    height: 100%;
+  }
 }
 
 .pane {
   @extend .list-group;
   padding: 5px;
   border: solid darkgray 1px;
+  overflow: scroll;
 }
 
 .pane > button {

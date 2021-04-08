@@ -12,10 +12,11 @@ create table article (
   bDeleted     boolean      default false,  -- 削除
   created_at   datetime     default now(),  -- 投稿時間
   deleted_at   datetime,
-  content      text         not null        -- 本文
+  content      longtext     not null        -- 本文
 );
 
 create unique index article_idx on article (newsgroup_id, id);
+create index article_reply_idx on article(reply_to);
 
 insert into article (newsgroup_id, id, title, reply_to, user_id, content)
 values
@@ -35,6 +36,9 @@ Hello World.
 
 長い文はねぇ.....
 ");
+
+update newsgroup set max_id = 6 where id = 1;
+update newsgroup set max_id = 4 where id = 2;
 
 
 

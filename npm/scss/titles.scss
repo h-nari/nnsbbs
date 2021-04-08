@@ -1,3 +1,8 @@
+#titles {
+  max-height: 300px;
+  overflow: scroll;
+}
+
 .titles button {
   display: inline-flex;
   > div {
