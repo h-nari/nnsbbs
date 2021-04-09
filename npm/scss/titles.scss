@@ -1,14 +1,19 @@
 #titles {
-  max-height: 300px;
-  overflow: scroll;
-}
+  max-height: 100%;
+  overflow-y: hidden;
 
-.titles button {
-  display: inline-flex;
-  > div {
-    display: inline-block;
+  .titles {
+    overflow-y: auto;
+    button {
+      display: inline-flex;
+      > div {
+        display: inline-block;
+      }
+    }
   }
 }
+
+
 
 .article-id {
   width: 30px;

@@ -1,0 +1,24 @@
+.no-display {
+  display: none;  
+}
+
+.fill {
+  flex-grow: 100;
+}
+
+.nb-list-group {
+  @extend .list-group;
+  padding: 5px;
+  border: solid darkgray 1px;
+  overflow: hide;
+}
+
+.nb-list-group > button {
+  @extend .list-group-item;
+  // @extend .list-group-item-action;
+  text-align: left;
+  font-size: 12pt;
+  padding: 2px;
+  white-space: pre;
+  overflow: hidden;
+}

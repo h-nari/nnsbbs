@@ -1,5 +1,6 @@
 import { get_json } from "./util";
 import { div, button } from "./tag";
+import { ToolBar } from "./toolbar";
 
 export interface ITitle {
   article_id: number;
@@ -19,6 +20,7 @@ export class TitlesPane {
   private bDispTherad: boolean = true;
   private thread_depth: number = 20;
   private clickCb: ((newsgroup_id: number, article_id: number) => void) | null = null;
+  public toolbar = new ToolBar('Titles');
 
   constructor() { }
 
@@ -57,7 +59,7 @@ export class TitlesPane {
         s += this.title_html(d, 0);
       }
     }
-    return div({ id: this.id, class: 'titles pane' }, s);
+    return this.toolbar.html() + div({ class: 'titles' }, div({ id: this.id, class: 'nb-list-group' }, s));
   }
 
   thread_html(t: ITitle, depth: number) {
@@ -82,6 +84,7 @@ export class TitlesPane {
 
 
   bind() {
+    this.toolbar.bind();
     $(`#${this.id} >button`).on('click', ev => {
       let target = ev.currentTarget;
       let article_id: number = target.attributes['article_id'].value;

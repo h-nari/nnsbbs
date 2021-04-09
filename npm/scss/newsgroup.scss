@@ -1,5 +1,10 @@
 
-#newsgroups {
-  max-height: 150px;
-  overflow: scroll;
+#newsgroup {
+  max-height: 100%;
+  overflow-y: hidden;
+}
+
+.newsgroup {
+  height: 100%;
+  overflow-y: auto;
 }

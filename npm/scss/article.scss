@@ -1,23 +1,28 @@
-#article-pane {
-  max-height: 600px;
-}
+#article {
+  overflow: hidden;
 
-.article-header {
-  width: 100%;
-  background-color: #eee;
-  color: #686;
-  font-size: small;
-  font-family: monospace;
-  margin-bottom: 5px;
-  white-space: pre;
-  overflow: scroll;
-  max-height: 100px;
-}
+  #article-pane {
+    height: 100%;
+    overflow-y: auto;
 
+    .article-header {
+      width: 100%;
+      background-color: #eee;
+      color: #686;
+      font-size: small;
+      font-family: monospace;
+      margin-bottom: 5px;
+      white-space: pre;
+      overflow: auto;
+      padding: 5px;
+    }
 
-.article-body {
-  width:100%;
-  background-color: white;
-  white-space: pre;
-  overflow: scroll;
+    .article-body {
+      width: 100%;
+      background-color: white;
+      white-space: pre;
+      font-family: monospace;
+      padding: 5px;
+    }
+  }
 }

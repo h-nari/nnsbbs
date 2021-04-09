@@ -1,0 +1,23 @@
+.toolbar {
+  padding: 2px;
+  background: darkgreen;
+  color: white;
+  display: flex;
+  margin-bottom: 2px;
+  .toolbar-title {
+    font-size: large;
+    flex-grow: 10;
+    margin-left: 5px;
+    color: yellow;
+    font-weight: bold;
+  }
+  i {
+    margin-right: 5px;
+    font-size: large;
+    flex-grow: 0;
+  }
+}
+
+.toolbar.closed + div {
+  display: none;
+}

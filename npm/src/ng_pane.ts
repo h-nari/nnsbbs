@@ -1,5 +1,6 @@
 import { get_json } from "./util";
 import { div, button } from "./tag";
+import { Btn, ToolBar } from "./toolbar";
 
 export interface INewsGroup {
   id: number;
@@ -11,8 +12,13 @@ export class NewsGroupsPane {
   private id: string = "newsgroups-pane";
   private data: INewsGroup[] = [];
   private clickCb: ((newsgroup_id: number) => void) | null = null;
+  public toolbar = new ToolBar('NewGroup');
 
   constructor() {
+    this.toolbar.add_btn(new Btn({icon:'caret-right'}));
+    this.toolbar.add_btn(new Btn({icon:'caret-down-fill'}));
+    this.toolbar.add_btn(new Btn({icon:'gear-fill'}));
+    this.toolbar.add_btn(new Btn({icon:'x-square'}));
   }
 
   setData(data: INewsGroup[]) {
@@ -24,11 +30,14 @@ export class NewsGroupsPane {
   }
 
   html(): string {
-    return div({ id: this.id, class: 'newsgroups pane' },
-      this.data.map(d => button({ 'newsgroup-id': d.id}, d.name)).join('')
-    );
+    return this.toolbar.html() +
+      div({ class: 'newsgroup' },
+        div({ id: this.id, class: 'nb-list-group' },
+          this.data.map(d => button({ 'newsgroup-id': d.id }, d.name)).join('')
+        ));
   }
   bind() {
+    this.toolbar.bind();
     $(`#${this.id} >button`).on('click', ev => {
       let t = ev.currentTarget;
       let ng_id = t.attributes['newsgroup-id'].value;
@@ -36,7 +45,7 @@ export class NewsGroupsPane {
     });
   }
 
-  select_newsgroup(id:number) {
+  select_newsgroup(id: number) {
     $(`#${this.id} >button`).removeClass('active');
     $(`#${this.id} >button[newsgroup-id=${id}]`).addClass('active');
   }
