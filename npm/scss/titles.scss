@@ -1,8 +1,8 @@
 #titles {
-  max-height: 100%;
   overflow-y: hidden;
 
   .titles {
+    height: 100%;
     overflow-y: auto;
     button {
       display: inline-flex;

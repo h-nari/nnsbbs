@@ -1,7 +1,8 @@
 import { div, span, tag, label, input } from "./tag";
 
-var sn = 0;
+type IToggleCB = (bOpen: boolean) => void;
 
+var sn = 0;
 export class ToolBar {
   private id: string;
   private id_chk: string;                    // open/close切替のアイコンのid
@@ -10,6 +11,7 @@ export class ToolBar {
   private open_icon_name = 'bi-caret-down-fill';
   private close_icon_name = 'bi-caret-right-fill';
   private bOpen: boolean = true;
+  private toggle_cb: IToggleCB | null = null;
 
   constructor(title: string = "") {
     this.id = "toolbar-" + sn++;
@@ -37,11 +39,10 @@ export class ToolBar {
   }
 
   add_btn(btn: Btn) {
-    this.btns.push(btn);
+    this.btns.unshift(btn);        // 最初に追加
   }
 
   setState(bOpen: boolean) {
-    console.log('setState:', bOpen);
     this.bOpen = bOpen;
     if (bOpen) {
       $('#' + this.id_chk).removeClass(this.close_icon_name);
@@ -52,6 +53,12 @@ export class ToolBar {
       $('#' + this.id_chk).removeClass(this.open_icon_name);
       $('#' + this.id).addClass('closed');
     }
+    if (this.toggle_cb)
+      this.toggle_cb(bOpen);
+  }
+
+  setTogleCB(cb: IToggleCB) {
+    this.toggle_cb = cb;
   }
 }
 

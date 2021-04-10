@@ -1,6 +1,7 @@
 import { get_json } from "./util";
 import { div, button } from "./tag";
 import { ToolBar } from "./toolbar";
+import { ToolbarPane } from "./pane";
 
 export interface ITitle {
   article_id: number;
@@ -12,17 +13,19 @@ export interface ITitle {
   children?: ITitle[];
 };
 
-export class TitlesPane {
-  private id = "titles-pane";
+export class TitlesPane extends ToolbarPane {
   private titles: ITitle[] = [];
   private threads: ITitle[] | null = null;
   private newsgroup_id: number | null = null;
   private bDispTherad: boolean = true;
   private thread_depth: number = 20;
   private clickCb: ((newsgroup_id: number, article_id: number) => void) | null = null;
-  public toolbar = new ToolBar('Titles');
+  private id_lg : string;
 
-  constructor() { }
+  constructor(id: string) { 
+    super(id); 
+    this.id_lg = id + "_lg";
+  }
 
   async open(newsgroup_id: number) {
     let data = await get_json('/api/titles', { data: { newsgroup_id } });
@@ -46,8 +49,12 @@ export class TitlesPane {
   setClickCb(cb: (n: number, m: number) => void) {
     this.clickCb = cb;
   }
-
+  
   html(): string {
+    return div({ id: this.id }, this.inner_html());
+  }
+
+  inner_html(): string {
     let s = "";
     if (this.bDispTherad && this.threads) {
       for (let t of this.threads) {
@@ -59,7 +66,7 @@ export class TitlesPane {
         s += this.title_html(d, 0);
       }
     }
-    return this.toolbar.html() + div({ class: 'titles' }, div({ id: this.id, class: 'nb-list-group' }, s));
+    return this.toolbar.html() + div({ class: 'titles' }, div({ id: this.id_lg, class: 'nb-list-group' }, s));
   }
 
   thread_html(t: ITitle, depth: number) {
@@ -84,8 +91,8 @@ export class TitlesPane {
 
 
   bind() {
-    this.toolbar.bind();
-    $(`#${this.id} >button`).on('click', ev => {
+    super.bind();
+    $(`#${this.id_lg} >button`).on('click', ev => {
       let target = ev.currentTarget;
       let article_id: number = target.attributes['article_id'].value;
       this.select_article(article_id);
@@ -96,7 +103,7 @@ export class TitlesPane {
   }
 
   select_article(id: number) {
-    $(`#${this.id} >button`).removeClass('active');
-    $(`#${this.id} >button[article_id=${id}]`).addClass('active');
+    $(`#${this.id_lg} >button`).removeClass('active');
+    $(`#${this.id_lg} >button[article_id=${id}]`).addClass('active');
   }
 }

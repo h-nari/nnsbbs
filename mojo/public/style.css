@@ -10762,10 +10762,10 @@ textarea.form-control-lg {
 }
 
 #titles {
-  max-height: 100%;
   overflow-y: hidden;
 }
 #titles .titles {
+  height: 100%;
   overflow-y: auto;
 }
 #titles .titles button {
@@ -10806,11 +10806,11 @@ textarea.form-control-lg {
 #article {
   overflow: hidden;
 }
-#article #article-pane {
+#article .article {
   height: 100%;
   overflow-y: auto;
 }
-#article #article-pane .article-header {
+#article .article .article-header {
   width: 100%;
   background-color: #eee;
   color: #686;
@@ -10821,7 +10821,7 @@ textarea.form-control-lg {
   overflow: auto;
   padding: 5px;
 }
-#article #article-pane .article-body {
+#article .article .article-body {
   width: 100%;
   background-color: white;
   white-space: pre;

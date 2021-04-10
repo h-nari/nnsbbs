@@ -1,22 +1,23 @@
 import { get_json } from "./util";
 import { div, button } from "./tag";
 import { ToolBar } from "./toolbar";
+import { ToolbarPane } from "./pane";
 
 export interface IArticle {
   header: string;
   content: string;
 };
 
-export class ArticlePane {
-  private id: string = "article-pane";
+export class ArticlePane extends ToolbarPane {
   private id_header: string;
   private data: IArticle | null = null;
-  public toolbar = new ToolBar('Article');
   private bDispHeader = false;              // 記事のヘッダー部を表示するか
 
-  constructor() {
+  constructor(id: string) {
+    super(id);
     this.id_header = this.id + "-header";
     this.clear();
+    this.toolbar.title = 'Article';
   }
 
   clear() {
@@ -24,17 +25,21 @@ export class ArticlePane {
   }
 
   html(): string {
+    return div({ id: this.id }, this.inner_html());
+  }
+
+  inner_html(): string {
     let d = this.data;
     return this.toolbar.html() +
-      div({ id: this.id, class: 'article fill' },
+      div({ class: 'article' },
         div({ class: 'article-header', id: this.id_header }, d ? d.header : ""),
-        div({ class: 'article-body fill' }, d ? d.content : ""));
+        div({ class: 'article-body' }, d ? d.content : ""));
   }
 
   bind() {
+    super.bind();
     if (!this.bDispHeader)
       $('#' + this.id_header).addClass('no-display');
-    this.toolbar.bind();
   }
 
   async open(newsgroup_id: number, article_id: number) {
