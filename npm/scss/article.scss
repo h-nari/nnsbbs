@@ -2,7 +2,7 @@
   overflow: hidden;
 
   .article {
-    height: 100%;
+    height: calc(100% - 30px);
     overflow-y: auto;
 
     .article-header {
@@ -23,6 +23,15 @@
       white-space: pre;
       font-family: monospace;
       padding: 5px;
+    }
+
+    .article-end {
+      text-align: center;
+      margin: 5px;
+      background-color: beige;
+      padding: 5px;
+      font-size: large;
+      font-style: italic;
     }
   }
 }

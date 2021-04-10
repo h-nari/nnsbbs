@@ -56,7 +56,7 @@ export class GeometryManager {
     }
 
     if (freePanes.length > 0) {
-      let h = size - 40;
+      let h = size - 70;
       for (let pane of freePanes) {
         let hh = h * pane.expansion_ratio / ratio_sum;
         pane.setSize(hh);

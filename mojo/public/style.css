@@ -10757,7 +10757,7 @@ textarea.form-control-lg {
 }
 
 .newsgroup {
-  height: 100%;
+  height: calc(100% - 30px);
   overflow-y: auto;
 }
 
@@ -10765,7 +10765,7 @@ textarea.form-control-lg {
   overflow-y: hidden;
 }
 #titles .titles {
-  height: 100%;
+  height: calc(100% - 30px);
   overflow-y: auto;
 }
 #titles .titles button {
@@ -10807,7 +10807,7 @@ textarea.form-control-lg {
   overflow: hidden;
 }
 #article .article {
-  height: 100%;
+  height: calc(100% - 30px);
   overflow-y: auto;
 }
 #article .article .article-header {
@@ -10827,6 +10827,14 @@ textarea.form-control-lg {
   white-space: pre;
   font-family: monospace;
   padding: 5px;
+}
+#article .article .article-end {
+  text-align: center;
+  margin: 5px;
+  background-color: beige;
+  padding: 5px;
+  font-size: large;
+  font-style: italic;
 }
 
 .toolbar {

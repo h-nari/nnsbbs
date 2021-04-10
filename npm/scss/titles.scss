@@ -2,7 +2,7 @@
   overflow-y: hidden;
 
   .titles {
-    height: 100%;
+    height: calc(100% - 30px);
     overflow-y: auto;
     button {
       display: inline-flex;

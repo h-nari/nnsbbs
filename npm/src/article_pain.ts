@@ -33,7 +33,8 @@ export class ArticlePane extends ToolbarPane {
     return this.toolbar.html() +
       div({ class: 'article' },
         div({ class: 'article-header', id: this.id_header }, d ? d.header : ""),
-        div({ class: 'article-body' }, d ? d.content : ""));
+        div({ class: 'article-body' }, d ? d.content : ""),
+        div({ class: 'article-end' }, "--- End ---"));
   }
 
   bind() {
