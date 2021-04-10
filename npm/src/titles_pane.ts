@@ -16,18 +16,19 @@ export interface ITitle {
 export class TitlesPane extends ToolbarPane {
   private titles: ITitle[] = [];
   private threads: ITitle[] | null = null;
+  private newsgroup_name: string | null = null;
   private newsgroup_id: number | null = null;
   private bDispTherad: boolean = true;
   private thread_depth: number = 20;
   private clickCb: ((newsgroup_id: number, article_id: number) => void) | null = null;
-  private id_lg : string;
+  private id_lg: string;
 
-  constructor(id: string) { 
-    super(id); 
+  constructor(id: string) {
+    super(id);
     this.id_lg = id + "_lg";
   }
 
-  async open(newsgroup_id: number) {
+  async open(newsgroup_id: number, newsgroup_name: string) {
     let data = await get_json('/api/titles', { data: { newsgroup_id } });
     this.titles = [];
     this.threads = [];
@@ -42,14 +43,15 @@ export class TitlesPane extends ToolbarPane {
         this.threads.push(d);
       }
     }
-
+    this.toolbar.title = newsgroup_name;
     this.newsgroup_id = newsgroup_id;
+    this.newsgroup_name = newsgroup_name;
   }
 
   setClickCb(cb: (n: number, m: number) => void) {
     this.clickCb = cb;
   }
-  
+
   html(): string {
     return div({ id: this.id }, this.inner_html());
   }

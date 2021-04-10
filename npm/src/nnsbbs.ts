@@ -96,7 +96,7 @@ export default class NssBss {
     this.ng_pane.select_newsgroup(id);
     this.article_pane.clear();
     $('#article').html(this.article_pane.inner_html());
-    await this.titles_pane.open(id);
+    await this.titles_pane.open(id, name);
     $('#titles').html(this.titles_pane.inner_html());
     this.titles_pane.bind();
     this.titles_pane.show();
@@ -112,6 +112,7 @@ export default class NssBss {
     await this.article_pane.open(newsgroup_id, article_id);
     this.titles_pane.select_article(article_id);
     $('#article').html(this.article_pane.inner_html());
+
     this.article_pane.show();
     this.article_pane.bind();
     window.history.pushState(null, '', `/${this.cur_newsgroup}/${article_id}`);

@@ -64,12 +64,11 @@ sub article($self) {
     }
     else {
         my $db  = NnsBbs::Db::new($self);
-        my $sql = "select content";
-        $sql .= " from article as a";
-        $sql .= " where newsgroup_id = ? and id = ?";
-        my $sth = $db->{conn}->prepare($sql);
-        $sth->execute( $newsgroup_id, $article_id );
-        my $hr = $sth->fetchrow_hashref;
+        my $sql = "select content,a.created_at as date,u.disp_name as author,title";
+        $sql .= " from article as a,user as u";
+        $sql .= " where a.user_id= u.id and newsgroup_id = ? and a.id = ?";
+
+        my $hr = $db->select_rh( $sql, $newsgroup_id, $article_id );
         $self->render( json => $hr );
     }
 }

@@ -60,6 +60,11 @@ export class ToolBar {
   setTogleCB(cb: IToggleCB) {
     this.toggle_cb = cb;
   }
+
+  setTitle(title: string) {
+    this.title = title;
+    $(`#${this.id} .toolbar-title`).html(title);
+  }
 }
 
 

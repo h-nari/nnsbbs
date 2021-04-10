@@ -1,0 +1,10 @@
+Perltidy version is 20200110
+
+<stdin>: Begin Error Output Stream
+
+There is no previous '{' to match a '}' on line 76
+76: }
+    ^
+76: Starting negative indentation
+78: final indentation level: -1
+78: To save a full .LOG file rerun with -g

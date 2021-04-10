@@ -10806,6 +10806,30 @@ textarea.form-control-lg {
 #article {
   overflow: hidden;
 }
+#article .toolbar-title > span {
+  vertical-align: middle;
+}
+#article .toolbar-title .id {
+  font-weight: bold;
+  margin-right: 5px;
+  font-size: small;
+  color: cyan;
+}
+#article .toolbar-title .author {
+  font-weight: normal;
+  margin-right: 5px;
+}
+#article .toolbar-title .date {
+  font-weight: lighter;
+  font-size: small;
+  margin-right: 5px;
+  color: cyan;
+}
+#article .toolbar-title .title {
+  color: lightgray;
+  font-weight: bold;
+  font-size: normal;
+}
 #article .article {
   height: calc(100% - 30px);
   overflow-y: auto;
@@ -10843,13 +10867,16 @@ textarea.form-control-lg {
   color: white;
   display: flex;
   margin-bottom: 2px;
+  white-space: pre;
 }
 .toolbar .toolbar-title {
   font-size: large;
   flex-grow: 10;
   margin-left: 5px;
+  margin-right: 5px;
   color: yellow;
   font-weight: bold;
+  overflow: hidden;
 }
 .toolbar i {
   margin-right: 5px;

@@ -1,11 +1,14 @@
 import { get_json } from "./util";
-import { div, button } from "./tag";
+import { div, button, span } from "./tag";
 import { ToolBar } from "./toolbar";
 import { ToolbarPane } from "./pane";
 
 export interface IArticle {
-  header: string;
+  header?: string;
   content: string;
+  date: string;
+  author: string;
+  title: string;
 };
 
 export class ArticlePane extends ToolbarPane {
@@ -21,7 +24,7 @@ export class ArticlePane extends ToolbarPane {
   }
 
   clear() {
-    this.data = { header: "", content: "" };
+    this.data = { content: "", date: "", author: "", title: "" };
   }
 
   html(): string {
@@ -30,10 +33,13 @@ export class ArticlePane extends ToolbarPane {
 
   inner_html(): string {
     let d = this.data;
+    let header = d && d.header ? d.header : "";
+    let content = d ? d.content : "";
+
     return this.toolbar.html() +
       div({ class: 'article' },
-        div({ class: 'article-header', id: this.id_header }, d ? d.header : ""),
-        div({ class: 'article-body' }, d ? d.content : ""),
+        div({ class: 'article-header', id: this.id_header }, header),
+        div({ class: 'article-body' }, content),
         div({ class: 'article-end' }, "--- End ---"));
   }
 
@@ -55,6 +61,11 @@ export class ArticlePane extends ToolbarPane {
       data['header'] = "";
     }
     this.data = data;
+    this.toolbar.title =
+      span({ class: 'id' }, '[' + article_id +']') +
+      span({ class: 'author' },  data.author ) +
+      span({ class: 'date' }, data.date) +
+      span({ class: 'title' }, data.title);
   }
 
   setHeaderDisp(bDisp: boolean) {

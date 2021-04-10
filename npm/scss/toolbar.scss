@@ -4,12 +4,16 @@
   color: white;
   display: flex;
   margin-bottom: 2px;
+  white-space: pre;
+
   .toolbar-title {
     font-size: large;
     flex-grow: 10;
     margin-left: 5px;
+    margin-right: 5px;
     color: yellow;
     font-weight: bold;
+    overflow: hidden;
   }
   i {
     margin-right: 5px;
