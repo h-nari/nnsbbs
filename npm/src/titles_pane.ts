@@ -84,9 +84,9 @@ export class TitlesPane extends ToolbarPane {
   title_html(d: ITitle, depth: number) {
     let s = button({ article_id: d.article_id },
       div({ class: 'article-id' }, String(d.article_id)),
-      div({ class: 'article-from' }, d.disp_name),
+      div({ class: 'article-from' , title: d.disp_name}, d.disp_name),
       div({ class: 'article-time' }, d.date),
-      div({ class: 'article-title', style: `left: ${depth}px;` }, d.title)
+      div({ class: 'article-title', title: d.title, style: `left: ${depth}px;` }, d.title)
     );
     return s;
   }
