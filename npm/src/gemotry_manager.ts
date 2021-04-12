@@ -32,7 +32,7 @@ export class GeometryManager {
     let size = n;
     if (!size) {
       size = $(window).height() || 800;
-      size -= 70;
+      size -= 80;
     }
     this.totalSize = size;
     $('#' + this.id).css('height', size + 'px');
@@ -56,7 +56,7 @@ export class GeometryManager {
     }
 
     if (freePanes.length > 0) {
-      let h = size - 70;
+      let h = size - 20;
       for (let pane of freePanes) {
         let hh = h * pane.expansion_ratio / ratio_sum;
         pane.setSize(hh);

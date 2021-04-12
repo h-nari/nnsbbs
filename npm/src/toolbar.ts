@@ -1,4 +1,4 @@
-import { div, span, tag, label, input } from "./tag";
+import { div, span, tag, label, input, button, ul, li, a } from "./tag";
 
 type IToggleCB = (bOpen: boolean) => void;
 
@@ -38,8 +38,9 @@ export class ToolBar {
       btn.bind();
   }
 
-  add_btn(btn: Btn) {
+  add_btn(btn: Btn) : ToolBar{
     this.btns.unshift(btn);        // 最初に追加
+    return this;
   }
 
   setState(bOpen: boolean) {
@@ -76,8 +77,8 @@ interface IBtnOption {
 
 var btn_sn = 0;
 export class Btn {
-  private opt: IBtnOption;
-  private id: string;
+  protected opt: IBtnOption;
+  protected id: string;
 
   constructor(opt: IBtnOption) {
     this.opt = opt;
@@ -86,9 +87,11 @@ export class Btn {
 
   html(): string {
     let opt = { id: this.id, class: "bi-" + this.opt.icon };
-    if (this.opt.explain)
+    if (this.opt.explain) {
       opt['title'] = this.opt.explain;
-    return tag('i', opt);
+      opt['data-toggle'] = 'tooltip'
+    }
+    return button(tag('i', opt));
   }
 
   bind() {
@@ -96,5 +99,70 @@ export class Btn {
       if (this.opt.action)
         this.opt.action(e, this);
     })
+  }
+}
+
+interface IDropDown {
+  name: string;
+  explain?: string;
+  action?: () => void;
+};
+
+interface IBtnDropdownOption extends IBtnOption {
+  dropdown: IDropDown[];
+}
+
+export class BtnDropdown extends Btn {
+  protected opt: IBtnDropdownOption;
+  constructor(opt: IBtnDropdownOption) {
+    super(opt);
+    this.opt = opt;
+  }
+
+  html(): string {
+    let id_btn = this.id + '-btn';
+    let dm = "";
+    let cnt = 0;
+    for (let dd of this.opt.dropdown) {
+      let id_dd = id_btn + '-' + cnt++;
+      let attr = { class: 'dropdown-item', href: '#', id: id_dd };
+      if (dd.explain) {
+        attr['title'] = dd.explain;
+        attr['data-toggle'] = 'tooltip';
+      }
+      dm += li(a(attr, dd.name));
+    }
+    let btn_attr = {
+      class: 'dropdown-toggle',
+      type: 'button',
+      id: id_btn,
+      'data-toggle': 'dropdown',
+      'aria-haspopup': true,
+      'aria-expanded': false
+    };
+    if (this.opt.explain) {
+      btn_attr['title'] = this.opt.explain;
+    }
+    return div({ class: 'dropdown' },
+      button(btn_attr, tag('i', { class: 'bi-' + this.opt.icon })),
+      ul({
+        class: 'dropdown-menu',
+        'aria-labelledby': id_btn
+      }, dm));
+  }
+
+  bind() {
+    let id_btn = this.id + '-btn';
+    let cnt = 0;
+    for (let dd of this.opt.dropdown) {
+      let id_dd = id_btn + '-' + cnt++;
+      if (dd.action) {
+        $('#' + id_dd).on('click', e => {
+          if (dd.action)
+            dd.action();
+          e.preventDefault();
+        });
+      }
+    }
   }
 }

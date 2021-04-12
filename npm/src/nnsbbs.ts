@@ -1,9 +1,9 @@
 import { get_json } from "./util";
 import { div } from "./tag";
-import { NewsGroupsPane, INewsGroup } from "./ng_pane";
-import { TitlesPane } from './titles_pane';
-import { ArticlePane } from './article_pain';
-import { Btn } from "./toolbar";
+import { NewsGroupsPane, INewsGroup } from "./newsgroup";
+import { TitlesPane } from './titles';
+import { ArticlePane } from './article';
+import { Btn, BtnDropdown } from "./toolbar";
 import { GeometryManager } from "./gemotry_manager";
 
 export default class NssBss {
@@ -19,6 +19,87 @@ export default class NssBss {
     this.ng_pane.expansion_ratio = 1;
     this.titles_pane.expansion_ratio = 2;
     this.article_pane.expansion_ratio = 4;
+
+    // newsgroupペーンのボタン
+    this.ng_pane.toolbar.add_btn(new Btn({
+      icon: 'check-all',
+      explain: '全てのニュースグループを表示',
+      action: ()=>{
+        $('#newsgroup_lg').removeClass('hide-not-subscribed');
+      }
+    })).add_btn(new Btn({
+      icon: 'check',
+      explain: '購読中のニュースグループのみ表示',
+      action: ()=>{
+        $('#newsgroup_lg').addClass('hide-not-subscribed');
+      }
+    }));
+    
+    // titleペーンのボタン
+    this.titles_pane.toolbar.add_btn(new Btn({
+      icon: 'x-square',
+      explain: 'タイトル・記事領域を閉じる',
+      action: () => {
+        this.titles_pane.close();
+        this.article_pane.close();
+        window.history.pushState(null, '', '/');
+        document.title = 'nnsbbs';
+      }
+    })).add_btn(new BtnDropdown({
+      icon: 'three-dots',       // 他の候補: justify, list, menu-down
+      explain: '表示設定',
+      dropdown: [
+        {
+          name: 'スレッド表示', action: () => {
+            console.log('スレッド表示');
+            this.titles_pane.disp_thread(true);
+          }
+        },
+        {
+          name: '投稿順表示', action: () => {
+            console.log('投稿順表示');
+            this.titles_pane.disp_thread(false);
+          }
+        },
+      ]
+    })).add_btn(new Btn({
+      icon: 'chevron-bar-down',
+      explain: '最後に移動',
+      action: () => {
+        let div1 = $('#' + this.titles_pane.id + ' .titles')[0];
+        let h1 = $(div1).height();
+        let div2 = $('#titles_lg')[0];
+        let h2 = $(div2).height();
+        if (h1 && h2)
+          div1.scrollTop = h2 - h1 + 10;
+      }
+    })).add_btn(new Btn({
+      icon: 'chevron-bar-up',
+      explain: '先頭に移動',
+      action: () => {
+        let div = $('#' + this.titles_pane.id + ' .titles')[0];
+        div.scrollTop = 0;
+      }
+    }));
+
+    this.article_pane.toolbar.add_btn(new Btn({
+      icon: 'x-square',
+      explain: '記事領域を閉じる',
+      action: () => {
+        this.article_pane.close();
+        window.history.pushState(null, '', `/${this.cur_newsgroup}`);
+        document.title = `nnsbbs/${this.cur_newsgroup}`;
+      }
+    }))
+    this.article_pane.toolbar.add_btn(new Btn({
+      icon: 'card-heading',
+      explain: '記事のヘッダの表示を切替',
+      action: () => {
+        this.article_pane.toggle_header()
+      }
+    }));
+
+    this.ng_pane.loadSubsInfo();
   }
 
   html(): string {
@@ -34,30 +115,6 @@ export default class NssBss {
     this.titles_pane.setClickCb((newsgroup_id, article_id) => {
       this.select_article(newsgroup_id, article_id);
     });
-    this.titles_pane.toolbar.add_btn(new Btn({
-      icon: 'x-square',
-      explain: 'タイトル・記事領域を閉じる',
-      action: () => {
-        this.titles_pane.close();
-        this.article_pane.close();
-      }
-    }));
-
-    this.article_pane.toolbar.add_btn(new Btn({
-      icon: 'x-square',
-      explain: '記事領域を閉じる',
-      action: () => {
-        this.article_pane.close();
-      }
-    }))
-    this.article_pane.toolbar.add_btn(new Btn({
-      icon: 'card-heading',
-      explain: '記事のヘッダの表示を切替',
-      action: () => {
-        this.article_pane.toggle_header()
-      }
-    }));
-
   }
 
   async top_page(newsgroup: string, article_id: string) {
@@ -66,9 +123,14 @@ export default class NssBss {
     $('#newsgroup').html(this.ng_pane.inner_html());
     this.ng_pane.bind();
 
-    if (newsgroup != "") {
+    if (newsgroup == "") {
+      this.titles_pane.close();
+      this.article_pane.close();
+    } else {
       await this.select_newsgroup(newsgroup);
-      if (article_id != "") {
+      if (article_id == "") {
+        this.article_pane.close();
+      } else {
         let id = parseInt(article_id);
         this.select_article(this.cur_newsgroup_id, id);
       }

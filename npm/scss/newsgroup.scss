@@ -1,10 +1,49 @@
-
 #newsgroup {
   max-height: 100%;
   overflow-y: hidden;
-}
 
-.newsgroup {
-  height: calc(100% - 30px);
-  overflow-y: auto;
+  .newsgroup {
+    height: calc(100% - 30px);
+    overflow-y: auto;
+
+    #newsgroup_lg.hide-not-subscribed {
+      .newsgroup-line {
+        display: none;
+      }
+      .newsgroup-line.subscribe {
+        display: block;
+      }
+    }
+
+    .newsgroup-line {
+      background-color: lightgray;
+      color: black;
+      .newsgroup-check {
+        margin-right: 10px;
+      }
+      .newsgroup-name {
+        font-weight: lighter;
+        margin-right: 20px;
+      }
+      .newsgroup-status {
+        font-weight: lighter;
+        font-size: small;
+
+        .unread {
+          color: red;
+          font-weight: bold;
+        }
+        .max-id {
+          font-weight: normal;
+        }
+      }
+    }
+    .newsgroup-line.subscribe {
+      background-color: white;
+      .newsgroup-name {
+        font-weight: bold;
+        margin-right: 20px;
+      }
+    }
+  }
 }

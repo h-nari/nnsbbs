@@ -1,5 +1,5 @@
 import { get_json } from "./util";
-import { div, button } from "./tag";
+import { div, button, span } from "./tag";
 import { ToolBar } from "./toolbar";
 import { ToolbarPane } from "./pane";
 
@@ -18,7 +18,7 @@ export class TitlesPane extends ToolbarPane {
   private threads: ITitle[] | null = null;
   private newsgroup_name: string | null = null;
   private newsgroup_id: number | null = null;
-  private bDispTherad: boolean = true;
+  private bDispTherad: boolean = false;
   private thread_depth: number = 20;
   private clickCb: ((newsgroup_id: number, article_id: number) => void) | null = null;
   private id_lg: string;
@@ -43,9 +43,9 @@ export class TitlesPane extends ToolbarPane {
         this.threads.push(d);
       }
     }
-    this.toolbar.title = newsgroup_name;
     this.newsgroup_id = newsgroup_id;
     this.newsgroup_name = newsgroup_name;
+    this.set_title();
   }
 
   setClickCb(cb: (n: number, m: number) => void) {
@@ -84,7 +84,7 @@ export class TitlesPane extends ToolbarPane {
   title_html(d: ITitle, depth: number) {
     let s = button({ article_id: d.article_id },
       div({ class: 'article-id' }, String(d.article_id)),
-      div({ class: 'article-from' , title: d.disp_name}, d.disp_name),
+      div({ class: 'article-from', title: d.disp_name }, d.disp_name),
       div({ class: 'article-time' }, d.date),
       div({ class: 'article-title', title: d.title, style: `left: ${depth}px;` }, d.title)
     );
@@ -107,5 +107,19 @@ export class TitlesPane extends ToolbarPane {
   select_article(id: number) {
     $(`#${this.id_lg} >button`).removeClass('active');
     $(`#${this.id_lg} >button[article_id=${id}]`).addClass('active');
+  }
+
+  disp_thread(bThread: boolean) {
+    this.bDispTherad = bThread;
+    this.set_title();
+    $('#' + this.id).html(this.inner_html());
+    this.bind();
+  }
+
+  set_title() {
+    let s = "";
+    s += span({ class: 'newsgroup-name' }, this.newsgroup_name || "");
+    s += span({ class: 'disp-mode' }, this.bDispTherad ? '[スレッド表示]' : '[投稿順表示]');
+    this.toolbar.title = s;
   }
 }

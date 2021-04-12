@@ -9,16 +9,23 @@
   .toolbar-title {
     font-size: large;
     flex-grow: 10;
-    margin-left: 5px;
     margin-right: 5px;
     color: yellow;
     font-weight: bold;
     overflow: hidden;
   }
-  i {
-    margin-right: 5px;
-    font-size: large;
-    flex-grow: 0;
+  button {
+    @extend .btn;
+    @extend .btn-sm;
+    @extend .btn-success;
+    margin-left: 5px;
+    i {
+      // color: white;
+      // margin-right: 5px;
+      // margin-left: 5px;
+      font-size: large;
+      flex-grow: 0;
+    }
   }
 }
 

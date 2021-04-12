@@ -1,8 +1,17 @@
 #titles {
   overflow-y: hidden;
 
+  .toolbar-title {
+    .disp-mode {
+      margin-left: 10px;
+      color: lightgray;
+      font-size: small;
+      font-weight: lighter;
+    }
+  }
+
   .titles {
-    height: calc(100% - 30px);
+    height: calc(100% - 40px);
     overflow-y: auto;
     button {
       display: inline-flex;
@@ -10,34 +19,37 @@
         display: inline-block;
       }
     }
+
+    .article-id {
+      width: 40px;
+      color: darkgreen;
+      font-size: small;
+      margin-right: 5px;
+      text-align: right;
+      flex: 0 0 auto;
+    }
+    .article-title {
+      flex-grow: 10;
+      font-weight: bold;
+      position: relative;
+    }
+    
+    .article-from {
+      width: 120px;
+      overflow: hidden;
+      font-weight: bold;
+      margin-right: 5px;
+      flex: 0 0 auto;
+    }
+    
+    .article-time {
+      margin-right: 5px;
+      flex: 0 0 auto;
+    }
+    
+
   }
 }
 
 
 
-.article-id {
-  width: 30px;
-  color: darkgreen;
-  font-size: small;
-  margin-right: 5px;
-  text-align: right;
-  flex: 0 0 auto;
-}
-.article-title {
-  flex-grow: 10;
-  font-weight: bold;
-  position: relative;
-}
-
-.article-from {
-  width: 60px;
-  overflow: hidden;
-  font-weight: bold;
-  margin-right: 5px;
-  flex: 0 0 auto;
-}
-
-.article-time {
-  margin-right: 5px;
-  flex: 0 0 auto;
-}
