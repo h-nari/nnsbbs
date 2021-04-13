@@ -103,6 +103,11 @@ export class NewsGroupsPane extends ToolbarPane {
     });
   }
 
+  redisplay() {
+    $('#' + this.id).html(this.inner_html());
+    this.bind();
+  }
+
   select_newsgroup(id: number) {
     $(`#${this.id_lg} >button`).removeClass('active');
     $(`#${this.id_lg} >button[newsgroup-id=${id}]`).addClass('active');
@@ -118,6 +123,13 @@ export class NewsGroupsPane extends ToolbarPane {
   name2id(name: string): number | null {
     for (let ng of this.data) {
       if (ng.name == name) return ng.id;
+    }
+    return null;
+  }
+
+  name2data(name: string): INewsGroup | null {
+    for (let ng of this.data) {
+      if (ng.name == name) return ng;
     }
     return null;
   }
@@ -155,5 +167,29 @@ export class NewsGroupsPane extends ToolbarPane {
       localStorage.setItem('nnsbbsSubsInfo', str);
       this.savedSubsString = str;
     }
+  }
+
+  get_readset(newsgroup: string): ReadSet {
+    let si = this.subsInfo[newsgroup];
+    if (!si)
+      this.subsInfo[newsgroup] = si = { subscribe: false, read: new ReadSet() };
+    return si.read;
+  }
+
+  read_all(newsgroup: string, last: number = 0) {
+    let d = this.name2data(newsgroup);
+    if (!d) throw new Error(`newsgroup:${newsgroup} は存在しません`);
+    let rs = this.get_readset(newsgroup)
+    rs.clear();
+    rs.add_range(1, d.max_id - last);
+    this.redisplay();
+  }
+
+  unread_all(newsgroup: string) {
+    let d = this.name2data(newsgroup);
+    if (!d) throw new Error(`newsgroup:${newsgroup} は存在しません`);
+    let rs = this.get_readset(newsgroup)
+    rs.clear();
+    this.redisplay();
   }
 }

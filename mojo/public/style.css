@@ -10163,6 +10163,28 @@ h3 {
   display: none;
 }
 
+#nnsbbs-context-menu {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  height: 100%;
+  width: 100%;
+}
+#nnsbbs-context-menu .context-menu {
+  background-color: #444;
+  color: white;
+}
+#nnsbbs-context-menu .context-menu .menu-title {
+  padding: 5px;
+}
+#nnsbbs-context-menu .context-menu .nb-list-group div {
+  padding: 5px;
+}
+#nnsbbs-context-menu .context-menu .nb-list-group div:hover {
+  padding: 5px;
+  background-color: #888;
+}
+
 BODY {
   background-color: #eee;
 }

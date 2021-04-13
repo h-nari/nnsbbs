@@ -7,6 +7,10 @@ export class ReadSet {
     if (str) this.fromString(str);
   }
 
+  clear() {
+    this.ranges = [];
+  }
+
   fromString(str: string) {
     let length = str.length;
     let start: number;

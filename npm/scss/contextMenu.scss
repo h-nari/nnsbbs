@@ -1,0 +1,21 @@
+#nnsbbs-context-menu {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  height: 100%;
+  width: 100%;
+  .context-menu {
+    background-color: #444;
+    color: white;
+    .menu-title {
+      padding: 5px;
+    }
+    .nb-list-group div {
+      padding: 5px;
+    } 
+    .nb-list-group div:hover {
+      padding: 5px;
+      background-color: #888;
+    }
+  }
+}

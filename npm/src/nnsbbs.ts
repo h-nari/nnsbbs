@@ -1,10 +1,13 @@
 import { get_json } from "./util";
-import { div } from "./tag";
 import { NewsGroupsPane, INewsGroup } from "./newsgroup";
 import { TitlesPane } from './titles';
 import { ArticlePane } from './article';
 import { Btn, BtnDropdown } from "./toolbar";
 import { GeometryManager } from "./gemotry_manager";
+import { div, button } from "./tag";
+import { contextMenu, closeContextMenu } from "./context_menu";
+import "./my_jquery";
+
 
 export default class NssBss {
   private ng_pane = new NewsGroupsPane('newsgroup');
@@ -24,17 +27,17 @@ export default class NssBss {
     this.ng_pane.toolbar.add_btn(new Btn({
       icon: 'check-all',
       explain: '全てのニュースグループを表示',
-      action: ()=>{
+      action: () => {
         $('#newsgroup_lg').removeClass('hide-not-subscribed');
       }
     })).add_btn(new Btn({
       icon: 'check',
       explain: '購読中のニュースグループのみ表示',
-      action: ()=>{
+      action: () => {
         $('#newsgroup_lg').addClass('hide-not-subscribed');
       }
     }));
-    
+
     // titleペーンのボタン
     this.titles_pane.toolbar.add_btn(new Btn({
       icon: 'x-square',
@@ -115,6 +118,44 @@ export default class NssBss {
     this.titles_pane.setClickCb((newsgroup_id, article_id) => {
       this.select_article(newsgroup_id, article_id);
     });
+
+    $(document).on('contextmenu', '.no-contextmenu', e => {
+      console.log('no-contextmenu');
+      closeContextMenu();
+      e.preventDefault();
+    });
+
+    $(document).on('contextmenu', '.newsgroup-line', e => {
+      console.log('context menu:', e);
+      let newsgroup = e.target.attributes['newsgroup-name'].value;
+      contextMenu(e, {
+        title: newsgroup,
+        width: 300,
+        buttons: {
+          btn1: {
+            text: '全て既読にする',
+            action: ev => { this.ng_pane.read_all(newsgroup); }
+          },
+          btn2: {
+            text: '全て未読にする',
+            action: ev => { this.ng_pane.unread_all(newsgroup); }
+          },
+          btn3: {
+            text: '最新50記事だけ未読にする',
+            action: ev => { this.ng_pane.read_all(newsgroup, 50); }
+          }
+        }
+      });
+    });
+
+    $(document).on('contextmenu', '.article-title', e => {
+      console.log('context menu:', e.target);
+      $.dialog({
+        content: 'Title ContextMenu'
+      });
+      e.preventDefault();
+    });
+
   }
 
   async top_page(newsgroup: string, article_id: string) {
