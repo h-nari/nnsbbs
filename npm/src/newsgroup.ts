@@ -104,8 +104,10 @@ export class NewsGroupsPane extends ToolbarPane {
   }
 
   redisplay() {
+    let scroll = $(`#${this.id} .newsgroup`).scrollTop();
     $('#' + this.id).html(this.inner_html());
     this.bind();
+    $(`#${this.id} .newsgroup`).scrollTop(scroll || 0);
   }
 
   select_newsgroup(id: number) {
