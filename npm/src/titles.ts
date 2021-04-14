@@ -2,6 +2,8 @@ import { get_json } from "./util";
 import { div, button, span } from "./tag";
 import { ToolBar } from "./toolbar";
 import { ToolbarPane } from "./pane";
+import { ReadSet } from "./readSet";
+import { ISubsInfo } from "./newsgroup";
 
 export interface ITitle {
   article_id: number;
@@ -14,6 +16,7 @@ export interface ITitle {
 };
 
 export class TitlesPane extends ToolbarPane {
+  public subsInfo: ISubsInfo = { subscribe: false, read: new ReadSet() };
   private titles: ITitle[] = [];
   private threads: ITitle[] | null = null;
   private newsgroup_name: string | null = null;
@@ -28,7 +31,8 @@ export class TitlesPane extends ToolbarPane {
     this.id_lg = id + "_lg";
   }
 
-  async open(newsgroup_id: number, newsgroup_name: string) {
+  async open(newsgroup_id: number, newsgroup_name: string, subsInfo: ISubsInfo) {
+    this.subsInfo = subsInfo;
     let data = await get_json('/api/titles', { data: { newsgroup_id } });
     this.titles = [];
     this.threads = [];
@@ -71,6 +75,13 @@ export class TitlesPane extends ToolbarPane {
     return this.toolbar.html() + div({ class: 'titles' }, div({ id: this.id_lg, class: 'nb-list-group' }, s));
   }
 
+  redisplay() {
+    let scroll = $(`#${this.id} .titles`).scrollTop();
+    $('#' + this.id).html(this.inner_html());
+    this.bind();
+    $(`#${this.id} .titles`).scrollTop(scroll || 0);
+  }
+
   thread_html(t: ITitle, depth: number) {
     let s = this.title_html(t, depth);
     if (t.children) {
@@ -82,7 +93,10 @@ export class TitlesPane extends ToolbarPane {
   }
 
   title_html(d: ITitle, depth: number) {
-    let s = button({ article_id: d.article_id },
+    let opt = { article_id: d.article_id };
+    if (this.subsInfo.read.includes(d.article_id))
+      opt['class'] = 'read';
+    let s = button(opt,
       div({ class: 'article-id' }, String(d.article_id)),
       div({ class: 'article-from', title: d.disp_name }, d.disp_name),
       div({ class: 'article-time' }, d.date),
@@ -119,6 +133,7 @@ export class TitlesPane extends ToolbarPane {
   set_title() {
     let s = "";
     s += span({ class: 'newsgroup-name' }, this.newsgroup_name || "");
+    s += span({ class: 'subscription' }, '(', this.subsInfo.subscribe ? '購読中' : '未購読', ')');
     s += span({ class: 'disp-mode' }, this.bDispTherad ? '[スレッド表示]' : '[投稿順表示]');
     this.toolbar.title = s;
   }

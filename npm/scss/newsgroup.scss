@@ -6,15 +6,6 @@
     height: calc(100% - 30px);
     overflow-y: auto;
 
-    #newsgroup_lg.hide-not-subscribed {
-      .newsgroup-line {
-        display: none;
-      }
-      .newsgroup-line.subscribe {
-        display: block;
-      }
-    }
-
     .newsgroup-line {
       background-color: lightgray;
       color: black;

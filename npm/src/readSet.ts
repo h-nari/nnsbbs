@@ -51,7 +51,8 @@ export class ReadSet {
     }
   }
 
-  add_range(start: number, end: number) {
+  add_range(start: number, end: number | null = null) {
+    if (!end) end = start;
     if (start <= end) {
       let s = start;
       let e = end;
@@ -131,5 +132,13 @@ export class ReadSet {
     for (let r of this.ranges)
       n += r[1] - r[0] + 1;
     return n;
+  }
+
+  includes(n: number): boolean {
+    for (let r of this.ranges) {
+      if (r[0] <= n && n <= r[1])
+        return true;
+    }
+    return false;
   }
 }

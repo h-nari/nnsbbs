@@ -12,7 +12,7 @@ export interface INewsGroup {
 };
 
 // 購読情報：ニュースグループごとの購読、既読情報
-interface ISubsInfo {
+export interface ISubsInfo {
   subscribe: boolean;
   read: ReadSet;
 };
@@ -23,10 +23,12 @@ interface ISubsJson {
 };
 
 export class NewsGroupsPane extends ToolbarPane {
+  public subsInfo: { [name: string]: ISubsInfo } = {};
+  public bShowAll: boolean = false;
+
   private id_lg: string;      // list-group id
   private data: INewsGroup[] = [];
   private clickCb: ((newsgroup_id: number) => void) | null = null;
-  public subsInfo: { [name: string]: ISubsInfo } = {};
   private savedSubsString: string = "";
 
   constructor(id: string) {
@@ -37,6 +39,10 @@ export class NewsGroupsPane extends ToolbarPane {
     // this.toolbar.add_btn(new Btn({ icon: 'caret-down-fill' }));
     // this.toolbar.add_btn(new Btn({ icon: 'gear-fill' }));
     // this.toolbar.add_btn(new Btn({ icon: 'x-square' }));
+
+    setInterval(() => {
+      this.saveSubsInfo();
+    }, 5000);
   }
 
   setData(data: INewsGroup[]) {
@@ -55,6 +61,7 @@ export class NewsGroupsPane extends ToolbarPane {
     let s = "";
     for (let d of this.data) {
       let si = this.subsInfo[d.name];
+      if ((!si || !si.subscribe) && !this.bShowAll) continue;   // 非購読ニュースグループを表示しない
       if (!si) si = { subscribe: false, read: new ReadSet() };
       let unread = d.max_id;
       let c = "";
@@ -98,7 +105,6 @@ export class NewsGroupsPane extends ToolbarPane {
         else
           $(parent).removeClass('subscribe');
         console.log(newsgroup, subscribe);
-        this.saveSubsInfo();
       }
     });
   }
@@ -171,27 +177,27 @@ export class NewsGroupsPane extends ToolbarPane {
     }
   }
 
-  get_readset(newsgroup: string): ReadSet {
+  getSubsInfo(newsgroup: string): ISubsInfo {
     let si = this.subsInfo[newsgroup];
     if (!si)
       this.subsInfo[newsgroup] = si = { subscribe: false, read: new ReadSet() };
-    return si.read;
+    return si;
   }
 
   read_all(newsgroup: string, last: number = 0) {
     let d = this.name2data(newsgroup);
     if (!d) throw new Error(`newsgroup:${newsgroup} は存在しません`);
-    let rs = this.get_readset(newsgroup)
-    rs.clear();
-    rs.add_range(1, d.max_id - last);
+    let si = this.getSubsInfo(newsgroup)
+    si.read.clear();
+    si.read.add_range(1, d.max_id - last);
     this.redisplay();
   }
 
   unread_all(newsgroup: string) {
     let d = this.name2data(newsgroup);
     if (!d) throw new Error(`newsgroup:${newsgroup} は存在しません`);
-    let rs = this.get_readset(newsgroup)
-    rs.clear();
+    let si = this.getSubsInfo(newsgroup)
+    si.read.clear();
     this.redisplay();
   }
 }

@@ -28,13 +28,17 @@ export default class NssBss {
       icon: 'check-all',
       explain: '全てのニュースグループを表示',
       action: () => {
-        $('#newsgroup_lg').removeClass('hide-not-subscribed');
+        // $('#newsgroup_lg').removeClass('hide-not-subscribed');
+        this.ng_pane.bShowAll = true;
+        this.ng_pane.redisplay();
       }
     })).add_btn(new Btn({
       icon: 'check',
       explain: '購読中のニュースグループのみ表示',
       action: () => {
-        $('#newsgroup_lg').addClass('hide-not-subscribed');
+        // $('#newsgroup_lg').addClass('hide-not-subscribed');
+        this.ng_pane.bShowAll = false;
+        this.ng_pane.redisplay();
       }
     }));
 
@@ -199,7 +203,9 @@ export default class NssBss {
     this.ng_pane.select_newsgroup(id);
     this.article_pane.clear();
     $('#article').html(this.article_pane.inner_html());
-    await this.titles_pane.open(id, name);
+    let si = this.ng_pane.getSubsInfo(name);
+    await this.titles_pane.open(id, name, si);
+
     $('#titles').html(this.titles_pane.inner_html());
     this.titles_pane.bind();
     this.titles_pane.show();
@@ -215,9 +221,12 @@ export default class NssBss {
     await this.article_pane.open(newsgroup_id, article_id);
     this.titles_pane.select_article(article_id);
     $('#article').html(this.article_pane.inner_html());
-
-    this.article_pane.show();
+    this.article_pane.show();  // no-displayを解除
     this.article_pane.bind();
+    let subsInfo = this.ng_pane.getSubsInfo(this.cur_newsgroup);
+    subsInfo.read.add_range(article_id);
+    this.ng_pane.redisplay();
+    this.titles_pane.redisplay();
     window.history.pushState(null, '', `/${this.cur_newsgroup}/${article_id}`);
     document.title = `nnsbbs/${this.cur_newsgroup}/${article_id}`
   }

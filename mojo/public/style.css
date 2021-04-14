@@ -9997,12 +9997,6 @@ h3 {
   height: calc(100% - 30px);
   overflow-y: auto;
 }
-#newsgroup .newsgroup #newsgroup_lg.hide-not-subscribed .newsgroup-line {
-  display: none;
-}
-#newsgroup .newsgroup #newsgroup_lg.hide-not-subscribed .newsgroup-line.subscribe {
-  display: block;
-}
 #newsgroup .newsgroup .newsgroup-line {
   background-color: lightgray;
   color: black;
@@ -10036,8 +10030,14 @@ h3 {
 #titles {
   overflow-y: hidden;
 }
+#titles .toolbar-title .subscription {
+  margin-left: 20px;
+  color: lightgray;
+  font-size: small;
+  font-weight: mdium;
+}
 #titles .toolbar-title .disp-mode {
-  margin-left: 10px;
+  margin-left: 20px;
   color: lightgray;
   font-size: small;
   font-weight: lighter;
@@ -10052,7 +10052,7 @@ h3 {
 #titles .titles button > div {
   display: inline-block;
 }
-#titles .titles .article-id {
+#titles .titles button .article-id {
   width: 40px;
   color: darkgreen;
   font-size: small;
@@ -10060,21 +10060,25 @@ h3 {
   text-align: right;
   flex: 0 0 auto;
 }
-#titles .titles .article-title {
+#titles .titles button .article-title {
   flex-grow: 10;
   font-weight: bold;
   position: relative;
 }
-#titles .titles .article-from {
+#titles .titles button .article-from {
   width: 120px;
   overflow: hidden;
   font-weight: bold;
   margin-right: 5px;
   flex: 0 0 auto;
 }
-#titles .titles .article-time {
+#titles .titles button .article-time {
   margin-right: 5px;
   flex: 0 0 auto;
+}
+#titles .titles button.read .article-title,
+#titles .titles button.read .article-from {
+  color: darkgray;
 }
 
 #article {
