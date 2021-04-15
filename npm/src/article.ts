@@ -15,6 +15,7 @@ export class ArticlePane extends ToolbarPane {
   private id_header: string;
   private data: IArticle | null = null;
   private bDispHeader = false;              // 記事のヘッダー部を表示するか
+  public fNext: (() => void) | null = null;  // --End--部をクリックした時に実行
 
   constructor(id: string) {
     super(id);
@@ -40,13 +41,16 @@ export class ArticlePane extends ToolbarPane {
       div({ class: 'article' },
         div({ class: 'article-header', id: this.id_header }, header),
         div({ class: 'article-body' }, content),
-        div({ class: 'article-end' }, "--- End ---"));
+        div({ class: 'article-end' }, "--- End (click to next)---"));
   }
 
   bind() {
     super.bind();
     if (!this.bDispHeader)
       $('#' + this.id_header).addClass('no-display');
+    $(`#${this.id} .article-end`).on('click', () => {
+      if (this.fNext) this.fNext();
+    });
   }
 
   async open(newsgroup_id: number, article_id: number) {
@@ -62,8 +66,8 @@ export class ArticlePane extends ToolbarPane {
     }
     this.data = data;
     this.toolbar.title =
-      span({ class: 'id' }, '[' + article_id +']') +
-      span({ class: 'author' },  data.author ) +
+      span({ class: 'id' }, '[' + article_id + ']') +
+      span({ class: 'author' }, data.author) +
       span({ class: 'date' }, data.date) +
       span({ class: 'title' }, data.title);
   }

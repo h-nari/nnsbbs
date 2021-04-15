@@ -129,6 +129,12 @@ export default class NssBss {
       this.select_article(newsgroup_id, article_id);
     });
 
+    this.article_pane.fNext = () => {
+      this.next_article();
+    };
+
+    // context メニュー
+
     $(document).on('contextmenu', '.no-contextmenu', e => {
       console.log('no-contextmenu');
       closeContextMenu();
@@ -235,5 +241,9 @@ export default class NssBss {
     this.titles_pane.redisplay();
     window.history.pushState(null, '', `/${this.cur_newsgroup}/${article_id}`);
     document.title = `nnsbbs/${this.cur_newsgroup}/${article_id}`
+  }
+
+  next_article() {
+    console.log('next_article');
   }
 }
