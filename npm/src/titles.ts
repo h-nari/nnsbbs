@@ -158,29 +158,34 @@ export class TitlesPane extends ToolbarPane {
     this.toolbar.title = s;
   }
 
-  scrollToNextUnread() {
+  scrollToNextUnread() : boolean {
     console.log('scroll to next unread');
 
-    let cur = $(`#${this.id} .nb-list-group button[active]`)[0];
-    if (!cur) {
-      let titles = $(`#${this.id} .nb-list-group button`);
-      if (titles.length > 0) {
-        cur = titles[0];
-      } else {
+    let cur: HTMLElement;
+    if (this.cur_article_id) {
+      cur = $(`#${this.id} .nb-list-group button[article_id=${this.cur_article_id}]`)[0];
+    } else {
+      let n = $(`#${this.id} .nb-list-group button`);
+      if (n.length > 0)
+        cur = n[0];
+      else { 
         console.log('no article in this newsgroup');
-        return;
+        return false;
       }
     }
     console.log('cur:', cur);
     let node = cur.nextElementSibling as HTMLElement;
     while (node && node.classList.contains('read'))
       node = node.nextElementSibling as HTMLElement;
+
     if (node) {
       let id = node.attributes['article_id'].value;
       console.log('next unread article:', id);
       this.select_article(id);
+      return true;
     } else {
       console.log('no next unread article');
+      return false;
     }
   }
 }
