@@ -19,8 +19,10 @@ export function tag(name: string, ...args: (string | number | StrObj)[]): string
   }
   for (let k in attr) {
     html += ' ' + k;
-    html += '="' + attr[k] + '"';
-    html += k + "=" + attr[k];
+    if (attr[k] !== null) {
+      html += '="' + attr[k] + '"';
+      html += k + "=" + attr[k];
+    }
   }
   html += '>';
   for (let a of args) {

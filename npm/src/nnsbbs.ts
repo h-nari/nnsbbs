@@ -23,7 +23,7 @@ export default class NssBss {
     this.titles_pane.expansion_ratio = 2;
     this.article_pane.expansion_ratio = 4;
 
-    // newsgroupペーンのボタン
+    // newsgroupペーンのボタン (右側から追加)
     this.ng_pane.toolbar.add_btn(new Btn({
       icon: 'check-all',
       explain: '全てのニュースグループを表示',
@@ -70,7 +70,7 @@ export default class NssBss {
         },
       ]
     })).add_btn(new Btn({
-      icon: 'chevron-bar-down',
+      icon: 'align-bottom',
       explain: '最後に移動',
       action: () => {
         let div1 = $('#' + this.titles_pane.id + ' .titles')[0];
@@ -81,11 +81,17 @@ export default class NssBss {
           div1.scrollTop = h2 - h1 + 10;
       }
     })).add_btn(new Btn({
-      icon: 'chevron-bar-up',
+      icon: 'align-top',
       explain: '先頭に移動',
       action: () => {
         let div = $('#' + this.titles_pane.id + ' .titles')[0];
         div.scrollTop = 0;
+      }
+    })).add_btn(new Btn({
+      icon: 'chevron-bar-down',
+      explain: '次の未読記事に移動',
+      action: () => {
+        this.titles_pane.scrollToNextUnread();
       }
     }));
 

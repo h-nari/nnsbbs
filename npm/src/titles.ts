@@ -21,6 +21,7 @@ export class TitlesPane extends ToolbarPane {
   private threads: ITitle[] | null = null;
   private newsgroup_name: string | null = null;
   private newsgroup_id: number | null = null;
+  private cur_article_id: number | null = null;
   private bDispTherad: boolean = false;
   private thread_depth: number = 20;
   private clickCb: ((newsgroup_id: number, article_id: number) => void) | null = null;
@@ -49,6 +50,7 @@ export class TitlesPane extends ToolbarPane {
     }
     this.newsgroup_id = newsgroup_id;
     this.newsgroup_name = newsgroup_name;
+    this.cur_article_id = null;
     this.set_title();
   }
 
@@ -94,8 +96,12 @@ export class TitlesPane extends ToolbarPane {
 
   title_html(d: ITitle, depth: number) {
     let opt = { article_id: d.article_id };
+    let c: string[] = [];
     if (this.subsInfo.read.includes(d.article_id))
-      opt['class'] = 'read';
+      c.push('read');
+    if (this.cur_article_id == d.article_id)
+      c.push('active');
+    if (c.length > 0) opt['class'] = c.join(' ');
     let s = button(opt,
       div({ class: 'article-id' }, String(d.article_id)),
       div({ class: 'article-from', title: d.disp_name }, d.disp_name),
@@ -119,8 +125,22 @@ export class TitlesPane extends ToolbarPane {
   }
 
   select_article(id: number) {
-    $(`#${this.id_lg} >button`).removeClass('active');
-    $(`#${this.id_lg} >button[article_id=${id}]`).addClass('active');
+    const scroller = `#${this.id} .titles`;
+    const scrollee = scroller + ' >div';
+    const line = scrollee + ` >button[article_id=${id}]`;
+    $(scrollee + ' >button').removeClass('active');
+    $(line).addClass('active');
+    this.cur_article_id = id;
+    let y = $(line).position().top;
+    console.log('y:', y);
+    let sy = $(scroller).scrollTop() || 0;
+    let sh = $(scroller).height() || 0;
+    let lh = $(line).height() || 0;
+    if (y < 0)
+      $(scroller).scrollTop(sy + y);
+    else if (y + lh > sh) {
+      $(scroller).scrollTop(sy + y);
+    }
   }
 
   disp_thread(bThread: boolean) {
@@ -136,5 +156,31 @@ export class TitlesPane extends ToolbarPane {
     s += span({ class: 'subscription' }, '(', this.subsInfo.subscribe ? '購読中' : '未購読', ')');
     s += span({ class: 'disp-mode' }, this.bDispTherad ? '[スレッド表示]' : '[投稿順表示]');
     this.toolbar.title = s;
+  }
+
+  scrollToNextUnread() {
+    console.log('scroll to next unread');
+
+    let cur = $(`#${this.id} .nb-list-group button[active]`)[0];
+    if (!cur) {
+      let titles = $(`#${this.id} .nb-list-group button`);
+      if (titles.length > 0) {
+        cur = titles[0];
+      } else {
+        console.log('no article in this newsgroup');
+        return;
+      }
+    }
+    console.log('cur:', cur);
+    let node = cur.nextElementSibling as HTMLElement;
+    while (node && node.classList.contains('read'))
+      node = node.nextElementSibling as HTMLElement;
+    if (node) {
+      let id = node.attributes['article_id'].value;
+      console.log('next unread article:', id);
+      this.select_article(id);
+    } else {
+      console.log('no next unread article');
+    }
   }
 }

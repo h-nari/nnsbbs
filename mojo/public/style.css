@@ -10044,6 +10044,9 @@ h3 {
 }
 #titles .titles {
   height: calc(100% - 40px);
+  position: relative;
+  left: 0px;
+  top: 0px;
   overflow-y: auto;
 }
 #titles .titles button {
