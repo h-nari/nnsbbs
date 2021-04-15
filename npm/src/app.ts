@@ -23,9 +23,3 @@ $(window).on('resize', () => {
   // set_main_size();
 });
 
-let rs = new ReadSet('1-9');
-console.log(rs.toJson());
-rs.sub_range(5,6);
-console.log(rs.toJson());
-rs.sub_range(8,8);
-console.log(rs.toJson());
