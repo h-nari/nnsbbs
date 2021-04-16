@@ -139,7 +139,7 @@ export default class NssBss {
       this.next_article();
     };
 
-    // context メニュー
+    // context menu
 
     $(document).on('contextmenu', '.no-contextmenu', e => {
       closeContextMenu();

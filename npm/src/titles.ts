@@ -20,8 +20,7 @@ export class TitlesPane extends ToolbarPane {
   private threads: ITitle[] | null = null;
   public newsgroup: INewsGroup | null = null;
   public cur_article_id: number | null = null;
-  private bDispTherad: boolean = false;
-  private thread_depth: number = 20;
+  private bDispTherad: boolean = true;
   private clickCb: ((newsgroup_id: number, article_id: number) => void) | null = null;
   private id_lg: string;
 
@@ -61,12 +60,12 @@ export class TitlesPane extends ToolbarPane {
     let s = "";
     if (this.bDispTherad && this.threads) {
       for (let t of this.threads) {
-        s += this.thread_html(t, 0);
+        s += this.thread_html(t, '');
       }
     } else {
       for (let id in this.titles) {
         let d = this.titles[id];
-        s += this.title_html(d, 0);
+        s += this.title_html(d);
       }
     }
     this.set_title();
@@ -80,17 +79,19 @@ export class TitlesPane extends ToolbarPane {
     $(`#${this.id} .titles`).scrollTop(scroll || 0);
   }
 
-  thread_html(t: ITitle, depth: number) {
-    let s = this.title_html(t, depth);
+  thread_html(t: ITitle, rule1: string = '', rule2: string = '') {
+    let s = this.title_html(t, rule1);
     if (t.children) {
-      for (let c of t.children) {
-        s += this.thread_html(c, depth + this.thread_depth);
+      for (let i = 0; i < t.children.length; i++) {
+        let r1 = rule2 + (i < t.children.length - 1 ? '┣' : '┗');
+        let r2 = rule2 + (i < t.children.length - 1 ? '┃' : '  ');
+        s += this.thread_html(t.children[i], r1, r2);
       }
     }
     return s;
   }
 
-  title_html(d: ITitle, depth: number) {
+  title_html(d: ITitle, rule: string = '') {
     let opt = { article_id: d.article_id };
     let c: string[] = ['title-contextmenu'];
     let si = this.newsgroup?.subsInfo;
@@ -103,7 +104,8 @@ export class TitlesPane extends ToolbarPane {
       div({ class: 'article-id' }, String(d.article_id)),
       div({ class: 'article-from', title: d.disp_name }, d.disp_name),
       div({ class: 'article-time' }, d.date),
-      div({ class: 'article-title', title: d.title, style: `left: ${depth}px;` }, d.title)
+      div({ class: 'article-rule' }, rule),
+      div({ class: 'article-title', title: d.title }, d.title)
     );
     return s;
   }

@@ -2,7 +2,6 @@
   overflow-y: hidden;
 
   .toolbar-title {
-
     .number-of-articles {
       margin-left: 20px;
       color: lightgray;
@@ -44,12 +43,6 @@
         text-align: right;
         flex: 0 0 auto;
       }
-      .article-title {
-        flex-grow: 10;
-        font-weight: bold;
-        position: relative;
-      }
-
       .article-from {
         width: 120px;
         overflow: hidden;
@@ -61,6 +54,19 @@
       .article-time {
         margin-right: 5px;
         flex: 0 0 auto;
+      }
+
+      .article-rule {
+        margin-right: 2px;
+        font-family: monospace;
+        font-size: large;
+        color: lightblue; 
+      }
+
+      .article-title {
+        flex-grow: 10;
+        font-weight: bold;
+        position: relative;
       }
     }
     button.read {
