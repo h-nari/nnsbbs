@@ -168,11 +168,35 @@ export default class NssBss {
       });
     });
 
-    $(document).on('contextmenu', '.article-title', e => {
-      $.dialog({
-        content: 'Title ContextMenu'
+    $(document).on('contextmenu', '.title-contextmenu', e => {
+      let article_id = parseInt($(e.currentTarget).attr('article_id') || "0");
+      let si = this.titles_pane.newsgroup?.subsInfo;
+      console.log('target:', e.currentTarget);
+      console.log('article_id:', article_id);
+      contextMenu(e, {
+        title: '記事' + article_id,
+        width: 300,
+        buttons: {
+          btn1: {
+            text: '既読にする',
+            action: ev => {
+              if (si) {
+                si.read.add_range(article_id);
+                this.redisplay();
+              }
+            }
+          },
+          btn2: {
+            text: '未読にする',
+            action: ev => {
+              if (si) {
+                si.read.sub_range(article_id);
+                this.redisplay();
+              }
+            }
+          }
+        }
       });
-      e.preventDefault();
     });
 
   }
@@ -258,6 +282,12 @@ export default class NssBss {
     if (t.cur_article_id && t.newsgroup)
       this.select_article(t.newsgroup.id, t.cur_article_id);
 
+  }
+
+  redisplay() {
+    this.ng_pane.redisplay();
+    this.titles_pane.redisplay();
+    this.article_pane.redisplay();
   }
 }
 

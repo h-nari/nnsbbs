@@ -79,7 +79,8 @@ export class ReadSet {
   }
 
   // @brief 領域を取り除く
-  sub_range(start: number, end: number) {
+  sub_range(start: number, end: number | null = null) {
+    end ||= start;
     if (start <= end) {
       let s = start;
       let e = end;
