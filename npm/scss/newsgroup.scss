@@ -5,6 +5,9 @@
   .newsgroup {
     height: calc(100% - 30px);
     overflow-y: auto;
+    position: relative;
+    left: 0px;
+    top: 0px; 
 
     .newsgroup-line {
       background-color: lightgray;
@@ -35,6 +38,12 @@
         font-weight: bold;
         margin-right: 20px;
       }
+    }
+
+    .newsgroup-line.active,
+    .newsgroup-line.subscribe.active {
+      color: white;
+      background-color: #007bff;
     }
   }
 }

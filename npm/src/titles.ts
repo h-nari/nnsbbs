@@ -3,7 +3,7 @@ import { div, button, span } from "./tag";
 import { ToolBar } from "./toolbar";
 import { ToolbarPane } from "./pane";
 import { ReadSet } from "./readSet";
-import { ISubsInfo } from "./newsgroup";
+import { INewsGroup, ISubsInfo } from "./newsgroup";
 
 export interface ITitle {
   article_id: number;
@@ -16,12 +16,10 @@ export interface ITitle {
 };
 
 export class TitlesPane extends ToolbarPane {
-  public subsInfo: ISubsInfo = { subscribe: false, read: new ReadSet() };
   private titles: ITitle[] = [];
   private threads: ITitle[] | null = null;
-  private newsgroup_name: string | null = null;
-  private newsgroup_id: number | null = null;
-  private cur_article_id: number | null = null;
+  public newsgroup: INewsGroup | null = null;
+  public cur_article_id: number | null = null;
   private bDispTherad: boolean = false;
   private thread_depth: number = 20;
   private clickCb: ((newsgroup_id: number, article_id: number) => void) | null = null;
@@ -32,9 +30,8 @@ export class TitlesPane extends ToolbarPane {
     this.id_lg = id + "_lg";
   }
 
-  async open(newsgroup_id: number, newsgroup_name: string, subsInfo: ISubsInfo) {
-    this.subsInfo = subsInfo;
-    let data = await get_json('/api/titles', { data: { newsgroup_id } });
+  async open(newsgroup: INewsGroup) {
+    let data = await get_json('/api/titles', { data: { newsgroup_id: newsgroup.id } });
     this.titles = [];
     this.threads = [];
     for (let d of data as ITitle[]) {
@@ -48,10 +45,8 @@ export class TitlesPane extends ToolbarPane {
         this.threads.push(d);
       }
     }
-    this.newsgroup_id = newsgroup_id;
-    this.newsgroup_name = newsgroup_name;
+    this.newsgroup = newsgroup;
     this.cur_article_id = null;
-    this.set_title();
   }
 
   setClickCb(cb: (n: number, m: number) => void) {
@@ -74,6 +69,7 @@ export class TitlesPane extends ToolbarPane {
         s += this.title_html(d, 0);
       }
     }
+    this.set_title();
     return this.toolbar.html() + div({ class: 'titles' }, div({ id: this.id_lg, class: 'nb-list-group' }, s));
   }
 
@@ -97,7 +93,8 @@ export class TitlesPane extends ToolbarPane {
   title_html(d: ITitle, depth: number) {
     let opt = { article_id: d.article_id };
     let c: string[] = [];
-    if (this.subsInfo.read.includes(d.article_id))
+    let si = this.newsgroup?.subsInfo;
+    if (si && si.read.includes(d.article_id))
       c.push('read');
     if (this.cur_article_id == d.article_id)
       c.push('active');
@@ -118,8 +115,8 @@ export class TitlesPane extends ToolbarPane {
       let target = ev.currentTarget;
       let article_id: number = target.attributes['article_id'].value;
       this.select_article(article_id);
-      if (this.newsgroup_id && this.clickCb) {
-        this.clickCb(this.newsgroup_id, article_id);
+      if (this.newsgroup && this.clickCb) {
+        this.clickCb(this.newsgroup.id, article_id);
       }
     });
   }
@@ -132,7 +129,6 @@ export class TitlesPane extends ToolbarPane {
     $(line).addClass('active');
     this.cur_article_id = id;
     let y = $(line).position().top;
-    console.log('y:', y);
     let sy = $(scroller).scrollTop() || 0;
     let sh = $(scroller).height() || 0;
     let lh = $(line).height() || 0;
@@ -145,46 +141,74 @@ export class TitlesPane extends ToolbarPane {
 
   disp_thread(bThread: boolean) {
     this.bDispTherad = bThread;
-    this.set_title();
     $('#' + this.id).html(this.inner_html());
     this.bind();
   }
 
   set_title() {
     let s = "";
-    s += span({ class: 'newsgroup-name' }, this.newsgroup_name || "");
-    s += span({ class: 'subscription' }, '(', this.subsInfo.subscribe ? '購読中' : '未購読', ')');
-    s += span({ class: 'disp-mode' }, this.bDispTherad ? '[スレッド表示]' : '[投稿順表示]');
+    if (this.newsgroup) {
+      let max_id = this.newsgroup.max_id;
+      let cUnread = max_id;
+      let si = this.newsgroup.subsInfo;
+      if (si) cUnread -= si.read.count();
+
+      s += span({ class: 'newsgroup-name' }, this.newsgroup.name);
+      s += span({ class: 'number-of-articles' }, '(', cUnread, '/', max_id, ')');
+      s += span({ class: 'subscription' }, '(', si && si.subscribe ? '購読中' : '未購読', ')');
+      s += span({ class: 'disp-mode' }, this.bDispTherad ? '[スレッド表示]' : '[投稿順表示]');
+    } else {
+      s = "no-newsgroup";
+    }
     this.toolbar.title = s;
   }
 
-  scrollToNextUnread() : boolean {
-    console.log('scroll to next unread');
-
+  scrollToPrevUnread(bFromBottom: boolean = false): boolean {
     let cur: HTMLElement;
-    if (this.cur_article_id) {
+    if (this.cur_article_id && !bFromBottom) {
       cur = $(`#${this.id} .nb-list-group button[article_id=${this.cur_article_id}]`)[0];
+      cur = cur.previousSibling as HTMLElement;
+    } else {
+      let n = $(`#${this.id} .nb-list-group button`);
+      if (n.length > 0)
+        cur = n[n.length - 1];
+      else {
+        return false;
+      }
+    }
+    while (cur && cur.classList.contains('read'))
+      cur = cur.previousSibling as HTMLElement;
+
+    if (cur) {
+      let id = cur.attributes['article_id'].value;
+      this.select_article(id);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  scrollToNextUnread(bFromTop: boolean = false): boolean {
+    let cur: HTMLElement;
+    if (this.cur_article_id && !bFromTop) {
+      cur = $(`#${this.id} .nb-list-group button[article_id=${this.cur_article_id}]`)[0];
+      cur = cur.nextElementSibling as HTMLElement;
     } else {
       let n = $(`#${this.id} .nb-list-group button`);
       if (n.length > 0)
         cur = n[0];
-      else { 
-        console.log('no article in this newsgroup');
+      else {
         return false;
       }
     }
-    console.log('cur:', cur);
-    let node = cur.nextElementSibling as HTMLElement;
-    while (node && node.classList.contains('read'))
-      node = node.nextElementSibling as HTMLElement;
+    while (cur && cur.classList.contains('read'))
+      cur = cur.nextElementSibling as HTMLElement;
 
-    if (node) {
-      let id = node.attributes['article_id'].value;
-      console.log('next unread article:', id);
+    if (cur) {
+      let id = cur.attributes['article_id'].value;
       this.select_article(id);
       return true;
     } else {
-      console.log('no next unread article');
       return false;
     }
   }

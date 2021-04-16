@@ -58,13 +58,11 @@ export default class NssBss {
       dropdown: [
         {
           name: 'スレッド表示', action: () => {
-            console.log('スレッド表示');
             this.titles_pane.disp_thread(true);
           }
         },
         {
           name: '投稿順表示', action: () => {
-            console.log('投稿順表示');
             this.titles_pane.disp_thread(false);
           }
         },
@@ -91,7 +89,15 @@ export default class NssBss {
       icon: 'chevron-bar-down',
       explain: '次の未読記事に移動',
       action: () => {
-        this.titles_pane.scrollToNextUnread();
+        this.titles_pane.scrollToNextUnread() ||
+          this.titles_pane.scrollToNextUnread(true);   // search from Top
+      }
+    })).add_btn(new Btn({
+      icon: 'chevron-bar-up',
+      explain: '前の未読記事に移動',
+      action: () => {
+        this.titles_pane.scrollToPrevUnread() ||
+          this.titles_pane.scrollToPrevUnread(true);  // search from Botttom
       }
     }));
 
@@ -122,8 +128,8 @@ export default class NssBss {
   bind() {
     this.gm.bind();
 
-    this.ng_pane.setClickCb((id: number) => {
-      this.select_newsgroup(id);
+    this.ng_pane.setClickCb((ng: INewsGroup) => {
+      this.select_newsgroup(ng);
     })
     this.titles_pane.setClickCb((newsgroup_id, article_id) => {
       this.select_article(newsgroup_id, article_id);
@@ -136,13 +142,11 @@ export default class NssBss {
     // context メニュー
 
     $(document).on('contextmenu', '.no-contextmenu', e => {
-      console.log('no-contextmenu');
       closeContextMenu();
       e.preventDefault();
     });
 
     $(document).on('contextmenu', '.newsgroup-line', e => {
-      console.log('context menu:', e);
       let newsgroup = e.target.attributes['newsgroup-name'].value;
       contextMenu(e, {
         title: newsgroup,
@@ -165,7 +169,6 @@ export default class NssBss {
     });
 
     $(document).on('contextmenu', '.article-title', e => {
-      console.log('context menu:', e.target);
       $.dialog({
         content: 'Title ContextMenu'
       });
@@ -174,9 +177,11 @@ export default class NssBss {
 
   }
 
+  // Called from the built-in script of topPage
+  // Read and display a list of newsgroups
   async top_page(newsgroup: string, article_id: string) {
     let data = await get_json('/api/newsgroup');
-    this.ng_pane.setData(data as INewsGroup[]);
+    this.ng_pane.setNewsgroups(data as INewsGroup[]);
     $('#newsgroup').html(this.ng_pane.inner_html());
     this.ng_pane.bind();
 
@@ -194,56 +199,65 @@ export default class NssBss {
     }
   }
 
-  async select_newsgroup(newsgroup: string | number) {
-    let id: number | null;
-    let name: string | null;
-    if (typeof newsgroup == 'number') {
-      id = newsgroup;
-      name = this.ng_pane.id2name(id);
-      if (!name)
-        throw Error(`newsgroup_id:${id} not found`);
-    } else if (/\d+/.test(newsgroup)) {
-      id = parseInt(newsgroup);
-      name = this.ng_pane.id2name(id);
-      if (!name) throw Error(`newsgroup_id:${id} not found`);
+  // Processing when a newsgroup is selected.
+  async select_newsgroup(arg: string | INewsGroup) {
+    let newsgroup: INewsGroup | null;
+
+    if (typeof arg == 'string') {
+      newsgroup = this.ng_pane.name2newsgroup(arg);
+      if (!newsgroup) throw Error(`newsgroup:${arg} not found`);
     } else {
-      id = this.ng_pane.name2id(newsgroup);
-      name = newsgroup;
-      if (!id) throw Error(`newsgroup:${newsgroup} not found`);
+      newsgroup = arg;
     }
 
-    this.ng_pane.select_newsgroup(id);
-    this.article_pane.clear();
-    $('#article').html(this.article_pane.inner_html());
-    let si = this.ng_pane.getSubsInfo(name);
-    await this.titles_pane.open(id, name, si);
+    this.ng_pane.select_newsgroup(newsgroup);
+    // $('#article').html(this.article_pane.inner_html());
+    // let si = this.ng_pane.getSubsInfo(newsgroup.name);
+    await this.titles_pane.open(newsgroup);
 
-    $('#titles').html(this.titles_pane.inner_html());
-    this.titles_pane.bind();
+    this.titles_pane.redisplay();
+    // $('#titles').html(this.titles_pane.inner_html());
+    // this.titles_pane.bind();
+    this.titles_pane.scrollToNextUnread();
     this.titles_pane.show();
+
     this.article_pane.close();
 
+    let name = newsgroup.name;
     window.history.pushState(null, '', `/${name}`);
     document.title = `nnsbbs/${name}`;
     this.cur_newsgroup = name;
-    this.cur_newsgroup_id = id;
+    this.cur_newsgroup_id = newsgroup.id;
   }
 
   async select_article(newsgroup_id: number, article_id: number) {
     await this.article_pane.open(newsgroup_id, article_id);
     this.titles_pane.select_article(article_id);
-    $('#article').html(this.article_pane.inner_html());
-    this.article_pane.show();  // no-displayを解除
-    this.article_pane.bind();
-    let subsInfo = this.ng_pane.getSubsInfo(this.cur_newsgroup);
-    subsInfo.read.add_range(article_id);
+    this.article_pane.redisplay();
+    this.article_pane.show();                            // Remove no-display
+    // let subsInfo = this.ng_pane.getSubsInfo(this.cur_newsgroup);
+    if (this.titles_pane.newsgroup) {
+      let subsInfo = this.titles_pane.newsgroup.subsInfo;
+      if (subsInfo)
+        subsInfo.read.add_range(article_id);                 // make article read
+    }
     this.ng_pane.redisplay();
     this.titles_pane.redisplay();
+
     window.history.pushState(null, '', `/${this.cur_newsgroup}/${article_id}`);
     document.title = `nnsbbs/${this.cur_newsgroup}/${article_id}`
   }
 
   next_article() {
     console.log('next_article');
+    let t = this.titles_pane;
+    if (!t.scrollToNextUnread()) {
+      this.ng_pane.scrollToNextSubscribedNewsgroup();
+      t.scrollToNextUnread();
+    }
+    if (t.cur_article_id && t.newsgroup)
+      this.select_article(t.newsgroup.id, t.cur_article_id);
+
   }
 }
+

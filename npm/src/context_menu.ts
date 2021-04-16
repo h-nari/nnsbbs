@@ -47,8 +47,6 @@ export function contextMenu(e: JQuery.ContextMenuEvent, opt: IContextMenuOption)
   c = div({ id, style: 'z-index:10;', class: 'no-contextmenu' },
     div({ class: 'context-menu', style }, c));
 
-  console.log('my contextMenu');
-
   $('#' + id).remove();
   $('body').prepend(c);
   e.preventDefault();
@@ -61,7 +59,6 @@ export function contextMenu(e: JQuery.ContextMenuEvent, opt: IContextMenuOption)
   for (let id in id2action) {
     $('#' + id).on('click', id2action[id]);
     $('#' + id).on('contextmenu', e => {
-      console.log('right clicked');
       id2action[id](e);
     });
   }

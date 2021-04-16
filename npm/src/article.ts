@@ -53,6 +53,11 @@ export class ArticlePane extends ToolbarPane {
     });
   }
 
+  redisplay() {
+    $('#' + this.id).html(this.inner_html());
+    this.bind();
+  }
+
   async open(newsgroup_id: number, article_id: number) {
     let data = await get_json('/api/article',
       { data: { newsgroup_id, article_id } }) as IArticle;
