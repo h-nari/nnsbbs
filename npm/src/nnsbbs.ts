@@ -6,7 +6,6 @@ import { Btn, BtnDropdown } from "./toolbar";
 import { GeometryManager } from "./gemotry_manager";
 import { div, button } from "./tag";
 import { contextMenu, closeContextMenu } from "./context_menu";
-import "./my_jquery";
 
 
 export default class NssBss {
@@ -23,7 +22,7 @@ export default class NssBss {
     this.titles_pane.expansion_ratio = 2;
     this.article_pane.expansion_ratio = 4;
 
-    // newsgroupペーンのボタン (右側から追加)
+    // buttons in newsgroup pane
     this.ng_pane.toolbar.add_btn(new Btn({
       icon: 'check-all',
       explain: '全てのニュースグループを表示',
@@ -42,7 +41,7 @@ export default class NssBss {
       }
     }));
 
-    // titleペーンのボタン
+    // Buttons in title pane
     this.titles_pane.toolbar.add_btn(new Btn({
       icon: 'x-square',
       explain: 'タイトル・記事領域を閉じる',
@@ -53,7 +52,7 @@ export default class NssBss {
         document.title = 'nnsbbs';
       }
     })).add_btn(new BtnDropdown({
-      icon: 'three-dots',       // 他の候補: justify, list, menu-down
+      icon: 'three-dots',   
       explain: '表示設定',
       dropdown: [
         {
@@ -171,8 +170,6 @@ export default class NssBss {
     $(document).on('contextmenu', '.title-contextmenu', e => {
       let article_id = parseInt($(e.currentTarget).attr('article_id') || "0");
       let si = this.titles_pane.newsgroup?.subsInfo;
-      console.log('target:', e.currentTarget);
-      console.log('article_id:', article_id);
       contextMenu(e, {
         title: '記事' + article_id,
         width: 300,
@@ -273,7 +270,6 @@ export default class NssBss {
   }
 
   next_article() {
-    console.log('next_article');
     let t = this.titles_pane;
     if (!t.scrollToNextUnread()) {
       this.ng_pane.scrollToNextSubscribedNewsgroup();
@@ -281,7 +277,6 @@ export default class NssBss {
     }
     if (t.cur_article_id && t.newsgroup)
       this.select_article(t.newsgroup.id, t.cur_article_id);
-
   }
 
   redisplay() {

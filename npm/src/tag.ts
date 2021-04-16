@@ -1,5 +1,3 @@
-// import printf = require('printf');
-
 interface StrObj {
   [key: string]: string | number | boolean;
 }

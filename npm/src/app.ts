@@ -15,11 +15,9 @@ $(() => {
   $('#main').html(nb.html());
   nb.bind();
   nb.gm.setSize();
-  // set_main_size();
 });
 
 $(window).on('resize', () => {
   nb.gm.setSize();
-  // set_main_size();
 });
 

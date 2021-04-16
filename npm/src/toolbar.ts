@@ -5,7 +5,7 @@ type IToggleCB = (bOpen: boolean) => void;
 var sn = 0;
 export class ToolBar {
   private id: string;
-  private id_chk: string;                    // open/close切替のアイコンのid
+  private id_chk: string;                    // The id of the open/close switching icon
   public title: string;
   private btns: Btn[] = [];
   private open_icon_name = 'bi-caret-down-fill';
@@ -39,7 +39,7 @@ export class ToolBar {
   }
 
   add_btn(btn: Btn) : ToolBar{
-    this.btns.unshift(btn);        // 最初に追加
+    this.btns.unshift(btn);        // First add
     return this;
   }
 
@@ -72,7 +72,7 @@ export class ToolBar {
 interface IBtnOption {
   icon: string;
   action?: (e: JQuery.ClickEvent, btn: Btn) => void;
-  explain?: string;                                     // title属性、mouseoverで表示される
+  explain?: string;                                     // title attribute, displayed with mouseover
 };
 
 var btn_sn = 0;

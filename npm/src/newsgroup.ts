@@ -12,12 +12,12 @@ export interface INewsGroup {
   subsInfo: ISubsInfo | null;
 };
 
-// 購読情報：ニュースグループごとの購読、既読情報
+// Subscription information: 
 export interface ISubsInfo {
   subscribe: boolean;
   read: ReadSet;
 };
-// ISubsInfoのjson表現
+// Json expression of ISubsInfo
 interface ISubsJson {
   subscribe: boolean;
   read: string;
@@ -64,7 +64,7 @@ export class NewsGroupsPane extends ToolbarPane {
     let s = "";
     for (let d of this.newsgroups) {
       let si = this.subsInfo[d.name];
-      if ((!si || !si.subscribe) && !this.bShowAll) continue;   // 非購読ニュースグループを表示しない
+      if ((!si || !si.subscribe) && !this.bShowAll) continue;   
       if (!si) si = { subscribe: false, read: new ReadSet() };
       let unread = d.max_id;
       let c = "";
@@ -150,9 +150,8 @@ export class NewsGroupsPane extends ToolbarPane {
     return null;
   }
 
-  // 購読情報を読み込む
+  // Load subscription information
   loadSubsInfo(json_data: string | null = null) {
-    console.log('loadSubsInfo');
     if (!json_data)
       json_data = localStorage.getItem('nnsbbsSubsInfo');
     if (json_data) {
@@ -168,12 +167,11 @@ export class NewsGroupsPane extends ToolbarPane {
       this.subsInfo = subsInfo;
       this.savedSubsString = json_data;
       for (let ng of this.newsgroups) {
-        console.log(ng.name, 'subsinfo:', subsInfo[ng.name]);
         ng.subsInfo = subsInfo[ng.name];
       }
     }
   }
-  // 購読情報を保存する
+  // Save your subscription information
   saveSubsInfo(bForced: boolean = false) {
     let subsJson: { [key: string]: ISubsJson } = {};
     for (let ng in this.subsInfo) {

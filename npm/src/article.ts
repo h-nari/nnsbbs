@@ -14,8 +14,8 @@ export interface IArticle {
 export class ArticlePane extends ToolbarPane {
   private id_header: string;
   private data: IArticle | null = null;
-  private bDispHeader = false;              // 記事のヘッダー部を表示するか
-  public fNext: (() => void) | null = null;  // --End--部をクリックした時に実行
+  private bDispHeader = false;               // Flag to display the header section of the article.
+  public fNext: (() => void) | null = null;  // invoked when end part clicked
 
   constructor(id: string) {
     super(id);

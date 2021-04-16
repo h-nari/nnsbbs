@@ -10,7 +10,7 @@ export class Pane {
   public natural_size: number = 200;
   public min_size: number = 10;
   public gm: GeometryManager | null = null;
-  public expansion_ratio: number = 1;          // 拡張して領域を分割する場合の重み付け
+  public expansion_ratio: number = 1;          // Weighting when expanding and dividing the area
 
   constructor(id: string | null = null) {
     if (id)

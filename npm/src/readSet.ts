@@ -78,7 +78,7 @@ export class ReadSet {
     }
   }
 
-  // @brief 領域を取り除く
+  // @brief Remove the area
   sub_range(start: number, end: number | null = null) {
     end ||= start;
     if (start <= end) {
