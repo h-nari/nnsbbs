@@ -8,7 +8,7 @@ sub show ($self) {
   my $newsgroup = $self->param('newsgroup') || "";
   my $article_id = $self->param('article_id') || "";
 
-  $self->stash(script_part => "<script>\$(()=>{nssbss.top_page(\"$newsgroup\",\"$article_id\");});</script>",
+  $self->stash(script_part => "<script>\$(()=>{nnsbbs.top_page(\"$newsgroup\",\"$article_id\");});</script>",
                msg => "Welcome to nnsbbs: NetNews styled BBS!");
   $self->render();
 }

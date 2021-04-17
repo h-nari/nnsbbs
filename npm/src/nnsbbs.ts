@@ -8,7 +8,7 @@ import { div, button } from "./tag";
 import { contextMenu, closeContextMenu } from "./context_menu";
 
 
-export default class NssBss {
+export default class NnsBbs {
   private ng_pane = new NewsGroupsPane('newsgroup');
   private titles_pane = new TitlesPane('titles');
   private article_pane = new ArticlePane('article');
@@ -146,22 +146,31 @@ export default class NssBss {
     });
 
     $(document).on('contextmenu', '.newsgroup-line', e => {
-      let newsgroup = e.target.attributes['newsgroup-name'].value;
+      let newsgroup = e.currentTarget.attributes['newsgroup-name'].value;
       contextMenu(e, {
         title: newsgroup,
         width: 300,
         buttons: {
           btn1: {
             text: '全て既読にする',
-            action: ev => { this.ng_pane.read_all(newsgroup); }
+            action: ev => { 
+              this.ng_pane.read_all(newsgroup);
+              this.redisplay();
+             }
           },
           btn2: {
             text: '全て未読にする',
-            action: ev => { this.ng_pane.unread_all(newsgroup); }
+            action: ev => { 
+              this.ng_pane.unread_all(newsgroup); 
+              this.redisplay();
+            }
           },
           btn3: {
             text: '最新50記事だけ未読にする',
-            action: ev => { this.ng_pane.read_all(newsgroup, 50); }
+            action: ev => { 
+              this.ng_pane.read_all(newsgroup, 50);
+              this.redisplay();
+             }
           }
         }
       });
@@ -232,13 +241,9 @@ export default class NssBss {
     }
 
     this.ng_pane.select_newsgroup(newsgroup);
-    // $('#article').html(this.article_pane.inner_html());
-    // let si = this.ng_pane.getSubsInfo(newsgroup.name);
     await this.titles_pane.open(newsgroup);
 
     this.titles_pane.redisplay();
-    // $('#titles').html(this.titles_pane.inner_html());
-    // this.titles_pane.bind();
     this.titles_pane.scrollToNextUnread();
     this.titles_pane.show();
 

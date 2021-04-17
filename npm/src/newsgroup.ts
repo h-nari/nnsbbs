@@ -24,7 +24,7 @@ interface ISubsJson {
 };
 
 export class NewsGroupsPane extends ToolbarPane {
-  public subsInfo: { [name: string]: ISubsInfo } = {};
+  public subsInfo: { [name: string]: ISubsInfo } | null = null;
   public bShowAll: boolean = false;
 
   private id_lg: string;      // list-group id
@@ -45,9 +45,17 @@ export class NewsGroupsPane extends ToolbarPane {
 
   setNewsgroups(data: INewsGroup[]) {
     this.newsgroups = data;
-    if (this.subsInfo) {
-      for (let ng of data) {
+    this.setSubsInfoIntoNewsgroup();
+  }
+
+  setSubsInfoIntoNewsgroup() {
+    if (this.subsInfo && this.newsgroups.length > 0) {
+      for (let ng of this.newsgroups) {
         ng.subsInfo = this.subsInfo[ng.name];
+        if (!ng.subsInfo) {
+          ng.subsInfo = { subscribe: false, read: new ReadSet() };
+          this.subsInfo[ng.name] = ng.subsInfo;
+        }
       }
     }
   }
@@ -63,25 +71,25 @@ export class NewsGroupsPane extends ToolbarPane {
   inner_html(): string {
     let s = "";
     for (let d of this.newsgroups) {
-      let si = this.subsInfo[d.name];
-      if ((!si || !si.subscribe) && !this.bShowAll) continue;   
-      if (!si) si = { subscribe: false, read: new ReadSet() };
-      let unread = d.max_id;
-      let c = "";
-      let opt = { type: 'checkbox', class: 'newsgroup-check', title: 'ニュースグループを購読' };
-      if (si.subscribe) opt['checked'] = 1;
-      c += input(opt);
-      c += span({ class: 'newsgroup-name' }, d.name);
-      if (si)
-        unread = d.max_id - si.read.count();
-      c += span({ class: 'newsgroup-status' },
-        '(', span({ class: 'unread', title: '未読記事数' }, unread,),
-        '/', span({ class: 'max-id', title: '総記事数' }, d.max_id), ')');
-      let opt2 = { class: 'newsgroup-line', 'newsgroup-name': d.name, 'newsgroup-id': d.id };
-      if (this.cur_newsgroup && this.cur_newsgroup.name == d.name)
-        opt2.class += " active"
-      if (si.subscribe) opt2.class += " subscribe";
-      s += button(opt2, c);
+      let si = d.subsInfo;
+      if (si?.subscribe || this.bShowAll) {
+        let unread = d.max_id;
+        let c = "";
+        let opt = { type: 'checkbox', class: 'newsgroup-check', title: 'ニュースグループを購読' };
+        if (si && si.subscribe) opt['checked'] = 1;
+        c += input(opt);
+        c += span({ class: 'newsgroup-name' }, d.name);
+        if (si)
+          unread = d.max_id - si.read.count();
+        c += span({ class: 'newsgroup-status' },
+          '(', span({ class: 'unread', title: '未読記事数' }, unread,),
+          '/', span({ class: 'max-id', title: '総記事数' }, d.max_id), ')');
+        let opt2 = { class: 'newsgroup-line', 'newsgroup-name': d.name, 'newsgroup-id': d.id };
+        if (this.cur_newsgroup && this.cur_newsgroup.name == d.name)
+          opt2.class += " active"
+        if (si?.subscribe) opt2.class += " subscribe";
+        s += button(opt2, c);
+      }
     }
 
     return super.html() +
@@ -99,11 +107,13 @@ export class NewsGroupsPane extends ToolbarPane {
       let target = ev.currentTarget;
       let parent = target.parentElement;
       if (parent) {
-        let newsgroup = parent.attributes['newsgroup-name'].value;
-        if (!this.subsInfo[newsgroup])
-          this.subsInfo[newsgroup] = { subscribe: false, read: new ReadSet() };
+        let name = parent.attributes['newsgroup-name'].value;
+        let newsgroup = this.name2newsgroup(name);
+        if (!newsgroup)
+          throw new Error('newsgroup ' + name + ' not found');
         let subscribe = $(target).is(':checked');
-        this.subsInfo[newsgroup].subscribe = subscribe;
+        if (newsgroup.subsInfo)
+          newsgroup.subsInfo.subscribe = subscribe;
         if (subscribe)
           $(parent).addClass('subscribe');
         else
@@ -157,18 +167,11 @@ export class NewsGroupsPane extends ToolbarPane {
     if (json_data) {
       let data = JSON.parse(json_data) as { [n: string]: ISubsJson };
       let subsInfo: { [key: string]: ISubsInfo } = {};
-      for (let ng in data) {
-        let s = data[ng]
-        subsInfo[ng] = {
-          subscribe: s.subscribe,
-          read: new ReadSet(s.read)
-        };
-      }
+      for (let k in data)
+        subsInfo[k] = { subscribe: data[k].subscribe, read: new ReadSet(data[k].read) };
       this.subsInfo = subsInfo;
       this.savedSubsString = json_data;
-      for (let ng of this.newsgroups) {
-        ng.subsInfo = subsInfo[ng.name];
-      }
+      this.setSubsInfoIntoNewsgroup();
     }
   }
   // Save your subscription information
@@ -188,28 +191,31 @@ export class NewsGroupsPane extends ToolbarPane {
     }
   }
 
-  getSubsInfo(newsgroup: string): ISubsInfo {
-    let si = this.subsInfo[newsgroup];
-    if (!si)
-      this.subsInfo[newsgroup] = si = { subscribe: false, read: new ReadSet() };
-    return si;
+  getSubsInfo(name: string): ISubsInfo | null {
+    let ng = this.name2newsgroup(name);
+    if (ng)
+      return ng.subsInfo;
+    else {
+      console.log(`newsgroup: ${name} not found`);
+      return null;
+    }
   }
 
   read_all(newsgroup: string, last: number = 0) {
     let d = this.name2newsgroup(newsgroup);
     if (!d) throw new Error(`newsgroup:${newsgroup} は存在しません`);
     let si = this.getSubsInfo(newsgroup)
-    si.read.clear();
-    si.read.add_range(1, d.max_id - last);
-    this.redisplay();
+    if (si) {
+      si.read.clear();
+      si.read.add_range(1, d.max_id - last);
+    }
   }
 
   unread_all(newsgroup: string) {
     let d = this.name2newsgroup(newsgroup);
     if (!d) throw new Error(`newsgroup:${newsgroup} は存在しません`);
     let si = this.getSubsInfo(newsgroup)
-    si.read.clear();
-    this.redisplay();
+    if (si) si.read.clear();
   }
 
   scrollToNextSubscribedNewsgroup(bFromTop: boolean = false): boolean {

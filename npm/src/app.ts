@@ -1,15 +1,15 @@
-import NssBss from './nnsbbs';
-import {ReadSet} from './readSet';
+import NnsBbs from './nnsbbs';
 
 declare global {
   interface Window {
-    nssbss: NssBss;
-    nssbss_baseUrl: string;
+    nnsbbs: NnsBbs;
+    nnsbbs_baseUrl: string;
   }
 }
 
-let nb = new NssBss();
-window.nssbss = nb;
+let nb = new NnsBbs();
+window.nnsbbs = nb;
+console.log('nnsbbs');
 
 $(() => {
   $('#main').html(nb.html());
@@ -20,4 +20,3 @@ $(() => {
 $(window).on('resize', () => {
   nb.gm.setSize();
 });
-
