@@ -52,7 +52,7 @@ export default class NnsBbs {
         document.title = 'nnsbbs';
       }
     })).add_btn(new BtnDropdown({
-      icon: 'three-dots',   
+      icon: 'three-dots',
       explain: '表示設定',
       dropdown: [
         {
@@ -88,15 +88,21 @@ export default class NnsBbs {
       icon: 'chevron-bar-down',
       explain: '次の未読記事に移動',
       action: () => {
-        this.titles_pane.scrollToNextUnread() ||
-          this.titles_pane.scrollToNextUnread(true);   // search from Top
+        let t = this.titles_pane;
+        let a = this.article_pane;
+        t.scrollToNextUnread() || t.scrollToNextUnread(true);   // search from Top
+        if (!a.bClosed && t.newsgroup && t.cur_article_id)
+          this.select_article(t.newsgroup.id, t.cur_article_id);
       }
     })).add_btn(new Btn({
       icon: 'chevron-bar-up',
       explain: '前の未読記事に移動',
       action: () => {
-        this.titles_pane.scrollToPrevUnread() ||
-          this.titles_pane.scrollToPrevUnread(true);  // search from Botttom
+        let t = this.titles_pane;
+        let a = this.article_pane;
+        t.scrollToPrevUnread() || t.scrollToPrevUnread(true);  // search from Botttom
+        if (!a.bClosed && t.newsgroup && t.cur_article_id)
+          this.select_article(t.newsgroup.id, t.cur_article_id);
       }
     }));
 
@@ -153,24 +159,24 @@ export default class NnsBbs {
         buttons: {
           btn1: {
             text: '全て既読にする',
-            action: ev => { 
+            action: ev => {
               this.ng_pane.read_all(newsgroup);
               this.redisplay();
-             }
+            }
           },
           btn2: {
             text: '全て未読にする',
-            action: ev => { 
-              this.ng_pane.unread_all(newsgroup); 
+            action: ev => {
+              this.ng_pane.unread_all(newsgroup);
               this.redisplay();
             }
           },
           btn3: {
             text: '最新50記事だけ未読にする',
-            action: ev => { 
+            action: ev => {
               this.ng_pane.read_all(newsgroup, 50);
               this.redisplay();
-             }
+            }
           }
         }
       });
