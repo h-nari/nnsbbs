@@ -38,7 +38,7 @@ export class ToolBar {
       btn.bind();
   }
 
-  add_btn(btn: Btn) : ToolBar{
+  add_btn(btn: Btn): ToolBar {
     this.btns.unshift(btn);        // First add
     return this;
   }
@@ -86,12 +86,10 @@ export class Btn {
   }
 
   html(): string {
-    let opt = { id: this.id, class: "bi-" + this.opt.icon };
-    if (this.opt.explain) {
+    let opt = { id: this.id };
+    if (this.opt.explain)
       opt['title'] = this.opt.explain;
-      opt['data-toggle'] = 'tooltip'
-    }
-    return button(tag('i', opt));
+    return button(opt, tag('i', { class: "bi-" + this.opt.icon }));
   }
 
   bind() {
