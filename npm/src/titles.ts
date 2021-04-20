@@ -157,8 +157,13 @@ export class TitlesPane extends ToolbarPane {
 
       s += span({ class: 'newsgroup-name' }, this.newsgroup.name);
       s += span({ class: 'number-of-articles' }, '(', cUnread, '/', max_id, ')');
-      s += span({ class: 'subscription' }, '(', si && si.subscribe ? '購読中' : '未購読', ')');
-      s += span({ class: 'disp-mode' }, this.bDispTherad ? '[スレッド表示]' : '[投稿順表示]');
+      s += span({ class: 'subscription' }, '(',
+        span({ 'html-i18n': si && si.subscribe ? 'subscribe' : 'unsubscribe' }),
+        ')');
+      s += span({ class: 'disp-mode' },
+        '[',
+        span({ 'html-i18n': this.bDispTherad ? 'thread-display' : 'time-order-display' }),
+        ']');
     } else {
       s = "no-newsgroup";
     }

@@ -1,5 +1,5 @@
 interface StrObj {
-  [key: string]: string | number | boolean;
+  [key: string]: string | number | boolean | null | undefined;
 }
 
 export function tag(name: string, ...args: (string | number | StrObj)[]): string {
@@ -16,6 +16,8 @@ export function tag(name: string, ...args: (string | number | StrObj)[]): string
     }
   }
   for (let k in attr) {
+    if (attr[k] === undefined)
+      continue;
     html += ' ' + k;
     if (attr[k] !== null) {
       html += '="' + attr[k] + '"';
@@ -31,6 +33,10 @@ export function tag(name: string, ...args: (string | number | StrObj)[]): string
   }
   html += '</' + name + '>';
   return html;
+}
+
+export function selected(b: boolean): null | undefined {
+  return b ? null : undefined;
 }
 
 export function div(...args: (string | number | StrObj)[]): string {

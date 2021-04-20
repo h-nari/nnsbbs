@@ -4,9 +4,9 @@ import { TitlesPane } from './titles';
 import { ArticlePane } from './article';
 import { Btn, BtnDropdown } from "./toolbar";
 import { GeometryManager } from "./gemotry_manager";
-import { div, button } from "./tag";
 import { contextMenu, closeContextMenu } from "./context_menu";
-
+import { i18n } from "i18next";
+import { div, select, option, label, selected } from "./tag";
 
 export default class NnsBbs {
   private ng_pane = new NewsGroupsPane('newsgroup');
@@ -15,8 +15,10 @@ export default class NnsBbs {
   private cur_newsgroup: string = "";
   private cur_newsgroup_id: number = 0;
   public gm = new GeometryManager('main');
+  public i18next: i18n;
 
-  constructor() {
+  constructor(i18next: i18n) {
+    this.i18next = i18next;
     this.gm.add(this.ng_pane, this.titles_pane, this.article_pane);
     this.ng_pane.expansion_ratio = 1;
     this.titles_pane.expansion_ratio = 2;
@@ -25,26 +27,26 @@ export default class NnsBbs {
     // buttons in newsgroup pane
     this.ng_pane.toolbar.add_btn(new Btn({
       icon: 'check-all',
-      explain: '全てのニュースグループを表示',
+      explain: 'show-all-newsgroups',
       action: () => {
         // $('#newsgroup_lg').removeClass('hide-not-subscribed');
         this.ng_pane.bShowAll = true;
-        this.ng_pane.redisplay();
+        this.redisplay();
       }
     })).add_btn(new Btn({
       icon: 'check',
-      explain: '購読中のニュースグループのみ表示',
+      explain: 'only-subscribed-newsgroups',
       action: () => {
         // $('#newsgroup_lg').addClass('hide-not-subscribed');
         this.ng_pane.bShowAll = false;
-        this.ng_pane.redisplay();
+        this.redisplay();
       }
     }));
 
     // Buttons in title pane
     this.titles_pane.toolbar.add_btn(new Btn({
       icon: 'x-square',
-      explain: 'タイトル・記事領域を閉じる',
+      explain: 'close-titles-and-article-pane',
       action: () => {
         this.titles_pane.close();
         this.article_pane.close();
@@ -53,22 +55,24 @@ export default class NnsBbs {
       }
     })).add_btn(new BtnDropdown({
       icon: 'three-dots',
-      explain: '表示設定',
+      explain: 'display-setting',
       dropdown: [
         {
-          name: 'スレッド表示', action: () => {
+          name: 'thread-display', action: () => {
             this.titles_pane.disp_thread(true);
+            this.redisplay();
           }
         },
         {
-          name: '投稿順表示', action: () => {
+          name: 'time-order-display', action: () => {
             this.titles_pane.disp_thread(false);
+            this.redisplay();
           }
         },
       ]
     })).add_btn(new Btn({
       icon: 'align-bottom',
-      explain: '最後に移動',
+      explain: 'goto-end',
       action: () => {
         let div1 = $('#' + this.titles_pane.id + ' .titles')[0];
         let h1 = $(div1).height();
@@ -79,14 +83,14 @@ export default class NnsBbs {
       }
     })).add_btn(new Btn({
       icon: 'align-top',
-      explain: '先頭に移動',
+      explain: 'goto-begin',
       action: () => {
         let div = $('#' + this.titles_pane.id + ' .titles')[0];
         div.scrollTop = 0;
       }
     })).add_btn(new Btn({
       icon: 'chevron-bar-down',
-      explain: '次の未読記事に移動',
+      explain: 'next-unread-article',
       action: () => {
         let t = this.titles_pane;
         let a = this.article_pane;
@@ -96,7 +100,7 @@ export default class NnsBbs {
       }
     })).add_btn(new Btn({
       icon: 'chevron-bar-up',
-      explain: '前の未読記事に移動',
+      explain: 'previous-unread-article',
       action: () => {
         let t = this.titles_pane;
         let a = this.article_pane;
@@ -108,7 +112,7 @@ export default class NnsBbs {
 
     this.article_pane.toolbar.add_btn(new Btn({
       icon: 'x-square',
-      explain: '記事領域を閉じる',
+      explain: 'close-article',
       action: () => {
         this.article_pane.close();
         window.history.pushState(null, '', `/${this.cur_newsgroup}`);
@@ -117,7 +121,7 @@ export default class NnsBbs {
     }))
     this.article_pane.toolbar.add_btn(new Btn({
       icon: 'card-heading',
-      explain: '記事のヘッダの表示を切替',
+      explain: 'toggle-article-header',
       action: () => {
         this.article_pane.toggle_header()
       }
@@ -158,21 +162,21 @@ export default class NnsBbs {
         width: 300,
         buttons: {
           btn1: {
-            text: '全て既読にする',
+            text: 'make-all-read',
             action: ev => {
               this.ng_pane.read_all(newsgroup);
               this.redisplay();
             }
           },
           btn2: {
-            text: '全て未読にする',
+            text: 'make-all-unread',
             action: ev => {
               this.ng_pane.unread_all(newsgroup);
               this.redisplay();
             }
           },
           btn3: {
-            text: '最新50記事だけ未読にする',
+            text: 'make-unread-last-50',
             action: ev => {
               this.ng_pane.read_all(newsgroup, 50);
               this.redisplay();
@@ -186,11 +190,11 @@ export default class NnsBbs {
       let article_id = parseInt($(e.currentTarget).attr('article_id') || "0");
       let si = this.titles_pane.newsgroup?.subsInfo;
       contextMenu(e, {
-        title: '記事' + article_id,
+        title: this.i18next.t('article') + article_id,
         width: 300,
         buttons: {
           btn1: {
-            text: '既読にする',
+            text: 'mark-article-as-read',
             action: ev => {
               if (si) {
                 si.read.add_range(article_id);
@@ -199,7 +203,7 @@ export default class NnsBbs {
             }
           },
           btn2: {
-            text: '未読にする',
+            text: 'mark-article-as-unread',
             action: ev => {
               if (si) {
                 si.read.sub_range(article_id);
@@ -207,6 +211,24 @@ export default class NnsBbs {
               }
             }
           }
+        }
+      });
+    });
+
+    // Setting Menu
+    $('#btn-setting').on('click', e => {
+      let lang = this.i18next.language;
+      $.alert({
+        title: 'Setting',
+        content: div({ class: 'setting-dlg' },
+          label({ for: 'language' }, 'Language:'),
+          select({ id: 'language' },
+            option({ value: 'jp', selected: selected(lang == 'jp') }, 'japanese'),
+            option({ value: 'en', selected: selected(lang == 'en') }, 'English'))),
+        onOpen: () => {
+          $('#language').on('change', e => {
+            this.setLanguage($('#language').val() as string);
+          });
         }
       });
     });
@@ -233,6 +255,7 @@ export default class NnsBbs {
         this.select_article(this.cur_newsgroup_id, id);
       }
     }
+    this.redisplay();
   }
 
   // Processing when a newsgroup is selected.
@@ -249,11 +272,10 @@ export default class NnsBbs {
     this.ng_pane.select_newsgroup(newsgroup);
     await this.titles_pane.open(newsgroup);
 
-    this.titles_pane.redisplay();
     this.titles_pane.scrollToNextUnread();
     this.titles_pane.show();
-
     this.article_pane.close();
+    this.redisplay();
 
     let name = newsgroup.name;
     window.history.pushState(null, '', `/${name}`);
@@ -265,7 +287,6 @@ export default class NnsBbs {
   async select_article(newsgroup_id: number, article_id: number) {
     await this.article_pane.open(newsgroup_id, article_id);
     this.titles_pane.select_article(article_id);
-    this.article_pane.redisplay();
     this.article_pane.show();                            // Remove no-display
     // let subsInfo = this.ng_pane.getSubsInfo(this.cur_newsgroup);
     if (this.titles_pane.newsgroup) {
@@ -273,8 +294,7 @@ export default class NnsBbs {
       if (subsInfo)
         subsInfo.read.add_range(article_id);                 // make article read
     }
-    this.ng_pane.redisplay();
-    this.titles_pane.redisplay();
+    this.redisplay();
 
     window.history.pushState(null, '', `/${this.cur_newsgroup}/${article_id}`);
     document.title = `nnsbbs/${this.cur_newsgroup}/${article_id}`
@@ -294,6 +314,33 @@ export default class NnsBbs {
     this.ng_pane.redisplay();
     this.titles_pane.redisplay();
     this.article_pane.redisplay();
+    this.set_i18n_text();
+  }
+
+  set_i18n_text() {
+    let i18next = this.i18next;
+    $('[html-i18n]').each(function () {
+      let key = $(this).attr('html-i18n') || "no-key";
+      let val = i18next.t(key);
+      $(this).text(val);
+    });
+    $('[title-i18n]').each(function () {
+      let key = $(this).attr('title-i18n') || "no-key";
+      let val = i18next.t(key);
+      console.log('title-i18n:', key, '->', val);
+      $(this).attr('title', val);
+    });
+  }
+
+  setLanguage(lang: string) {
+    console.log('language:', lang);
+    this.i18next.changeLanguage(lang, (err, t) => {
+      if (err) console.log('changeLanguage failed:', err);
+      else {
+        console.log('changeLanguage succeeded');
+        this.set_i18n_text();
+      }
+    });
   }
 }
 

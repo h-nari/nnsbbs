@@ -88,7 +88,7 @@ export class Btn {
   html(): string {
     let opt = { id: this.id };
     if (this.opt.explain)
-      opt['title'] = this.opt.explain;
+      opt['title-i18n'] = this.opt.explain;
     return button(opt, tag('i', { class: "bi-" + this.opt.icon }));
   }
 
@@ -123,9 +123,14 @@ export class BtnDropdown extends Btn {
     let cnt = 0;
     for (let dd of this.opt.dropdown) {
       let id_dd = id_btn + '-' + cnt++;
-      let attr = { class: 'dropdown-item', href: '#', id: id_dd };
+      let attr = {
+        class: 'dropdown-item',
+        href: '#',
+        id: id_dd,
+        'html-i18n': dd.name
+      };
       if (dd.explain) {
-        attr['title'] = dd.explain;
+        attr['title-i18n'] = dd.explain;
         attr['data-toggle'] = 'tooltip';
       }
       dm += li(a(attr, dd.name));
@@ -139,7 +144,7 @@ export class BtnDropdown extends Btn {
       'aria-expanded': false
     };
     if (this.opt.explain) {
-      btn_attr['title'] = this.opt.explain;
+      btn_attr['title-i18n'] = this.opt.explain;
     }
     return div({ class: 'dropdown' },
       button(btn_attr, tag('i', { class: 'bi-' + this.opt.icon })),

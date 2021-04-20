@@ -1,4 +1,7 @@
 import NnsBbs from './nnsbbs';
+import i18next from 'i18next';
+import { jp } from './locale/jp';
+import { en } from './locale/en';
 
 declare global {
   interface Window {
@@ -7,9 +10,13 @@ declare global {
   }
 }
 
-let nb = new NnsBbs();
+let nb = new NnsBbs(i18next);
 window.nnsbbs = nb;
-console.log('nnsbbs');
+i18next.init({
+  lng: 'en',
+  debug: true,
+  resources: { en, jp }
+});
 
 $(() => {
   $('#main').html(nb.html());
@@ -19,4 +26,12 @@ $(() => {
 
 $(window).on('resize', () => {
   nb.gm.setSize();
+});
+
+$(window).on('keydown', function (e) {
+  if (e.key == 'j') nb.setLanguage('jp');
+  else if (e.key == 'e') nb.setLanguage('en');
+  else if (e.key == "Enter") {
+    nb.setLanguage(i18next.language == 'en' ? 'jp' : 'en');
+  }
 });
