@@ -83,8 +83,8 @@ export class NewsGroupsPane extends ToolbarPane {
         if (si)
           unread = d.max_id - si.read.count();
         c += span({ class: 'newsgroup-status' },
-          '(', span({ class: 'unread', title: '未読記事数' }, unread,),
-          '/', span({ class: 'max-id', title: '総記事数' }, d.max_id), ')');
+          '(', span({ class: 'unread', 'title-i18n': 'unread-articles' }, unread,),
+          '/', span({ class: 'max-id', 'title-i18n': 'total-articles' }, d.max_id), ')');
         let opt2 = { class: 'newsgroup-line', 'newsgroup-name': d.name, 'newsgroup-id': d.id };
         if (this.cur_newsgroup && this.cur_newsgroup.name == d.name)
           opt2.class += " active"

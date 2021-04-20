@@ -24,6 +24,7 @@ export class TitlesPane extends ToolbarPane {
   private clickCb: ((newsgroup_id: number, article_id: number) => void) | null = null;
   private id_lg: string;
 
+
   constructor(id: string) {
     super(id);
     this.id_lg = id + "_lg";
@@ -156,7 +157,9 @@ export class TitlesPane extends ToolbarPane {
       if (si) cUnread -= si.read.count();
 
       s += span({ class: 'newsgroup-name' }, this.newsgroup.name);
-      s += span({ class: 'number-of-articles' }, '(', cUnread, '/', max_id, ')');
+      s += span({ class: 'number-of-articles' }, '(',
+        span({ 'title-i18n': 'unread-articles' }, cUnread), '/',
+        span({ 'title-i18n': 'total-articles' }, max_id), ')');
       s += span({ class: 'subscription' }, '(',
         span({ 'html-i18n': si && si.subscribe ? 'subscribe' : 'unsubscribe' }),
         ')');

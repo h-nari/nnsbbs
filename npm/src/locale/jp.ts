@@ -22,6 +22,8 @@ export const jp = {
     'display-setting': '表示設定',
     'subscribe-newsgroup': 'ニュースグループを購読',
     'no-subscribed-newsgroup': '購読しているニュースグループはありません',
-    'end-click-to-next':'- 記事終わり - クリックで次の記事表示します -'
+    'end-click-to-next':'- 記事終わり - クリックで次の記事表示します -',
+    'total-articles': '総記事数',
+    'unread-articles': '未読記事数'
   }
 };
