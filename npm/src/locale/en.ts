@@ -21,6 +21,7 @@ export const en = {
     'unsubscribe': 'unsubscribe',
     'display-setting': 'Display Setting',
     'subscribe-newsgroup': 'subscribe Newsgroup',
-    'no-subscribed-newsgroup': 'No subscribed Newsgroup'
+    'no-subscribed-newsgroup': 'No subscribed Newsgroup',
+    'end-click-to-next': ' --- End  (click to next article) ---'
   }
 };

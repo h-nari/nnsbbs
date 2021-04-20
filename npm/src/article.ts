@@ -41,7 +41,7 @@ export class ArticlePane extends ToolbarPane {
       div({ class: 'article' },
         div({ class: 'article-header', id: this.id_header }, header),
         div({ class: 'article-body' }, content),
-        div({ class: 'article-end' }, "--- End (click to next)---"));
+        div({ class: 'article-end', 'html-i18n':'end-click-to-next' }, "--- End (click to next)---"));
   }
 
   bind() {

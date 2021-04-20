@@ -21,6 +21,7 @@ export const jp = {
     'unsubscribe': '未購読',
     'display-setting': '表示設定',
     'subscribe-newsgroup': 'ニュースグループを購読',
-    'no-subscribed-newsgroup': '購読しているニュースグループはありません'
+    'no-subscribed-newsgroup': '購読しているニュースグループはありません',
+    'end-click-to-next':'- 記事終わり - クリックで次の記事表示します -'
   }
 };
