@@ -14,6 +14,8 @@ sub newsgroup ($self) {
 
 sub titles($self) {
     my $newsgroup_id = $self->param("newsgroup_id");
+    my $from         = $self->param("from");
+    my $to           = $self->param("to");
 
     if ($newsgroup_id) {
         my $db  = NnsBbs::Db::new($self);
@@ -22,9 +24,20 @@ sub titles($self) {
         $sql .= " from article as a left join user as u on a.user_id = u.id";
         $sql .= " where newsgroup_id = ?";
         $sql .= " and not a.bDeleted";
+
+        my @params = ($newsgroup_id);
+        if ($from) {
+            $sql .= " and a.id >= ?";
+            push @params, $from;
+        }
+        if ($to) {
+            $sql .= "and a.id <= ?";
+            push @params, $to;
+        }
         $sql .= " order by a.id";
-        my $data = $db->select_ah($sql, $newsgroup_id);
-        print STDERR "newsgroup=", $newsgroup_id," count=", (@$data + 0),"\n";
+        my $data = $db->select_ah( $sql, @params );
+        print STDERR "newsgroup=", $newsgroup_id, " count=", ( @$data + 0 ),
+          "\n";
         $self->render( json => $data );
     }
     else {
