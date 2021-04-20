@@ -1,7 +1,7 @@
 export const en = {
   translation: {
-    "show-all-newsgroups": "Show All Newsgroups",
-    "only-subscribed-newsgroups": "Only subscribed Newsgroups",
+    'show-all-newsgroups': 'Show All Newsgroups',
+    'only-subscribed-newsgroups': 'Only subscribed Newsgroups',
     'close-titles-and-article-pane': 'Close titles and article pane',
     'thread-display': 'Thread display',
     'time-order-display': 'Time order display',
@@ -19,6 +19,8 @@ export const en = {
     'mark-article-as-unread': 'mark article as unread',
     'subscribe': 'subscrbe',
     'unsubscribe': 'unsubscribe',
-    'display-setting':'Display Setting'
+    'display-setting': 'Display Setting',
+    'subscribe-newsgroup': 'subscribe Newsgroup',
+    'no-subscribed-newsgroup': 'No subscribed Newsgroup'
   }
 };

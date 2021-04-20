@@ -17,8 +17,10 @@ export const jp = {
     'article': '記事',
     'mark-article-as-read': '既読にする',
     'mark-article-as-unread': '未読にする',
-    'subscribe':'購読中',
-    'unsubscribe':'未購読',
-    'display-setting':'表示設定'
+    'subscribe': '購読中',
+    'unsubscribe': '未購読',
+    'display-setting': '表示設定',
+    'subscribe-newsgroup': 'ニュースグループを購読',
+    'no-subscribed-newsgroup': '購読しているニュースグループはありません'
   }
 };

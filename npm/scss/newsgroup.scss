@@ -7,7 +7,7 @@
     overflow-y: auto;
     position: relative;
     left: 0px;
-    top: 0px; 
+    top: 0px;
 
     .newsgroup-line {
       background-color: lightgray;
@@ -44,6 +44,26 @@
     .newsgroup-line.subscribe.active {
       color: white;
       background-color: #007bff;
+    }
+
+    .no-newsgroup {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      background-color: lightcyan;
+      font-size: xx-large;
+
+      > div {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+          
+        > div {
+          margin-bottom: 20px;
+        }
+      }
     }
   }
 }

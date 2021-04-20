@@ -137,6 +137,11 @@ export default class NnsBbs {
   bind() {
     this.gm.bind();
 
+    this.ng_pane.showAllNewsgroupCb = () => {
+      this.ng_pane.bShowAll = true;
+      this.redisplay();
+    };
+
     this.ng_pane.setClickCb((ng: INewsGroup) => {
       this.select_newsgroup(ng);
     })

@@ -1,5 +1,5 @@
 import { get_json } from "./util";
-import { div, button, span, input } from "./tag";
+import { div, button, span, input, tag } from "./tag";
 import { Btn, ToolBar } from "./toolbar";
 import { Pane, ToolbarPane } from './pane';
 import { ReadSet } from "./readSet";
@@ -30,6 +30,7 @@ export class NewsGroupsPane extends ToolbarPane {
   private id_lg: string;      // list-group id
   private newsgroups: INewsGroup[] = [];
   private clickCb: ((newsgroup: INewsGroup) => void) | null = null;
+  public showAllNewsgroupCb: (() => void) | null = null;
   private savedSubsString: string = "";
   private cur_newsgroup: INewsGroup | null = null;
 
@@ -75,7 +76,7 @@ export class NewsGroupsPane extends ToolbarPane {
       if (si?.subscribe || this.bShowAll) {
         let unread = d.max_id;
         let c = "";
-        let opt = { type: 'checkbox', class: 'newsgroup-check', title: 'ニュースグループを購読' };
+        let opt = { type: 'checkbox', class: 'newsgroup-check', title: 'subscribe-newsgroup' };
         if (si && si.subscribe) opt['checked'] = 1;
         c += input(opt);
         c += span({ class: 'newsgroup-name' }, d.name);
@@ -92,9 +93,23 @@ export class NewsGroupsPane extends ToolbarPane {
       }
     }
 
+    let b: string;
+    if (s.length > 0)
+      b = div({ id: this.id_lg, class: 'nb-list-group' }, s);
+    else {
+      b = div({ class: 'no-newsgroup' },
+        div(
+          div({ 'html-i18n': 'no-subscribed-newsgroup' }),
+          div(button({
+            id: this.id + '_showall',
+            class: 'btn btn-primary',
+            type: 'button',
+            'html-i18n': 'show-all-newsgroups'
+          }))));
+    }
+
     return super.html() +
-      div({ class: 'newsgroup' },
-        div({ id: this.id_lg, class: 'nb-list-group' }, s));
+      div({ class: 'newsgroup' }, b);
   }
   bind() {
     super.bind();
@@ -119,6 +134,10 @@ export class NewsGroupsPane extends ToolbarPane {
         else
           $(parent).removeClass('subscribe');
       }
+    });
+    $('#' + this.id + '_showall').on('click', () => {
+      if (this.showAllNewsgroupCb)
+        this.showAllNewsgroupCb();
     });
   }
 
