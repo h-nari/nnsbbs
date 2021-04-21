@@ -1,14 +1,15 @@
 type Range = [number, number];
 
 export class ReadSet {
-  private ranges: Range[] = [];
+  public ranges: Range[] = [];
 
   constructor(str: string | undefined = undefined) {
     if (str) this.fromString(str);
   }
 
-  clear() {
+  clear(): ReadSet {
     this.ranges = [];
+    return this;
   }
 
   fromString(str: string) {
@@ -51,7 +52,7 @@ export class ReadSet {
     }
   }
 
-  add_range(start: number, end: number | null = null) {
+  add_range(start: number, end: number | null = null): ReadSet {
     if (!end) end = start;
     if (start <= end) {
       let s = start;
@@ -76,10 +77,11 @@ export class ReadSet {
       }
       this.ranges = new_ranges;
     }
+    return this;
   }
 
   // @brief Remove the area
-  sub_range(start: number, end: number | null = null) {
+  sub_range(start: number, end: number | null = null): ReadSet {
     end ||= start;
     if (start <= end) {
       let s = start;
@@ -105,6 +107,7 @@ export class ReadSet {
       }
       this.ranges = new_ranges;
     }
+    return this;
   }
 
   syntaxError(offendingStr: string, allString: string): never {

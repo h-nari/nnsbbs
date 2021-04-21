@@ -81,7 +81,7 @@ export class NewsGroupsPane extends ToolbarPane {
         c += input(opt);
         c += span({ class: 'newsgroup-name' }, d.name);
         if (si)
-          unread = d.max_id - si.read.count();
+          unread = Math.max(d.max_id - si.read.count(), 0);
         c += span({ class: 'newsgroup-status' },
           '(', span({ class: 'unread', 'title-i18n': 'unread-articles' }, unread,),
           '/', span({ class: 'max-id', 'title-i18n': 'total-articles' }, d.max_id), ')');

@@ -23,7 +23,7 @@ export class TitlesPane extends ToolbarPane {
   private bDispTherad: boolean = true;
   private clickCb: ((newsgroup_id: number, article_id: number) => void) | null = null;
   private id_lg: string;
-
+  public loaded_titles: ReadSet = new ReadSet();
 
   constructor(id: string) {
     super(id);
@@ -31,7 +31,17 @@ export class TitlesPane extends ToolbarPane {
   }
 
   async open(newsgroup: INewsGroup) {
-    let data = await get_json('/api/titles', { data: { newsgroup_id: newsgroup.id } });
+    let from = 1;
+    let to = newsgroup.max_id;
+    let si = newsgroup.subsInfo;
+    if (si && si.read.ranges.length > 0) {
+      let r = si.read.ranges[0];
+      if (r[0] == 1)
+        from = Math.max(r[1] - 10, 1);
+    }
+    to = Math.min(from + 99, to);
+    let data = await get_json('/api/titles', { data: { newsgroup_id: newsgroup.id, from, to } });
+    this.loaded_titles.clear().add_range(from, to);
     this.titles = [];
     this.threads = [];
     for (let d of data as ITitle[]) {
@@ -106,7 +116,7 @@ export class TitlesPane extends ToolbarPane {
       div({ class: 'article-from', title: d.disp_name }, d.disp_name),
       div({ class: 'article-time' }, d.date),
       div({ class: 'article-rule' }, rule),
-      div({ class: 'article-title', title: d.title }, d.title)
+      div({ class: 'article-title' }, d.title)
     );
     return s;
   }
@@ -154,7 +164,7 @@ export class TitlesPane extends ToolbarPane {
       let max_id = this.newsgroup.max_id;
       let cUnread = max_id;
       let si = this.newsgroup.subsInfo;
-      if (si) cUnread -= si.read.count();
+      if (si) cUnread = Math.max(cUnread - si.read.count(), 0);
 
       s += span({ class: 'newsgroup-name' }, this.newsgroup.name);
       s += span({ class: 'number-of-articles' }, '(',
@@ -167,6 +177,7 @@ export class TitlesPane extends ToolbarPane {
         '[',
         span({ 'html-i18n': this.bDispTherad ? 'thread-display' : 'time-order-display' }),
         ']');
+      s += span({ class: 'loaded-titles' }, 'Loaded:', span(this.loaded_titles.toString()))
     } else {
       s = "no-newsgroup";
     }

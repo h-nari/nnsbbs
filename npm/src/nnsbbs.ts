@@ -320,7 +320,8 @@ export default class NnsBbs {
     this.titles_pane.redisplay();
     this.article_pane.redisplay();
     this.set_i18n_text();
-    $('[title]').tooltip();
+    $('.tooltip').remove();
+    (<any>$('[title]')).tooltip();
   }
 
   set_i18n_text() {
