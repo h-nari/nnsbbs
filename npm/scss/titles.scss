@@ -67,7 +67,7 @@
         margin-right: 2px;
         font-family: monospace;
         font-size: large;
-        color: lightblue; 
+        color: lightblue;
       }
 
       .article-title {
@@ -80,6 +80,15 @@
       .article-title,
       .article-from {
         color: darkgray;
+      }
+    }
+
+    .more-titles {
+      text-align: center;
+      button {
+        margin: 10px;
+        @extend .btn;
+        @extend .btn-info;
       }
     }
   }

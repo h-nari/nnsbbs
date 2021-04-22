@@ -24,6 +24,10 @@ export const jp = {
     'no-subscribed-newsgroup': '購読しているニュースグループはありません',
     'end-click-to-next':'- 記事終わり - クリックで次の記事表示します -',
     'total-articles': '総記事数',
-    'unread-articles': '未読記事数'
+    'unread-articles': '未読記事数',
+    'load-previous-100-titles': '以前の100タイトルを読み込む',
+    'load-all-previous-titles': '以前の全てのタイトルを読み込む',
+    'load-next-100-titles': '以降の100タイトルを読み込む',
+    'load-all-subsequent-titles': '以降の全てのタイトルを読み込む'
   }
 };

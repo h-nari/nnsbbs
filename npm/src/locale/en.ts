@@ -24,6 +24,10 @@ export const en = {
     'no-subscribed-newsgroup': 'No subscribed Newsgroup',
     'end-click-to-next': ' --- End  (click to next article) ---',
     'total-articles': 'total articles',
-    'unread-articles': 'unread articles'
+    'unread-articles': 'unread articles',
+    'load-previous-100-titles': 'Load previous 100 titles',
+    'load-all-previous-titles': 'Load all previous titles',
+    'load-next-100-titles': 'Load next 100 titles',
+    'load-all-subsequent-titles': 'Load all subsequent titles'
   }
 };

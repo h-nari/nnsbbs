@@ -145,4 +145,20 @@ export class ReadSet {
     }
     return false;
   }
+
+  first(): number | null {
+    if (this.ranges.length > 0) {
+      return this.ranges[0][0];
+    } else {
+      return null;
+    }
+  }
+
+  last(): number | null {
+    if (this.ranges.length > 0) {
+      return this.ranges[this.ranges.length - 1][1];
+    } else {
+      return null;
+    }
+  }
 }

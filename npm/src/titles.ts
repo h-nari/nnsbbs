@@ -40,6 +40,10 @@ export class TitlesPane extends ToolbarPane {
         from = Math.max(r[1] - 10, 1);
     }
     to = Math.min(from + 99, to);
+    await this.load(newsgroup, from, to);
+  }
+
+  async load(newsgroup: INewsGroup, from: number, to: number) {
     let data = await get_json('/api/titles', { data: { newsgroup_id: newsgroup.id, from, to } });
     this.loaded_titles.clear().add_range(from, to);
     this.titles = [];
@@ -57,6 +61,7 @@ export class TitlesPane extends ToolbarPane {
     }
     this.newsgroup = newsgroup;
     this.cur_article_id = null;
+    this.redisplay(true);    // reset scroll
   }
 
   setClickCb(cb: (n: number, m: number) => void) {
@@ -79,15 +84,50 @@ export class TitlesPane extends ToolbarPane {
         s += this.title_html(d);
       }
     }
+    if (!this.loaded_titles.includes(1))
+      s = this.more_titles('backward') + s;
+    if (this.newsgroup && !this.loaded_titles.includes(this.newsgroup.max_id))
+      s += this.more_titles('forward');
     this.set_title();
     return this.toolbar.html() + div({ class: 'titles' }, div({ id: this.id_lg, class: 'nb-list-group' }, s));
   }
 
-  redisplay() {
+  more_titles(dir: 'forward' | 'backward'): string {
+    let b = '';
+    if (dir == 'backward') {
+      let first = this.loaded_titles.first();
+      if (first) {
+        if (first > 1) {
+          if (first > 101)
+            b += button({ from: first - 100, to: first - 1, 'html-i18n': 'load-previous-100-titles' });
+          b += button({ from: 1, to: first - 1, 'html-i18n': 'load-all-previous-titles' });
+        }
+      }
+    }
+    if (dir == 'forward') {
+      let last = this.loaded_titles.last();
+      if (last && this.newsgroup) {
+        let max_id = this.newsgroup.max_id;
+        let left = max_id - last;
+        if (left > 0) {
+          if (left > 100)
+            b += button({ from: last + 1, to: last + 100, 'html-i18n': 'load-next-100-titles' });
+          b += button({ from: last + 1, to: max_id, dir, 'html-i18n': 'load-all-subsequent-titles' });
+        }
+      }
+    }
+    if (b == '')
+      return '';
+    else
+      return div({ class: 'more-titles' }, b);
+  }
+
+  redisplay(resetScroll: boolean = false) {
     let scroll = $(`#${this.id} .titles`).scrollTop();
     $('#' + this.id).html(this.inner_html());
     this.bind();
-    $(`#${this.id} .titles`).scrollTop(scroll || 0);
+    if (!resetScroll)
+      $(`#${this.id} .titles`).scrollTop(scroll || 0);
   }
 
   thread_html(t: ITitle, rule1: string = '', rule2: string = '') {
@@ -132,6 +172,16 @@ export class TitlesPane extends ToolbarPane {
         this.clickCb(this.newsgroup.id, article_id);
       }
     });
+    $(`#${this.id} .more-titles button`).on('click', async e => {
+      let elem = e.currentTarget;
+      let from = elem.attributes['from'].value || "";
+      let to = elem.attributes['to'].value || "";
+      if (this.newsgroup) {
+        let rs = this.loaded_titles;
+        rs.add_range(from, to);
+        this.load(this.newsgroup, rs.first() || 1, rs.last() || this.newsgroup.max_id);
+      }
+    })
   }
 
   select_article(id: number) {
@@ -177,7 +227,7 @@ export class TitlesPane extends ToolbarPane {
         '[',
         span({ 'html-i18n': this.bDispTherad ? 'thread-display' : 'time-order-display' }),
         ']');
-      s += span({ class: 'loaded-titles' }, 'Loaded:', span(this.loaded_titles.toString()))
+      s += span({ class: 'loaded-titles' }, 'Loaded: ', span(this.loaded_titles.toString()))
     } else {
       s = "no-newsgroup";
     }
@@ -190,7 +240,7 @@ export class TitlesPane extends ToolbarPane {
       cur = $(`#${this.id} .nb-list-group button[article_id=${this.cur_article_id}]`)[0];
       cur = cur.previousSibling as HTMLElement;
     } else {
-      let n = $(`#${this.id} .nb-list-group button`);
+      let n = $(`#${this.id} .nb-list-group >button`);
       if (n.length > 0)
         cur = n[n.length - 1];
       else {
@@ -215,12 +265,10 @@ export class TitlesPane extends ToolbarPane {
       cur = $(`#${this.id} .nb-list-group button[article_id=${this.cur_article_id}]`)[0];
       cur = cur.nextElementSibling as HTMLElement;
     } else {
-      let n = $(`#${this.id} .nb-list-group button`);
-      if (n.length > 0)
-        cur = n[0];
-      else {
+      let n = $(`#${this.id} .nb-list-group >button`);
+      if (n.length == 0)
         return false;
-      }
+      cur = n[0];
     }
     while (cur && cur.classList.contains('read'))
       cur = cur.nextElementSibling as HTMLElement;

@@ -8,6 +8,12 @@
 
 BODY {
   background-color: #eee;
+  cursor: auto;
+}
+
+BODY.wait,
+BODY.wait button {
+  cursor: wait !important;
 }
 
 #main {

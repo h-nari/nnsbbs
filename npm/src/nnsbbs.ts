@@ -334,17 +334,14 @@ export default class NnsBbs {
     $('[title-i18n]').each(function () {
       let key = $(this).attr('title-i18n') || "no-key";
       let val = i18next.t(key);
-      console.log('title-i18n:', key, '->', val);
       $(this).attr('title', val);
     });
   }
 
   setLanguage(lang: string) {
-    console.log('language:', lang);
     this.i18next.changeLanguage(lang, (err, t) => {
       if (err) console.log('changeLanguage failed:', err);
       else {
-        console.log('changeLanguage succeeded');
         this.set_i18n_text();
       }
     });
