@@ -252,7 +252,7 @@ export class TitlesPane extends ToolbarPane {
     while (cur && cur.classList.contains('read'))
       cur = cur.previousSibling as HTMLElement;
 
-    if (cur) {
+    if (cur && cur.tagName == 'BUTTON') {
       let id = cur.attributes['article_id'].value;
       this.select_article(id);
       return true;
@@ -275,7 +275,7 @@ export class TitlesPane extends ToolbarPane {
     while (cur && cur.classList.contains('read'))
       cur = cur.nextElementSibling as HTMLElement;
 
-    if (cur) {
+    if (cur && cur.tagName == 'BUTTON') {
       let id = cur.attributes['article_id'].value;
       this.select_article(id);
       return true;
