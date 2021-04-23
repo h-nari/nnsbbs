@@ -242,7 +242,7 @@ export default class NnsBbs {
 
   // Called from the built-in script of topPage
   // Read and display a list of newsgroups
-  async top_page(newsgroup: string, article_id: string) {
+  async top_page(newsgroup: string = '', article_id: string = '') {
     let data = await get_json('/api/newsgroup');
     this.ng_pane.setNewsgroups(data as INewsGroup[]);
     $('#newsgroup').html(this.ng_pane.inner_html());
