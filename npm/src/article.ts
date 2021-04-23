@@ -1,4 +1,4 @@
-import { get_json } from "./util";
+import { get_json, escape_html } from "./util";
 import { div, button, span } from "./tag";
 import { ToolBar } from "./toolbar";
 import { ToolbarPane } from "./pane";
@@ -39,9 +39,9 @@ export class ArticlePane extends ToolbarPane {
 
     return this.toolbar.html() +
       div({ class: 'article' },
-        div({ class: 'article-header', id: this.id_header }, header),
-        div({ class: 'article-body' }, content),
-        div({ class: 'article-end', 'html-i18n':'end-click-to-next' }, "--- End (click to next)---"));
+        div({ class: 'article-header', id: this.id_header }, escape_html(header)),
+        div({ class: 'article-body' }, escape_html(content)),
+        div({ class: 'article-end', 'html-i18n': 'end-click-to-next' }, "--- End (click to next)---"));
   }
 
   bind() {
@@ -72,9 +72,9 @@ export class ArticlePane extends ToolbarPane {
     this.data = data;
     this.toolbar.title =
       span({ class: 'id' }, '[' + article_id + ']') +
-      span({ class: 'author' }, data.author) +
+      span({ class: 'author' }, escape_html(data.author)) +
       span({ class: 'date' }, data.date) +
-      span({ class: 'title' }, data.title);
+      span({ class: 'title' }, escape_html(data.title));
   }
 
   setHeaderDisp(bDisp: boolean) {

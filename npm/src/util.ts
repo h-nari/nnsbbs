@@ -21,3 +21,16 @@ export function get_json(path, option = {}) {
     $.ajax(opt);
   });
 }
+
+export function escape_html(str: string): string {
+  return str.replace(/[&'`"<>]/g, function(match) {
+    return {
+      '&': '&amp;',
+      "'": '&#X27;',
+      '`': '&#x60;',
+      '"': '&quot;',
+      '<': '&lt;',
+      '>': '&gt;'
+    }[match] || '';
+  });
+}

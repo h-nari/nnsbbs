@@ -1,9 +1,10 @@
-import { get_json } from "./util";
+import { get_json, escape_html } from "./util";
 import { div, button, span } from "./tag";
 import { ToolBar } from "./toolbar";
 import { ToolbarPane } from "./pane";
 import { ReadSet } from "./readSet";
 import { INewsGroup, ISubsInfo } from "./newsgroup";
+import NnsBbs from "./nnsbbs";
 
 export interface ITitle {
   article_id: number;
@@ -153,10 +154,10 @@ export class TitlesPane extends ToolbarPane {
     if (c.length > 0) opt['class'] = c.join(' ');
     let s = button(opt,
       div({ class: 'article-id' }, String(d.article_id)),
-      div({ class: 'article-from', title: d.disp_name }, d.disp_name),
+      div({ class: 'article-from', title: d.disp_name }, escape_html(d.disp_name)),
       div({ class: 'article-time' }, d.date),
       div({ class: 'article-rule' }, rule),
-      div({ class: 'article-title' }, d.title)
+      div({ class: 'article-title' }, escape_html(d.title))
     );
     return s;
   }
@@ -179,7 +180,8 @@ export class TitlesPane extends ToolbarPane {
       if (this.newsgroup) {
         let rs = this.loaded_titles;
         rs.add_range(from, to);
-        this.load(this.newsgroup, rs.first() || 1, rs.last() || this.newsgroup.max_id);
+        await this.load(this.newsgroup, rs.first() || 1, rs.last() || this.newsgroup.max_id);
+        window.nnsbbs.redisplay();
       }
     })
   }
