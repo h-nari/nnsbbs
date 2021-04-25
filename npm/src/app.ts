@@ -6,7 +6,7 @@ import { en } from './locale/en';
 declare global {
   interface Window {
     nnsbbs: NnsBbs;
-    nnsbbs_baseUrl: string;
+    nnsbbs_baseURL: string;
   }
 }
 
@@ -31,12 +31,12 @@ $(window).on('resize', () => {
 $(window).on('popstate', e => {
   console.log('popstate:', document.location.pathname);
   let d = document.location.pathname.split('/');
-  if (d.length == 1)
+  if (d.length == 2)
     nb.top_page();
-  else if (d.length == 2)
-    nb.top_page(d[1]);
   else if (d.length == 3)
-    nb.top_page(d[1], d[2])
+    nb.top_page(d[2]);
+  else if (d.length == 4)
+    nb.top_page(d[2], d[3])
 })
 
 $(window).on('keydown', function (e) {

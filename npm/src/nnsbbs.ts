@@ -52,7 +52,7 @@ export default class NnsBbs {
       action: () => {
         this.titles_pane.close();
         this.article_pane.close();
-        window.history.pushState(null, '', '/');
+        window.history.pushState(null, '', '/bbs');
         document.title = 'nnsbbs';
       }
     })).add_btn(new BtnDropdown({
@@ -117,7 +117,7 @@ export default class NnsBbs {
       explain: 'close-article',
       action: () => {
         this.article_pane.close();
-        window.history.pushState(null, '', `/${this.cur_newsgroup}`);
+        window.history.pushState(null, '', `/bbs/${this.cur_newsgroup}`);
         document.title = `nnsbbs/${this.cur_newsgroup}`;
       }
     }))
@@ -286,7 +286,7 @@ export default class NnsBbs {
     this.redisplay();
 
     let name = newsgroup.name;
-    window.history.pushState(null, '', `/${name}`);
+    window.history.pushState(null, '', `/bbs/${name}`);
     document.title = `nnsbbs/${name}`;
     this.cur_newsgroup = name;
     this.cur_newsgroup_id = newsgroup.id;
@@ -304,8 +304,8 @@ export default class NnsBbs {
     }
     this.redisplay();
 
-    window.history.pushState(null, '', `/${this.cur_newsgroup}/${article_id}`);
-    document.title = `nnsbbs/${this.cur_newsgroup}/${article_id}`
+    window.history.pushState(null, '', `/bbs/${this.cur_newsgroup}/${article_id}`);
+    document.title = `nnsbbs/bss/${this.cur_newsgroup}/${article_id}`
   }
 
   next_article() {

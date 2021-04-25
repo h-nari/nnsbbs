@@ -18,8 +18,9 @@ sub startup ($self) {
   $r->get('/api/article')->to('api#article');
   $r->get('/index.html')->to('top#show');
   $r->get('/')->to('top#show');
-  $r->get('/#newsgroup')->to('top#show');
-  $r->get('/#newsgroup/:article_id')->to('top#show');
+  $r->get('/bbs')->to('top#bbs');
+  $r->get('/bbs/#newsgroup')->to('top#bbs');
+  $r->get('/bbs/#newsgroup/:article_id')->to('top#bbs');
 }
 
 sub _load_config {
