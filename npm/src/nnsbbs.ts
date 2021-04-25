@@ -2,6 +2,7 @@ import { get_json } from "./util";
 import { NewsGroupsPane, INewsGroup } from "./newsgroup";
 import { TitlesPane } from './titles';
 import { ArticlePane } from './article';
+import { User } from './user';
 import { Btn, BtnDropdown } from "./toolbar";
 import { GeometryManager } from "./gemotry_manager";
 import { contextMenu, closeContextMenu } from "./context_menu";
@@ -12,6 +13,7 @@ export default class NnsBbs {
   private ng_pane = new NewsGroupsPane('newsgroup');
   private titles_pane = new TitlesPane('titles');
   private article_pane = new ArticlePane('article');
+  private user = new User();
   private cur_newsgroup: string = "";
   private cur_newsgroup_id: number = 0;
   public gm = new GeometryManager('main');
@@ -136,6 +138,7 @@ export default class NnsBbs {
 
   bind() {
     this.gm.bind();
+    this.user.bind();
 
     this.ng_pane.showAllNewsgroupCb = () => {
       this.ng_pane.bShowAll = true;
@@ -221,7 +224,7 @@ export default class NnsBbs {
     });
 
     // Setting Menu
-    $('#btn-setting').on('click', e => {
+    $('.btn-setting').on('click', e => {
       let lang = this.i18next.language;
       $.alert({
         title: 'Setting',
