@@ -22,7 +22,7 @@ sub titles($self) {
     if ($newsgroup_id) {
         my $db  = NnsBbs::Db::new($self);
         my $sql = "select a.id as article_id ,title,reply_to,user_id";
-        $sql .= ",a.created_at as date, disp_name";
+        $sql .= ",a.created_at as date, a.disp_name as disp_name";
         $sql .= " from article as a left join user as u on a.user_id = u.id";
         $sql .= " where newsgroup_id = ?";
         $sql .= " and not a.bDeleted";
@@ -70,9 +70,9 @@ sub article($self) {
         my $db = NnsBbs::Db::new($self);
         my $sql =
           "select content,a.created_at as date,u.disp_name as author,title";
-        $sql .= " from article as a,user as u";
-        $sql .= " where a.user_id= u.id and newsgroup_id = ? and a.id = ?";
-
+        $sql .= " from article as a left join user as u on a.user_id = u.id";
+        $sql .= " where newsgroup_id = ? and a.id = ?";
+        $sql .= " order by rev desc limit 1";
         my $hr = $db->select_rh( $sql, $newsgroup_id, $article_id );
         $self->render( json => $hr );
     }
@@ -112,16 +112,16 @@ sub mail_auth($self) {
     $db->commit;
 
     my $url = $self->url_for("/mail_auth/$id")->to_abs;
-    my $c = "メールアドレスの認証を完了させるために\n";
+    my $c   = "メールアドレスの認証を完了させるために\n";
     $c .= "次のURLをアクセスして下さい。\n\n";
     $c .= "   $url\n";
     $c .= "\n";
     $c .= "このメールに心当たりがない場合は\n";
     $c .= "無視して下さい。";
 
-    NnsBbs::Mail::send( $email, "NnsBbsメール認証", $c);
+    NnsBbs::Mail::send( $email, "NnsBbsメール認証", $c );
 
-    $self->render( json => { result => 1} );
+    $self->render( json => { result => 1 } );
 }
 
 1;

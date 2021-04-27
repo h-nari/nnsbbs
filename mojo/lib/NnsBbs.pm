@@ -30,7 +30,7 @@ sub _load_config {
     my $self = shift;
     my $f;
 
-    my $env_db = $ENV{'NNSBBS_DB'};
+    my $env_db = $ENV{'NNSBBS_DB'} || "";
 
     if ( $env_db eq 'fj' ) {
         $f = $self->home->to_string . "/etc/fj-db.conf";
