@@ -1,4 +1,3 @@
 % layout 'default';
 % title 'NNSBBS';
-<div class="message"><%= $msg %></div>
 <div id="main"></div>

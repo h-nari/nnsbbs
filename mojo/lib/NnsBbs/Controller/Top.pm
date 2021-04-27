@@ -12,11 +12,15 @@ sub bbs ($self) {
     my $newsgroup  = $self->param('newsgroup') || "";
     my $article_id = $self->param('article_id') || "";
 
-    $self->stash(
-        script_part =>
-"<script>\$(()=>{nnsbbs.top_page(\"$newsgroup\",\"$article_id\");});</script>",
-        msg => "Welcome to nnsbbs: NetNews styled BBS!"
-    );
+    my $s = '<script src="/app.js"></script>' . "\n";
+    $s .= "<script>\n";
+    $s .= "\$(()=>{\n";
+    $s .= sprintf( '  nnsbbs.top_page("%s","%s");', $newsgroup, $article_id )
+      . "\n";
+    $s .= "});\n";
+    $s .= "</script>\n";
+
+    $self->stash( script_part => $s);
     $self->render( template => 'top/show' );
 }
 

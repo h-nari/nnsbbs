@@ -1,6 +1,6 @@
 
 
-export function get_json(path, option = {}) {
+export function get_json(path: string, option = {}) {
   let opt = { url: path, type: "GET", dataType: "json" };
   for (let key in option)
     opt[key] = option[key];
@@ -23,7 +23,7 @@ export function get_json(path, option = {}) {
 }
 
 export function escape_html(str: string): string {
-  return str.replace(/[&'`"<>]/g, function(match) {
+  return str.replace(/[&'`"<>]/g, function (match) {
     return {
       '&': '&amp;',
       "'": '&#X27;',

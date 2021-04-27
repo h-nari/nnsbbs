@@ -1,5 +1,5 @@
 import { div, input, button, tag, label, a, span } from './tag';
-
+import { get_json } from './util';
 
 export class User {
   bind() {
@@ -51,7 +51,40 @@ export class User {
           div({ class: 'form-group row' },
             label({ for: 'email', class: 'col-sm-3 col-form-label' }, 'Email'),
             div({ class: 'col-sm-6' },
-              input({ type: 'text', class: 'form-control', id: 'email', placeholder: 'email@example.com' })))))
+              input({ type: 'text', class: 'form-control', id: 'email', placeholder: 'email@example.com' }))))),
+      buttons: {
+        ok: {
+          text: 'ok',
+          action: () => {
+            let email: string = $('#email').val() as string;
+            if (!email) {
+              $.alert('Please enter your email address');
+              return false;
+            } else if (!email.match(/[\w.]+@(\w+\.)+\w+/)) {
+              $.alert('The email address format is incorrect.');
+              return false;
+            } else {
+              get_json('/api/mail_auth', { data: { email } }).then((d: any) => {
+                console.log('d:', d);
+                if (d.result == 0) {
+                  $.alert('failed:' + d.message);
+                  return false;
+                } else {
+                  $.alert(div('An authentication URL has been sent to the email address you entered.') +
+                    div('Please open the email and open the URL for authentication with your browser.'));
+                }
+              }).catch(e => {
+                console.log('Error:', e);
+                $.alert(e);
+              });
+            }
+          }
+        },
+        cancel: {
+          text: 'cancel',
+          action: () => { }
+        }
+      }
     });
   }
 }

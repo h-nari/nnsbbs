@@ -1,7 +1,9 @@
 package NnsBbs::Controller::Api;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use NnsBbs::Db;
+use NnsBbs::Mail;
 use Data::Dumper;
+use String::Random;
 use utf8;
 
 sub newsgroup ($self) {
@@ -74,6 +76,52 @@ sub article($self) {
         my $hr = $db->select_rh( $sql, $newsgroup_id, $article_id );
         $self->render( json => $hr );
     }
+}
+
+sub mail_auth($self) {
+    my $email = $self->param("email");
+    if ( !$email ) {
+        $self->render(
+            text   => "param email is required",
+            status => '400'
+        );
+        return;
+    }
+    if ( $email !~ /[\w.]+@(\w+\.)*\w+/ ) {
+        $self->render( json => { result => 0, mes => 'bad email format' } );
+        return;
+    }
+
+    my $db    = NnsBbs::Db::new($self);
+    my $sql   = "select count(*) as count from user where mail=?";
+    my $rh    = $db->select_rh( $sql, $email );
+    my $count = $rh->{'count'};
+    if ( $count > 0 ) {
+        $self->render(
+            json => { result => 0, mes => 'email is already used' } );
+        return;
+    }
+    $sql = "delete from mail_auth  where";
+    $sql .= " created_at < date_sub(now(),interval 30 day) ";
+    $sql .= " or email=?";
+    $db->execute( $sql, $email );
+
+    my $id = String::Random->new->randregex('[A-Za-z0-9]{12}');
+    $sql = "insert into mail_auth(id,email) values (?,?)";
+    $db->execute( $sql, $id, $email );
+    $db->commit;
+
+    my $url = $self->url_for("/mail_auth/$id")->to_abs;
+    my $c = "メールアドレスの認証を完了させるために\n";
+    $c .= "次のURLをアクセスして下さい。\n\n";
+    $c .= "   $url\n";
+    $c .= "\n";
+    $c .= "このメールに心当たりがない場合は\n";
+    $c .= "無視して下さい。";
+
+    NnsBbs::Mail::send( $email, "NnsBbsメール認証", $c);
+
+    $self->render( json => { result => 1} );
 }
 
 1;

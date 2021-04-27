@@ -1,0 +1,53 @@
+% layout 'default';
+% title 'NNSBBSメール認証成功';
+<div id="auth">
+  <div class="title">
+    <%= $title %>
+  </div>
+  <div class="content">
+  <%== $msg %>
+  </div>
+
+  <form action="<%= url_for('/register') %>" method="post"> 
+    <div class="form-group row">
+      <label for="auth-id" class="col-sm-2">認証ID</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="auth-id" name="auth-id" readonly value="<%= $id %>">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="email" class="col-sm-2">メールアドレス</label>
+      <div class="col-sm-10 col">
+        <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp" placeholder="Enter email"
+        value="<%= $email %>">
+        <small id="emailHelp" class="form-text text-muted">確認用、認証に使用したメールアドレスを入力してください。</small>
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="disp-name" class="col-sm-2">表示名</label>
+      <div class="col-sm-10 col">
+        <input type="text" class="form-control" id="disp-name" name="disp_name" aria-describedby="disp-name-help" placeholder="なまえ"
+        value="<%= $disp_name %>">
+        <small id="disp-name-help" class="form-text text-muted">掲示板で名前として表示されます。本名である必要はありません。
+        いつでも変更可能です。</small>
+      </div>  
+    </div>
+    <div class="form-group row">
+      <label for="password1" class="col-sm-2">パスワード</label>
+      <div class="col col-sm-10">
+        <input type="password" class="form-control" id="password1" name="password1" aria-describedby="password1-help" placeholder="password"
+        value="<%= $pwd1 %>">
+        <small id="password1-help" class="form-text text-muted">ログイン用のパスワードを入力してください。(8文字以上)</small>
+      </div>  
+    </div>
+    <div class="form-group row">
+      <label for="password2" class="col-sm-2">パスワード(確認)</label>
+      <div class="col col-sm-10">
+        <input type="password" class="form-control" id="password2" name="password2" aria-describedby="password2-help" placeholder="password",
+        value="<%= $pwd2 %>">
+        <small id="password1-help" class="form-text text-muted">確認用に上と同じパスワードを入力して下さい。</small>
+      </div>  
+    </div>
+    <button type="submit" class="btn btn-primary offset-sm-10 col-sm-2">ユーザ登録</button>
+  </form>
+</div>

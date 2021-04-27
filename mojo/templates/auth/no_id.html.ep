@@ -1,0 +1,11 @@
+% layout 'default';
+% title 'NNSBBSメール認証失敗';
+
+<div id="auth">
+  <div class="title">
+  このIDは登録されていません。
+  </div>
+  <div class="content">
+  メールアドレス認証に失敗しました。
+  </div>
+</div>

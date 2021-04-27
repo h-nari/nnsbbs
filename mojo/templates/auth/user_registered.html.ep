@@ -1,0 +1,11 @@
+% layout 'default';
+% title 'NNSBBSユーザ登録完了';
+
+<div id="auth">
+  <div class="title">
+  ユーザ登録完了
+  </div>
+  <div class="content">
+  掲示板をお楽しみ下さい。
+  </div>
+</div>

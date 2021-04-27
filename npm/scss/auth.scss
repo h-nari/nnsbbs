@@ -1,0 +1,21 @@
+#auth {
+  div.title {
+    font-size: large;
+    font-weight: bold;
+    text-align: center;
+    margin: 40px;
+  }
+
+  div.content {
+    margin: 20px;
+    text-align: center;
+
+    .error {
+      display: inline-block;
+      ul {
+        text-align: left;
+        color: red;
+      }
+    }
+  }
+}
