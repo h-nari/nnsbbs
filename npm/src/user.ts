@@ -1,5 +1,6 @@
 import { div, input, button, tag, label, a, span } from './tag';
 import { get_json } from './util';
+import { createHash } from 'sha1-uint8array';
 
 export class User {
   bind() {
@@ -34,7 +35,26 @@ export class User {
           a({ href: '#' }, 'forget Password'),
           a({ href: '#' }, 'User registration'),
           a({ href: '#' }, 'merits of user registration')
-        ))
+        )),
+      buttons: {
+        login: {
+          text: 'Login',
+          action: async () => {
+            console.log('login');
+            let email = $('#email').val() as string;
+            let password = $('#inputPassword').val() as string;
+            let sha = createHash('sha1');
+            sha.update(password);
+            let pwd = sha.digest('hex');
+            let data = await get_json('/api/login', { data: { email, pwd } });
+            console.log('data:', data);
+          }
+        },
+        cancel: {
+          text: 'Cancel',
+          action: () => { }
+        }
+      }
     });
   }
 
@@ -67,7 +87,7 @@ export class User {
               get_json('/api/mail_auth', { data: { email } }).then((d: any) => {
                 console.log('d:', d);
                 if (d.result == 0) {
-                  $.alert('failed:' + d.message);
+                  $.alert('failed:' + d.mes);
                   return false;
                 } else {
                   $.alert(div('An authentication URL has been sent to the email address you entered.') +

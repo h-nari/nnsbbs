@@ -17,6 +17,9 @@ sub startup ($self) {
     $r->get('/api/titles')->to('api#titles');
     $r->get('/api/article')->to('api#article');
     $r->get('/api/mail_auth')->to('api#mail_auth');
+    $r->get('/api/login')->to('auth#api_login');
+    $r->get('/api/logout')->to('auth#api_logout');
+    $r->get('/api/session')->to('auth#api_session');
     $r->get('/index.html')->to('top#show');
     $r->get('/')->to('top#show');
     $r->get('/mail_auth/#id')->to('auth#mail');

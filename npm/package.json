@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "bootstrap": "^4.6.0",
-    "i18next": "^20.2.1"
+    "i18next": "^20.2.1",
+    "sha1-uint8array": "^0.10.0"
   }
 }

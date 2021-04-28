@@ -2,6 +2,8 @@ package NnsBbs::Controller::Auth;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use NnsBbs::Db;
 use Data::Dumper;
+use String::Random;
+use Digest::SHA1 qw(sha1_hex);
 
 sub mail($self) {
     my $id = $self->param('id');
@@ -19,6 +21,8 @@ sub mail($self) {
         $self->render( template => 'auth/no_id' );
     }
     elsif ( $len == 1 ) {
+        $db->execute( "delete from mail_auth where id=?", $id );
+        $db->commit;
         $self->stash(
             script_part => '',
             id          => $id,
@@ -61,6 +65,15 @@ sub register($self) {
             "メールアドレスが認証に使用したものと違います"
         );
     }
+    else {
+        $sql = "select count(*) from user where mail=?";
+        my ($cnt) = $db->select_ra( $sql, $email );
+        if ( $cnt > 0 ) {
+            push( @errors,
+"メールアドレスが既に使用されています(内部エラー)"
+            );
+        }
+    }
 
     if ( !$disp_name ) {
         push( @errors, "表示名が入力されていません" );
@@ -70,8 +83,8 @@ sub register($self) {
     }
     elsif ( length($pwd1) < 8 ) {
         push( @errors,
-"パスワードが短すぎます。8文字以上にしてください"
-        );
+                "パスワードが短すぎます。"
+              . "8文字以上にしてください" );
     }
     elsif ( $pwd1 ne $pwd2 ) {
         push( @errors, "確認用パスワードが一致しません" );
@@ -97,8 +110,103 @@ sub register($self) {
         $self->render( template => 'auth/register' );
     }
     else {
+        my $user_id;
+        while (1) {
+            $user_id = String::Random->new->randregex('[A-Za-z0-9]{12}');
+            $sql     = "select count(*) from user where id=?";
+            my ($c) = $db->select_ra( $sql, $user_id );
+            last if ( $c == 0 );
+        }
+        my $pwd = sha1_hex($pwd1);
+        $sql = "insert into user(id,mail,disp_name,password,logined_at)";
+        $sql .= "values(?,?,?,?,now())";
+        $db->execute( $sql, $user_id, $email, $disp_name, $pwd );
+        $self->stash( script_part => '' );
         $self->render( template => 'auth/user_registered' );
+        $db->commit;
     }
+}
+
+sub api_login {
+    my $self  = shift;
+    my $email = $self->param('email') || "";
+    my $pwd   = $self->param('pwd') || "";
+
+    if ( !$email || !$pwd ) {
+        $self->render( text => 'Parameters are missing.', status => '400' );
+    }
+    else {
+        my $db  = NnsBbs::Db::new($self);
+        my $sql = "select id,disp_name from user";
+        $sql .= " where mail=? and password=?";
+        my ( $user_id, $disp_name ) = $db->select_ra( $sql, $email, $pwd );
+        if ( !$user_id ) {
+            $self->render( json => { result => 'ng' } );
+        }
+        else {
+            &new_session( $self, $db, $user_id );
+            $self->render( json => { result => 'ok', name => $disp_name } );
+        }
+    }
+}
+
+sub api_logout {
+    my $self       = shift;
+    my $session_id = $self->session('id');
+    if ($session_id) {
+        my $db  = NnsBbs::Db::new($self);
+        my $sql = "delete from session where id=?";
+        $db->execute( $sql, $session_id );
+        $db->commit;
+    }
+    $self->session( expires => 1 );
+    $self->render( json => { login => 0 } );
+}
+
+sub api_session {
+    my $self       = shift;
+    my $session_id = $self->session('id');
+    if ($session_id) {
+        my $db = NnsBbs::Db::new($self);
+        &update_session($db);
+        my $sql = "select disp_name from user as u,session as s";
+        $sql .= " where u.id = s.user_id and s.id=?";
+        my ($disp_name) = $db->select_ra( $sql, $session_id );
+        if ($disp_name) {
+            $self->render( json => { login => 1, name => $disp_name } );
+            return;
+        }
+    }
+    $self->render( json => { login => 0 } );
+}
+
+sub new_session {
+    my $self    = shift;
+    my $db      = shift;
+    my $user_id = shift;
+
+    &update_session($db);
+    my $sql = "select count(*) from session where id=?";
+    my $id;
+    while (1) {
+        $id = String::Random->new->randregex('[A-Za-z0-9]{48}');
+        my ($c) = $db->select_ra( $sql, $id );
+        last if $c == 0;
+    }
+    $sql = "insert into session (id,user_id) values(?,?)";
+    $db->execute( $sql, $id, $user_id );
+    $db->commit;
+    $self->session( id => $id );
+}
+
+# delete expired session information .
+sub update_session {
+    my $db  = shift;
+    my $sql = "delete from session";
+    $sql .= " where last_access  < subtime(now(),'4:00:00')";
+    $sql .= " or created_at < subtime(now(), '24:00:00')";
+    $db->execute($sql);
+    $db->commit;
 }
 
 1;
