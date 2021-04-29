@@ -12,8 +12,7 @@ sub bbs ($self) {
     my $newsgroup  = $self->param('newsgroup') || "";
     my $article_id = $self->param('article_id') || "";
 
-    my $s = '<script src="/app.js"></script>' . "\n";
-    $s .= "<script>\n";
+    my $s = "<script>\n";
     $s .= "\$(()=>{\n";
     $s .= sprintf( '  nnsbbs.top_page("%s","%s");', $newsgroup, $article_id )
       . "\n";

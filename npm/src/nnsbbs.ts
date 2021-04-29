@@ -1,4 +1,5 @@
 import { get_json } from "./util";
+import { TopBar } from "./topbar";
 import { NewsGroupsPane, INewsGroup } from "./newsgroup";
 import { TitlesPane } from './titles';
 import { ArticlePane } from './article';
@@ -10,10 +11,11 @@ import { i18n } from "i18next";
 import { div, select, option, label, selected } from "./tag";
 
 export default class NnsBbs {
+  public topBar = new TopBar();
   private ng_pane = new NewsGroupsPane('newsgroup');
   private titles_pane = new TitlesPane('titles');
   private article_pane = new ArticlePane('article');
-  private user = new User();
+  public user = new User();
   private cur_newsgroup: string = "";
   private cur_newsgroup_id: number = 0;
   public gm = new GeometryManager('main');
@@ -138,7 +140,6 @@ export default class NnsBbs {
 
   bind() {
     this.gm.bind();
-    this.user.bind();
 
     this.ng_pane.showAllNewsgroupCb = () => {
       this.ng_pane.bShowAll = true;
@@ -223,23 +224,6 @@ export default class NnsBbs {
       });
     });
 
-    // Setting Menu
-    $('.btn-setting').on('click', e => {
-      let lang = this.i18next.language;
-      $.alert({
-        title: 'Setting',
-        content: div({ class: 'setting-dlg' },
-          label({ for: 'language' }, 'Language:'),
-          select({ id: 'language' },
-            option({ value: 'jp', selected: selected(lang == 'jp') }, 'japanese'),
-            option({ value: 'en', selected: selected(lang == 'en') }, 'English'))),
-        onOpen: () => {
-          $('#language').on('change', e => {
-            this.setLanguage($('#language').val() as string);
-          });
-        }
-      });
-    });
 
   }
 

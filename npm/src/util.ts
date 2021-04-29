@@ -31,6 +31,6 @@ export function escape_html(str: string): string {
       '"': '&quot;',
       '<': '&lt;',
       '>': '&gt;'
-    }[match] || '';
+    }[match] || '?' + match + '?';
   });
 }

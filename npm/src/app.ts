@@ -18,31 +18,3 @@ i18next.init({
   resources: { en, jp }
 });
 
-$(() => {
-  $('#main').html(nb.html());
-  nb.bind();
-  nb.gm.setSize();
-});
-
-$(window).on('resize', () => {
-  nb.gm.setSize();
-});
-
-$(window).on('popstate', e => {
-  console.log('popstate:', document.location.pathname);
-  let d = document.location.pathname.split('/');
-  if (d.length == 2)
-    nb.top_page();
-  else if (d.length == 3)
-    nb.top_page(d[2]);
-  else if (d.length == 4)
-    nb.top_page(d[2], d[3])
-})
-
-$(window).on('keydown', function (e) {
-  if (e.key == 'j') nb.setLanguage('jp');
-  else if (e.key == 'e') nb.setLanguage('en');
-  else if (e.key == "Enter") {
-    nb.setLanguage(i18next.language == 'en' ? 'jp' : 'en');
-  }
-});

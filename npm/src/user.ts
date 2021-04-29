@@ -3,6 +3,7 @@ import { get_json } from './util';
 import { createHash } from 'sha1-uint8array';
 
 export class User {
+  /*
   bind() {
     $('.menu-login').on('click', e => {
       this.login();
@@ -17,6 +18,7 @@ export class User {
       e.preventDefault();
     });
   }
+  */
 
   login() {
     $.confirm({
@@ -48,6 +50,7 @@ export class User {
             let pwd = sha.digest('hex');
             let data = await get_json('/api/login', { data: { email, pwd } });
             console.log('data:', data);
+            window.nnsbbs.topBar.check_login_status();
           }
         },
         cancel: {
@@ -56,6 +59,28 @@ export class User {
         }
       }
     });
+  }
+
+  logout() {
+    console.log('logout');
+    $.confirm({
+      title: 'Logout',
+      content: 'Are you sure you want to log out?',
+      buttons : {
+        logout: {
+          text: 'Logout',
+          action: ()=>{
+            get_json('/api/logout').then(()=>{
+              window.nnsbbs.topBar.check_login_status();
+            });
+          }
+        },
+        cancel: {
+          text: 'Cancel',
+          action: ()=>{}
+        }
+      }
+    })
   }
 
   user_registration() {
@@ -106,5 +131,9 @@ export class User {
         }
       }
     });
+  }
+
+  profile() {
+    console.log('profile');
   }
 }

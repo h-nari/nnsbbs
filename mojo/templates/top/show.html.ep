@@ -1,3 +1,37 @@
 % layout 'default';
 % title 'NNSBBS';
 <div id="main"></div>
+
+<script>
+$(() => {
+  var nb = window.nnsbbs;
+  $('#main').html(nb.html());
+  nb.bind();
+  nb.gm.setSize();
+});
+
+$(window).on('resize', () => {
+  window.nnsbbs.gm.setSize();
+});
+
+$(window).on('popstate', e => {
+  console.log('popstate:', document.location.pathname);
+  var d = document.location.pathname.split('/');
+  var nb = window.nnsbbs;
+  if (d.length == 2)
+    nb.top_page();
+  else if (d.length == 3)
+    nb.top_page(d[2]);
+  else if (d.length == 4)
+    nb.top_page(d[2], d[3])
+})
+
+$(window).on('keydown', function (e) {
+  var nb = window.nnsbbs;
+  if (e.key == 'j') nb.setLanguage('jp');
+  else if (e.key == 'e') nb.setLanguage('en');
+  else if (e.key == "Enter") {
+    nb.setLanguage(nb.i18next.language == 'en' ? 'jp' : 'en');
+  }
+});
+</script>

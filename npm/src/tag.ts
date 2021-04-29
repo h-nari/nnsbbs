@@ -74,5 +74,10 @@ export function li(...args: (string | number | StrObj)[]): string {
 export function a(...args: (string | number | StrObj)[]): string {
   return tag('a', ...args);
 }
-
+export function icon(name: string, opt_class: (string | null) = null) {
+  let c = 'bi-' + name;
+  if (opt_class)
+    c += ' ' + opt_class;
+  return tag('span', { class: c });
+}
 
