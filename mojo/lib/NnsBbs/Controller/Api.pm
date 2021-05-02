@@ -69,7 +69,7 @@ sub article($self) {
     else {
         my $db = NnsBbs::Db::new($self);
         my $sql =
-          "select content,a.created_at as date,u.disp_name as author,title";
+"select content,a.created_at as date,u.disp_name as author,title, rev, a.id as article_id";
         $sql .= " from article as a left join user as u on a.user_id = u.id";
         $sql .= " where newsgroup_id = ? and a.id = ?";
         $sql .= " order by rev desc limit 1";
@@ -122,6 +122,97 @@ sub mail_auth($self) {
     NnsBbs::Mail::send( $email, "NnsBbsメール認証", $c );
 
     $self->render( json => { result => 1 } );
+}
+
+sub profile_read {
+    my $self    = shift;
+    my $user_id = $self->param('user_id');
+
+    if ( !$user_id ) {
+        $self->render( text => 'user_id required', status => '400' );
+    }
+    else {
+        my $db  = NnsBbs::Db::new($self);
+        my $sql = "select mail,disp_name,created_at,logined_at";
+        $sql .= ",access_auth,profile from user where id=?";
+        my $ra = $db->select_rh( $sql, $user_id );
+        $self->render( json => $ra ? $ra : {} );
+    }
+}
+
+sub profile_write {
+    my $self    = shift;
+    my $user_id = $self->param('user_id');
+    my $name    = $self->param('name');
+    my $profile = $self->param('profile');
+
+    if ( !$user_id ) {
+        $self->render( text => 'user_id is required', status => '400' );
+    }
+    elsif ( !$name && !$profile ) {
+        $self->render( text => 'name or profile is required', status => '400' );
+    }
+    else {
+        my $db  = NnsBbs::Db::new($self);
+        my $sql = "update user set disp_name=? where id=?";
+        $db->execute( $sql, $name, $user_id ) if $name;
+        $sql = "update user set profile=? where id=?";
+        $db->execute( $sql, $profile, $user_id ) if $profile;
+        $db->commit;
+        $self->render( json => { result => 'Ok' } );
+    }
+}
+
+sub post_article {
+    my $self          = shift;
+    my $ip            = $self->client_ip;
+    my $newsgroup_id  = $self->param('newsgroup_id');
+    my $title         = $self->param('title');
+    my $user_id       = $self->param('user_id');
+    my $disp_name     = $self->param('disp_name');
+    my $content       = $self->param('content');
+    my $reply_to      = $self->param('reply_to') || 0;
+    my $reply_rev     = $self->param('reply_rev') || 0;
+    my @missing_param = ();
+
+    push( @missing_param, 'newsgroup_id' ) unless $newsgroup_id;
+    push( @missing_param, 'title' )        unless $title;
+    push( @missing_param, 'user_id' )      unless $user_id;
+    push( @missing_param, 'disp_name' )    unless $disp_name;
+    push( @missing_param, 'content' )      unless $content;
+
+    if ( @missing_param > 0 ) {
+        $self->render(
+            text => 'parameter ',
+            join( ',', @missing_param ) . ' are missing',
+            status => '400'
+        );
+        return;
+    }
+    my $db = NnsBbs::Db::new($self);
+
+    # TODO: ckeck user permissions
+
+    my $sql = "select max_id from newsgroup where id=? for update";
+    my ($max_id) = $db->select_ra( $sql, $newsgroup_id );
+    if ( !$max_id ) {
+        $self->render( text => 'invalid newsgroup_id', status => '400' );
+        return;
+    }
+    my $article_id = $max_id + 1;
+    $sql = "update newsgroup set max_id=? where id=?";
+    $db->execute( $sql, $article_id, $newsgroup_id );
+
+    $sql = "insert into article";
+    $sql .= "(newsgroup_id,id,title,reply_to,reply_rev,";
+    $sql .= "user_id,disp_name,ip,content)";
+    $sql .= "values(?,?,?,?,?,?,?,?,?)";
+    $db->execute(
+        $sql,       $newsgroup_id, $article_id, $title, $reply_to,
+        $reply_rev, $user_id,      $disp_name,  $ip,    $content
+    );
+    $db->commit;
+    $self->render( json => { result => 'ok', article_id => $article_id } );
 }
 
 1;

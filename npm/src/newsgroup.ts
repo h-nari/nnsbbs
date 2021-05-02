@@ -77,7 +77,7 @@ export class NewsGroupsPane extends ToolbarPane {
         let unread = d.max_id;
         let c = "";
         let opt = { type: 'checkbox', class: 'newsgroup-check', title: 'subscribe-newsgroup' };
-        if (si && si.subscribe) opt['checked'] = 1;
+        if (si && si.subscribe) opt['checked'] = null;
         c += input(opt);
         c += span({ class: 'newsgroup-name' }, d.name);
         if (si)

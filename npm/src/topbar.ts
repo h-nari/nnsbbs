@@ -21,6 +21,7 @@ export class TopBar {
         onOpen: () => {
           $('#language').on('change', e => {
             window.nnsbbs.setLanguage($('#language').val() as string);
+            window.nnsbbs.redisplay();
           });
         }
       });
@@ -41,9 +42,19 @@ export class TopBar {
   }
 
   check_login_status() {
-    get_json('/api/session').then((d: any) => {
-      if (d.login) this.set_login_menu(d.name);
-      else this.set_logout_menu();
+    return new Promise((resolve, reject) => {
+      get_json('/api/session').then((d: any) => {
+        if (d.login) {
+          this.set_login_menu(d.name);
+          window.nnsbbs.user.user = { id: d.user_id as string, name: d.name as string };
+          resolve(true);
+        }
+        else {
+          this.set_logout_menu();
+          window.nnsbbs.user.user = null;
+          resolve(false);
+        }
+      });
     });
   }
 

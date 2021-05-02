@@ -13,8 +13,7 @@ declare global {
 let nb = new NnsBbs(i18next);
 window.nnsbbs = nb;
 i18next.init({
-  lng: 'en',
+  lng: 'jp',
   debug: true,
   resources: { en, jp }
 });
-

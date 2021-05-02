@@ -112,6 +112,13 @@ export default class NnsBbs {
         if (!a.bClosed && t.newsgroup && t.cur_article_id)
           this.select_article(t.newsgroup.id, t.cur_article_id);
       }
+    })).add_btn(new Btn({
+      icon: 'chat-square-text-fill',
+      explain: 'post-new-article',
+      action: () => {
+        if (this.titles_pane.newsgroup)
+          this.user.post_article(this.titles_pane.newsgroup);
+      }
     }));
 
     this.article_pane.toolbar.add_btn(new Btn({
@@ -128,6 +135,13 @@ export default class NnsBbs {
       explain: 'toggle-article-header',
       action: () => {
         this.article_pane.toggle_header()
+      }
+    })).add_btn(new Btn({
+      icon: 'reply-fill',
+      explain: 'reply-to-article',
+      action: () => {
+        if (this.titles_pane.newsgroup && this.article_pane.article)
+          this.user.post_article(this.titles_pane.newsgroup, this.article_pane.article);
       }
     }));
 

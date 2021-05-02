@@ -28,6 +28,10 @@ export const jp = {
     'load-previous-100-titles': '以前の100タイトルを読み込む',
     'load-all-previous-titles': '以前の全てのタイトルを読み込む',
     'load-next-100-titles': '以降の100タイトルを読み込む',
-    'load-all-subsequent-titles': '以降の全てのタイトルを読み込む'
+    'load-all-subsequent-titles': '以降の全てのタイトルを読み込む',
+    'post-new-article': '記事を投稿',
+    'reply-to-article': '記事に返信',
+    'quote-article': '記事を引用する',
+    'login-failed': 'ログインに失敗しました'
   }
 };

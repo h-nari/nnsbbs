@@ -19,10 +19,8 @@ export function tag(name: string, ...args: (string | number | StrObj)[]): string
     if (attr[k] === undefined)
       continue;
     html += ' ' + k;
-    if (attr[k] !== null) {
+    if (attr[k] !== null) 
       html += '="' + attr[k] + '"';
-      html += k + "=" + attr[k];
-    }
   }
   html += '>';
   for (let a of args) {

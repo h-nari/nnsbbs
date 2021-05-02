@@ -141,11 +141,11 @@ sub api_login {
         $sql .= " where mail=? and password=?";
         my ( $user_id, $disp_name ) = $db->select_ra( $sql, $email, $pwd );
         if ( !$user_id ) {
-            $self->render( json => { result => 'ng' } );
+            $self->render( json => { login => 0 } );
         }
         else {
             &new_session( $self, $db, $user_id );
-            $self->render( json => { result => 'ok', name => $disp_name } );
+            $self->render( json => { login => 1 } );
         }
     }
 }
@@ -165,15 +165,19 @@ sub api_logout {
 
 sub api_session {
     my $self       = shift;
-    my $session_id = $self->session('id');
+    my $session_id = $self->session('id') || '';
+    print STDERR "*** api_session: session_id:$session_id\n";
     if ($session_id) {
         my $db = NnsBbs::Db::new($self);
         &update_session($db);
-        my $sql = "select disp_name from user as u,session as s";
+        my $sql =
+          "select disp_name, u.id as user_id from user as u,session as s";
         $sql .= " where u.id = s.user_id and s.id=?";
-        my ($disp_name) = $db->select_ra( $sql, $session_id );
+        my ( $disp_name, $user_id ) = $db->select_ra( $sql, $session_id );
         if ($disp_name) {
-            $self->render( json => { login => 1, name => $disp_name } );
+            $self->render(
+                json => { login => 1, name => $disp_name, user_id => $user_id }
+            );
             return;
         }
     }
@@ -193,17 +197,19 @@ sub new_session {
         my ($c) = $db->select_ra( $sql, $id );
         last if $c == 0;
     }
+    $sql = "delete from session where user_id=?";
+    $db->execute( $sql, $user_id );
     $sql = "insert into session (id,user_id) values(?,?)";
     $db->execute( $sql, $id, $user_id );
     $db->commit;
-    $self->session( id => $id );
+    $self->session( id => $id, expiration => 3600 * 24 * 7 );
 }
 
 # delete expired session information .
 sub update_session {
     my $db  = shift;
     my $sql = "delete from session";
-    $sql .= " where last_access  < subtime(now(),'4:00:00')";
+    $sql .= " where last_access  < subtime(now(),'24:00:00')";
     $sql .= " or created_at < subtime(now(), '24:00:00')";
     $db->execute($sql);
     $db->commit;

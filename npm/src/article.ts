@@ -9,11 +9,13 @@ export interface IArticle {
   date: string;
   author: string;
   title: string;
+  article_id: number;
+  rev: number;
 };
 
 export class ArticlePane extends ToolbarPane {
   private id_header: string;
-  private data: IArticle | null = null;
+  public article: IArticle | null = null;
   private bDispHeader = false;               // Flag to display the header section of the article.
   public fNext: (() => void) | null = null;  // invoked when end part clicked
 
@@ -25,7 +27,7 @@ export class ArticlePane extends ToolbarPane {
   }
 
   clear() {
-    this.data = { content: "", date: "", author: "", title: "" };
+    this.article = null;
   }
 
   html(): string {
@@ -33,7 +35,7 @@ export class ArticlePane extends ToolbarPane {
   }
 
   inner_html(): string {
-    let d = this.data;
+    let d = this.article;
     let header = d && d.header ? d.header : "";
     let content = d ? d.content : "";
 
@@ -69,7 +71,7 @@ export class ArticlePane extends ToolbarPane {
     } else {
       data['header'] = "";
     }
-    this.data = data;
+    this.article = data;
     this.toolbar.title =
       span({ class: 'id' }, '[' + article_id + ']') +
       span({ class: 'author' }, escape_html(data.author)) +

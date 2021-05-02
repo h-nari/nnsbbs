@@ -28,6 +28,10 @@ export const en = {
     'load-previous-100-titles': 'Load previous 100 titles',
     'load-all-previous-titles': 'Load all previous titles',
     'load-next-100-titles': 'Load next 100 titles',
-    'load-all-subsequent-titles': 'Load all subsequent titles'
+    'load-all-subsequent-titles': 'Load all subsequent titles',
+    'post-new-article': 'Post new article',
+    'reply-to-article': 'Reply to article',
+    'quote-article': 'Quote article',
+    'login-failed': 'Login failed'
   }
 };

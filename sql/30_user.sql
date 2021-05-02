@@ -19,11 +19,11 @@ create unique index user_mail on user(mail);
 
 insert into user (id, disp_name,mail,password)
 values
-('nari',  'nari', 'nari@mxb.mesh.ne.jp', '*'),
+('nari',  'nari', 'nari@mxb.mesh.ne.jp', '1f5c9bcd5574ea919399202dea9361f82934a28a'),
 ('nari2', 'なりまつ', 'nari2@humblesoft.com', '*'),
 ('nari3', '成松', 'nari3@humblesoft.com', '*'),
 ('yamada', '山田杏奈', 'anna@humblesoft.com', '*'),
 ('tanaka', '田中R次郎', 'tanaka@humblesoft.com', '*'),
 ('suzuki', 'スズキ・モーターズ', 'suzuki@humblesoft.com', '*');
 
-
+-- php -r "print 'sha1('password').'\n';"  
