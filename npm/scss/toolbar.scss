@@ -15,14 +15,8 @@
     overflow: hidden;
   }
   button {
-    @extend .btn;
-    @extend .btn-sm;
-    @extend .btn-success;
     margin-left: 5px;
     i {
-      // color: white;
-      // margin-right: 5px;
-      // margin-left: 5px;
       font-size: large;
       flex-grow: 0;
     }

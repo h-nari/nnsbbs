@@ -1,5 +1,5 @@
 .no-display {
-  display: none;  
+  display: none;
 }
 
 .fill {
@@ -7,18 +7,23 @@
 }
 
 .nb-list-group {
-  @extend .list-group;
-  padding: 5px;
-  border: solid darkgray 1px;
+  padding: 2px;
+  border: solid darkgray 0px;
   overflow: hide;
 }
 
-.nb-list-group > button {
-  @extend .list-group-item;
-  // @extend .list-group-item-action;
-  text-align: left;
-  font-size: 12pt;
-  padding: 2px;
-  white-space: pre;
-  overflow: hidden;
+.nb-list-group {
+  > button {
+    width: 100%;
+    border: none;
+    text-align: left;
+    font-size: 12pt;
+    padding: 2px;
+    white-space: pre;
+    overflow: hidden;
+  }
+  > button.active {
+    background-color: #007bff;
+    color: white;
+  }
 }

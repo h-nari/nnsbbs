@@ -44,7 +44,6 @@
 
       .article-id {
         width: 40px;
-        color: darkgreen;
         font-size: small;
         margin-right: 5px;
         text-align: right;
@@ -67,7 +66,6 @@
         margin-right: 2px;
         font-family: monospace;
         font-size: large;
-        color: lightblue;
       }
 
       .article-title {
@@ -87,8 +85,6 @@
       text-align: center;
       button {
         margin: 10px;
-        @extend .btn;
-        @extend .btn-info;
       }
     }
   }
