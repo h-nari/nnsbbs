@@ -1,4 +1,4 @@
-import { div, input, button, tag, label, a, span } from './tag';
+import { div, input, button, tag, label, a, span, select, option, selected } from './tag';
 import { escape_html, get_json } from './util';
 import { createHash } from 'sha1-uint8array';
 import { INewsGroup } from './newsgroup';
@@ -15,7 +15,7 @@ interface IProfile {
   disp_name: string,
   created_at: string,
   logined_at: string,
-  access_auth: string,
+  membership: string,
   profile: string
 };
 
@@ -153,11 +153,17 @@ export class User {
     }
     if (!this.user) return;
     let d = await get_json('/api/profile_read', { data: { user_id: this.user.id } }) as IProfile;
+    console.log('membership:', d.membership);
     let c = tag('form', { class: 'edit-profile' },
       form_input('p-user-id', 'User ID', { value: this.user.id, readonly: null }),
       form_input('p-email', 'Email', { help: '登録に使用したメールアドレス', value: d.mail, readonly: null }),
       form_input('p-name', '表示名', { help: 'ユーザ名として表示されます', value: d.disp_name }),
-      form_textarea('p-profile', 'プロファイル', { help: '自己紹介を記入して下さい', value: d.profile, rows: 10 })
+      form_membership('p-membership', '党員資格', '党員資格を選択して下さい', d.membership),
+      form_profile_textarea('p-profile', 'プロファイル',
+        {
+          help: '自己紹介を記入して下さい。ここに書かれた内容は公開されますので注意して下さい。',
+          value: d.profile, rows: 10
+        })
     );
     $.confirm({
       title: 'User Profile',
@@ -168,6 +174,7 @@ export class User {
         ok: {
           text: '書込み',
           action: () => {
+            console.log('profile write');
             if (!this.user) return;
             let disp_name = $('#p-name').val() || '';
             if (disp_name != d.disp_name)
@@ -177,6 +184,9 @@ export class User {
             let profile = $('#p-profile').val() || '';
             if (profile != d.profile)
               get_json('/api/profile_write', { method: 'post', data: { user_id: this.user.id, profile } });
+            let membership = $('#p-membership').val() || '';
+            if (membership != d.membership)
+              get_json('/api/profile_write', { method: 'post', data: { user_id: this.user.id, membership } });
           }
         },
         close: {
@@ -270,8 +280,8 @@ export class User {
       columnClass: 'large',
       content: div({ class: 'show-profile' },
         div(
-          div({ class: 'title' }, this.t('user-id')),
-          div({ class: 'user-id' }, user_id)),
+          div({ class: 'title' }, this.t('membership')),
+          div({ class: 'membership' }, membership[d.membership])),
         div(
           div({ class: 'title' }, this.t('disp_name')),
           div({ class: 'disp-name' }, escape_html(d.disp_name))),
@@ -301,10 +311,10 @@ function form_input(id: string, label_str: string, opt: IFormGroupOpt) {
 
   return div({ class: 'form-row' },
     label({ for: id, class: 'col col-md-2' }, label_str),
-    div({ class: 'form-group col-md-10' }, input_part, help));
+    div({ class: 'form-group col-md-9' }, input_part, help));
 }
 
-function form_textarea(id: string, label_str: string, opt: IFormGroupOpt) {
+function form_profile_textarea(id: string, label_str: string, opt: IFormGroupOpt) {
   let input_part: string;
   input_part = tag('textarea', {
     id, rows: opt.rows, readonly: opt.readonly,
@@ -316,7 +326,8 @@ function form_textarea(id: string, label_str: string, opt: IFormGroupOpt) {
     help = tag('small', { id: id + 'Help', class: 'form-text text-muted' }, opt.help);
 
   return div({ class: 'form-group' },
-    label({ for: id }, label_str), input_part, help);
+    div({ class: 'form-row' }, label({ for: id }, label_str), help),
+    input_part);
 }
 
 function form_post_textarea(id: string, label_str: string, a: IArticle | null, opt: IFormGroupOpt) {
@@ -339,6 +350,24 @@ function form_post_textarea(id: string, label_str: string, a: IArticle | null, o
       label({ for: id }, label_str), reply_btn),
     input_part, help);
 }
+
+const membership = ['党員外', '参政党 サポーター', '参政党 一般党員', '参政党 運営党員'];
+
+function form_membership(id: string, label_str: string, help_str: string, value: string): string {
+  let c = '';
+  for (let idx in membership) {
+    let m = membership[idx];
+    let v = String(idx);
+    c += option({ value: v, selected: selected(v == value) }, m);
+  }
+  return div({ class: 'form-group row' },
+    label({ class: 'col-sm-2' }, label_str),
+    div({ class: 'col-sm-9' },
+      select({ id }, c),
+      tag('small', { class: 'form-text text-muted' }, '党員資格を選択してください'))
+  );
+}
+
 
 function quote_article(id: string, n: INewsGroup, a: IArticle) {
   console.log('quote');

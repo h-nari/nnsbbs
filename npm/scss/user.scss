@@ -21,12 +21,19 @@ form.post-article {
   overflow: hidden;
 }
 
+form.edit-profile {
+  label {
+    margin-left: 10px;
+    margin-right: 20px;
+  }
+}
+
 .show-profile {
   .title {
     display: inline-block;
     width: 100px;
   }
-  .user-id,
+  .membership,
   .disp-name {
     display: inline-block;
     font-weight: bold;

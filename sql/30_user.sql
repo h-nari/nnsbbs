@@ -10,7 +10,9 @@ create table user (
   created_at  datetime      default now(),
   logined_at  datetime,                     -- 最終ログイン時刻
   reset_count int           default 0,      -- パスワードリセットの回数
-  access_auth int           default 0,      -- アクセス権限 
+  membership  int           default 0,      -- アクセス権限 
+  moderator   boolean       default false,
+  admin       boolean       default false,
   bBanned     boolean       default false,
   banned_at   datetime,  
   profile     text          default ""      -- プロフィール
