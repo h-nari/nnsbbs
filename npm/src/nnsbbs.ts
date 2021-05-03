@@ -11,11 +11,11 @@ import { i18n } from "i18next";
 import { div, select, option, label, selected } from "./tag";
 
 export default class NnsBbs {
-  public topBar = new TopBar();
-  private ng_pane = new NewsGroupsPane('newsgroup');
-  private titles_pane = new TitlesPane('titles');
-  private article_pane = new ArticlePane('article');
-  public user = new User();
+  public topBar = new TopBar(this);
+  private ng_pane = new NewsGroupsPane('newsgroup',this);
+  private titles_pane = new TitlesPane('titles',this);
+  private article_pane = new ArticlePane('article',this);
+  public user = new User(this);
   private cur_newsgroup: string = "";
   private cur_newsgroup_id: number = 0;
   public gm = new GeometryManager('main');
@@ -237,8 +237,6 @@ export default class NnsBbs {
         }
       });
     });
-
-
   }
 
   // Called from the built-in script of topPage

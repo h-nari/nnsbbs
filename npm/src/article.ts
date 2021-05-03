@@ -2,14 +2,16 @@ import { get_json, escape_html } from "./util";
 import { div, button, span } from "./tag";
 import { ToolBar } from "./toolbar";
 import { ToolbarPane } from "./pane";
+import NnsBbs from "./nnsbbs";
 
 export interface IArticle {
   header?: string;
   content: string;
   date: string;
   author: string;
+  user_id: string;
   title: string;
-  article_id: number;
+  article_id: string;
   rev: number;
 };
 
@@ -19,8 +21,8 @@ export class ArticlePane extends ToolbarPane {
   private bDispHeader = false;               // Flag to display the header section of the article.
   public fNext: (() => void) | null = null;  // invoked when end part clicked
 
-  constructor(id: string) {
-    super(id);
+  constructor(id: string, parent: NnsBbs) {
+    super(id, parent);
     this.id_header = this.id + "-header";
     this.clear();
     this.toolbar.title = 'Article';
@@ -52,6 +54,10 @@ export class ArticlePane extends ToolbarPane {
       $('#' + this.id_header).addClass('no-display');
     $(`#${this.id} .article-end`).on('click', () => {
       if (this.fNext) this.fNext();
+    });
+    $(`#${this.id} .toolbar-title .author`).on('click', ev => {
+      if (this.article)
+        this.parent.user.show_profile(this.article.user_id);
     });
   }
 

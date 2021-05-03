@@ -16,6 +16,23 @@
   }
 }
 
-form.edit-profile, form.post-article {
+form.edit-profile,
+form.post-article {
   overflow: hidden;
+}
+
+.show-profile {
+  .title {
+    display: inline-block;
+    width: 100px;
+  }
+  .user-id,
+  .disp-name {
+    display: inline-block;
+    font-weight: bold;
+  }
+  .profile {
+    margin: 5px;
+    padding: 5px;
+  }
 }

@@ -1,16 +1,31 @@
 import { div, input, button, tag, label, a, span } from './tag';
-import { get_json } from './util';
+import { escape_html, get_json } from './util';
 import { createHash } from 'sha1-uint8array';
 import { INewsGroup } from './newsgroup';
 import { IArticle } from './article';
+import NnsBbs from './nnsbbs';
 
 interface IUser {
   id: string;
   name: string;
 };
 
+interface IProfile {
+  mail: string,
+  disp_name: string,
+  created_at: string,
+  logined_at: string,
+  access_auth: string,
+  profile: string
+};
+
 export class User {
+  public parent: NnsBbs;
   public user: (IUser | null) = null;
+
+  constructor(parent: NnsBbs) {
+    this.parent = parent;
+  }
 
   login() {
     return new Promise((resolve, reject) => {
@@ -44,10 +59,10 @@ export class User {
               let data: any = await get_json('/api/login', { data: { email, pwd } });
               console.log('data:', data);
               if (!data.login) {
-                let n = window.nnsbbs.i18next;
+                let n = this.parent.i18next;
                 $.alert(n.t('login-failed'));
               }
-              let r = await window.nnsbbs.topBar.check_login_status();
+              let r = await this.parent.topBar.check_login_status();
               resolve(r);
             }
           },
@@ -70,7 +85,7 @@ export class User {
           text: 'Logout',
           action: () => {
             get_json('/api/logout').then(() => {
-              window.nnsbbs.topBar.check_login_status();
+              this.parent.topBar.check_login_status();
             });
           }
         },
@@ -137,8 +152,7 @@ export class User {
       if (!await this.login()) return;
     }
     if (!this.user) return;
-    let d: any = await get_json('/api/profile_read', { data: { user_id: this.user.id } })
-    console.log('d:', d);
+    let d = await get_json('/api/profile_read', { data: { user_id: this.user.id } }) as IProfile;
     let c = tag('form', { class: 'edit-profile' },
       form_input('p-user-id', 'User ID', { value: this.user.id, readonly: null }),
       form_input('p-email', 'Email', { help: '登録に使用したメールアドレス', value: d.mail, readonly: null }),
@@ -158,7 +172,7 @@ export class User {
             let disp_name = $('#p-name').val() || '';
             if (disp_name != d.disp_name)
               get_json('/api/profile_write', { method: 'post', data: { user_id: this.user.id, name: disp_name } }).then(() => {
-                window.nnsbbs.topBar.check_login_status();
+                this.parent.topBar.check_login_status();
               });
             let profile = $('#p-profile').val() || '';
             if (profile != d.profile)
@@ -220,7 +234,7 @@ export class User {
               }
             }).then((d: any) => {
               console.log('d:', d.article_id);
-              window.nnsbbs.top_page(n.name, d.article_id);
+              this.parent.top_page(n.name, d.article_id);
               $.alert('投稿に成功しました')
             }).catch(e => {
               console.log('error:', e);
@@ -234,7 +248,7 @@ export class User {
         }
       },
       onOpen: () => {
-        window.nnsbbs.set_i18n_text();
+        this.parent.set_i18n_text();
         // $('.post-article [title]').tooltip();
         $('.btn-quote').on('click', () => {
           console.log('quote');
@@ -242,6 +256,27 @@ export class User {
         });
       }
     });
+  }
+
+  t(id: string) {
+    return this.parent.i18next.t(id);
+  }
+
+  async show_profile(user_id: string) {
+    let d = await get_json('/api/profile_read', { data: { user_id } }) as IProfile;
+    $.alert({
+      title: this.t('show-profile'),
+      type: 'green',
+      columnClass: 'large',
+      content: div({ class: 'show-profile' },
+        div(
+          div({ class: 'title' }, this.t('user-id')),
+          div({ class: 'user-id' }, user_id)),
+        div(
+          div({ class: 'title' }, this.t('disp_name')),
+          div({ class: 'disp-name' }, escape_html(d.disp_name))),
+        div({ class: 'profile' }, escape_html(d.profile)))
+    })
   }
 }
 

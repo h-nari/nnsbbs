@@ -32,6 +32,9 @@ export const jp = {
     'post-new-article': '記事を投稿',
     'reply-to-article': '記事に返信',
     'quote-article': '記事を引用する',
-    'login-failed': 'ログインに失敗しました'
+    'login-failed': 'ログインに失敗しました',
+    'show-profile': 'ユーザ プロフィール',
+    'user-id': 'ユーザID',
+    'disp_name':'表示名'
   }
 };

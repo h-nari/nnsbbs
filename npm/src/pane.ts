@@ -1,4 +1,5 @@
 import { GeometryManager } from "./gemotry_manager";
+import NnsBbs from "./nnsbbs";
 import { ToolBar, Btn } from "./toolbar";
 
 var pane_sn = 0;
@@ -48,9 +49,11 @@ export class Pane {
 
 export class ToolbarPane extends Pane {
   public toolbar: ToolBar;
+  public parent: NnsBbs;
 
-  constructor(id: string | null) {
+  constructor(id: string | null, parent: NnsBbs) {
     super(id);
+    this.parent = parent;
     this.toolbar = new ToolBar(id ? id : '%no-title%');
   }
 
@@ -66,7 +69,7 @@ export class ToolbarPane extends Pane {
     });
   }
 
-  show(){
+  show() {
     super.show();
     this.toolbar.setState(true);
   }
@@ -81,5 +84,9 @@ export class ToolbarPane extends Pane {
     } else {
       this.setSize(this.natural_size);
     }
+  }
+
+  t(id: string): string {
+    return this.parent.i18next.t(id);
   }
 }

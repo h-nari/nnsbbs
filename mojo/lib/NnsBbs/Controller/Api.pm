@@ -21,22 +21,22 @@ sub titles($self) {
 
     if ($newsgroup_id) {
         my $db  = NnsBbs::Db::new($self);
-        my $sql = "select a.id as article_id ,title,reply_to,user_id";
-        $sql .= ",a.created_at as date, a.disp_name as disp_name";
-        $sql .= " from article as a left join user as u on a.user_id = u.id";
+        my $sql = "select id as article_id ,title,reply_to";
+        $sql .= ",created_at as date,user_id,disp_name";
+        $sql .= " from article";
         $sql .= " where newsgroup_id = ?";
-        $sql .= " and not a.bDeleted";
+        $sql .= " and not bDeleted";
 
         my @params = ($newsgroup_id);
         if ($from) {
-            $sql .= " and a.id >= ?";
+            $sql .= " and id >= ?";
             push @params, $from;
         }
         if ($to) {
-            $sql .= "and a.id <= ?";
+            $sql .= "and id <= ?";
             push @params, $to;
         }
-        $sql .= " order by a.id";
+        $sql .= " order by id";
         my $data = $db->select_ah( $sql, @params );
         print STDERR "newsgroup=", $newsgroup_id, " count=", ( @$data + 0 ),
           "\n";
@@ -67,11 +67,11 @@ sub article($self) {
         );
     }
     else {
-        my $db = NnsBbs::Db::new($self);
-        my $sql =
-"select content,a.created_at as date,u.disp_name as author,title, rev, a.id as article_id";
-        $sql .= " from article as a left join user as u on a.user_id = u.id";
-        $sql .= " where newsgroup_id = ? and a.id = ?";
+        my $db  = NnsBbs::Db::new($self);
+        my $sql = "select content,created_at as date,disp_name as author";
+        $sql .= ",title,rev,id as article_id,user_id";
+        $sql .= " from article";
+        $sql .= " where newsgroup_id = ? and id = ?";
         $sql .= " order by rev desc limit 1";
         my $hr = $db->select_rh( $sql, $newsgroup_id, $article_id );
         $self->render( json => $hr );

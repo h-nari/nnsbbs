@@ -3,6 +3,7 @@ import { div, button, span, input, tag } from "./tag";
 import { Btn, ToolBar } from "./toolbar";
 import { Pane, ToolbarPane } from './pane';
 import { ReadSet } from "./readSet";
+import NnsBbs from "./nnsbbs";
 
 export interface INewsGroup {
   id: number;
@@ -34,8 +35,8 @@ export class NewsGroupsPane extends ToolbarPane {
   private savedSubsString: string = "";
   private cur_newsgroup: INewsGroup | null = null;
 
-  constructor(id: string) {
-    super(id);
+  constructor(id: string, parent: NnsBbs) {
+    super(id, parent);
     this.id_lg = id + "_lg";
     this.toolbar.title = 'NewsGroup';
 

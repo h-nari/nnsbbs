@@ -9,10 +9,10 @@ import NnsBbs from "./nnsbbs";
 export interface ITitle {
   article_id: number;
   date: string;
+  user_id: string;
   disp_name: string;
   reply_to: number;
   title: string;
-  user_id: number;
   children?: ITitle[];
 };
 
@@ -26,8 +26,8 @@ export class TitlesPane extends ToolbarPane {
   private id_lg: string;
   public loaded_titles: ReadSet = new ReadSet();
 
-  constructor(id: string) {
-    super(id);
+  constructor(id: string, parent: NnsBbs) {
+    super(id, parent);
     this.id_lg = id + "_lg";
   }
 
@@ -154,7 +154,7 @@ export class TitlesPane extends ToolbarPane {
     if (c.length > 0) opt['class'] = c.join(' ');
     let s = button(opt,
       div({ class: 'article-id' }, String(d.article_id)),
-      div({ class: 'article-from', title: d.disp_name }, escape_html(d.disp_name)),
+      div({ class: 'article-from', title: d.disp_name, user_id: d.user_id }, escape_html(d.disp_name)),
       div({ class: 'article-time' }, d.date),
       div({ class: 'article-rule' }, rule),
       div({ class: 'article-title' }, escape_html(d.title))
@@ -181,9 +181,15 @@ export class TitlesPane extends ToolbarPane {
         let rs = this.loaded_titles;
         rs.add_range(from, to);
         await this.load(this.newsgroup, rs.first() || 1, rs.last() || this.newsgroup.max_id);
-        window.nnsbbs.redisplay();
+        this.parent.redisplay();
       }
     })
+    $(`#${this.id_lg} >button .article-from`).on('click', e => {
+      let user_id = e.currentTarget.attributes['user_id'].value;
+      this.parent.user.show_profile(user_id);
+      e.preventDefault();
+      e.stopPropagation();
+    });
   }
 
   select_article(id: number) {
