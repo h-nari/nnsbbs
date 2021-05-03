@@ -35,6 +35,7 @@ export const jp = {
     'login-failed': 'ログインに失敗しました',
     'show-profile': 'ユーザ プロフィール',
     'user-id': 'ユーザID',
-    'disp_name':'表示名'
+    'disp_name':'表示名',
+    'last-post':'最終投稿'
   }
 };

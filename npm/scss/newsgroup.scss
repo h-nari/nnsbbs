@@ -9,9 +9,11 @@
     left: 0px;
     top: 0px;
 
-    .newsgroup-line {
+    button.newsgroup-line {
       background-color: lightgray;
       color: black;
+      display: flex;
+      
       .newsgroup-check {
         margin-right: 10px;
       }
@@ -22,7 +24,7 @@
       .newsgroup-status {
         font-weight: lighter;
         font-size: small;
-
+        flex-grow: 1;
         .unread {
           color: red;
           font-weight: bold;
@@ -30,6 +32,10 @@
         .max-id {
           font-weight: normal;
         }
+      }
+      .posted-at {
+        font-size: small;
+        margin-right: auto;
       }
     }
     .newsgroup-line.subscribe {
@@ -59,7 +65,7 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-          
+
         > div {
           margin-bottom: 20px;
         }

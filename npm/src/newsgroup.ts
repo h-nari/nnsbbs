@@ -4,12 +4,14 @@ import { Btn, ToolBar } from "./toolbar";
 import { Pane, ToolbarPane } from './pane';
 import { ReadSet } from "./readSet";
 import NnsBbs from "./nnsbbs";
+const moment = require('moment');
 
 export interface INewsGroup {
   id: number;
   name: string;
   comment: string;
   max_id: number;
+  posted_at: string;
   subsInfo: ISubsInfo | null;
 };
 
@@ -86,6 +88,8 @@ export class NewsGroupsPane extends ToolbarPane {
         c += span({ class: 'newsgroup-status' },
           '(', span({ class: 'unread', 'title-i18n': 'unread-articles' }, unread,),
           '/', span({ class: 'max-id', 'title-i18n': 'total-articles' }, d.max_id), ')');
+        let m = moment(d.posted_at);
+        c += span({ class: 'posted-at' }, this.t('last-post'), ': ', m.format('YYYY/MM/DD HH:mm:ss'));
         let opt2 = { class: 'newsgroup-line', 'newsgroup-name': d.name, 'newsgroup-id': d.id };
         if (this.cur_newsgroup && this.cur_newsgroup.name == d.name)
           opt2.class += " active"
