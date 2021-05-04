@@ -18,9 +18,3 @@ create table  newsgroup (
   comment      text         default ""         -- ニュースグループの説明    
 );
 
-insert into newsgroup (ord, name, comment)
-values
-( 1, 'テスト',        'テスト用ニュースグループ'),
-( 2, 'テスト.雑談',   '雑談などすれば？'),
-( 3, 'テスト.質問',   '質問などすれば？');
-

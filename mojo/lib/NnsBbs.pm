@@ -31,6 +31,10 @@ sub startup ($self) {
     $r->get('/bbs')->to('top#bbs');
     $r->get('/bbs/#newsgroup')->to('top#bbs');
     $r->get('/bbs/#newsgroup/:article_id')->to('top#bbs');
+    $r->get('/admin/user')->to('admin#user');
+    $r->get('/admin/newsgroup')->to('admin#newsgroup');
+    $r->get('/admin/api/newsgroup')->to('admin#api_newsgroup');
+    $r->get('/admin/api/user')->to('admin#api_user');
 }
 
 sub _load_config {

@@ -1,0 +1,43 @@
+#user-admin {
+  height: 100%;
+  > div {
+    height: calc(100% - 100px);
+    .btn-box {
+      width: 100%;
+      background-color: lightgray;
+      padding: 2px;
+      button {
+        margin: 2px;
+        font-size: large;
+        font-weight: bold;
+        border-radius: 5px;
+      }
+      > span {
+        margin: 5px;
+        white-space: nowrap;
+      }
+      input {
+        border-radius: 12px;
+      }
+      input.pageNum {
+        width: 60px;
+        text-align: right;
+      }
+    }
+    .scroll {
+      max-height: calc(100% - 100px);
+      overflow: auto;
+      border: solid 1px lightgray;
+      table.user-list {
+        margin-top: 10px;
+        width: 100%;
+        border: 2px solid lightgray;
+        td {
+          padding: 4px 10px;
+          margin: 5px 10px;
+          border-bottom: solid black 1px;
+        }
+      }
+    }
+  }
+}

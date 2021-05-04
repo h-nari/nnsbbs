@@ -2,8 +2,6 @@
 -- mysql: nnsbbs
 --
 
--- ユーザごとのnewsgroupの購読、既読状態を記録
-
 drop table if exists subscribe;
 create table subscribe (
   user_id      integer      not null,

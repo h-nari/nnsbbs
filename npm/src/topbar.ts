@@ -51,7 +51,8 @@ export class TopBar {
     m.add(new Menu('Profile', () => {
       this.parent.user.profile();
     }));
-
+    m.add(new Menu('user-manager','/admin/user'));
+    m.add(new Menu('newsgroup-manager','/admin/newsgroup'));
   }
 
   set_logout_menu() {

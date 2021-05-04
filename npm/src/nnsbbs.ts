@@ -9,17 +9,19 @@ import { GeometryManager } from "./gemotry_manager";
 import { contextMenu, closeContextMenu } from "./context_menu";
 import { i18n } from "i18next";
 import { div, select, option, label, selected } from "./tag";
+import { UserAdmin } from "./userAdmin";
 
 export default class NnsBbs {
   public topBar = new TopBar(this);
-  private ng_pane = new NewsGroupsPane('newsgroup',this);
-  private titles_pane = new TitlesPane('titles',this);
-  private article_pane = new ArticlePane('article',this);
   public user = new User(this);
-  private cur_newsgroup: string = "";
-  private cur_newsgroup_id: number = 0;
+  public userAdmin = new UserAdmin(this);
   public gm = new GeometryManager('main');
   public i18next: i18n;
+  private ng_pane = new NewsGroupsPane('newsgroup', this);
+  private titles_pane = new TitlesPane('titles', this);
+  private article_pane = new ArticlePane('article', this);
+  private cur_newsgroup: string = "";
+  private cur_newsgroup_id: number = 0;
 
   constructor(i18next: i18n) {
     this.i18next = i18next;

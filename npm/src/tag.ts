@@ -72,6 +72,18 @@ export function li(...args: (string | number | StrObj)[]): string {
 export function a(...args: (string | number | StrObj)[]): string {
   return tag('a', ...args);
 }
+export function table(...args: (string | number | StrObj)[]): string {
+  return tag('table', ...args);
+}
+export function tr(...args: (string | number | StrObj)[]): string {
+  return tag('tr', ...args);
+}
+export function th(...args: (string | number | StrObj)[]): string {
+  return tag('th', ...args);
+}
+export function td(...args: (string | number | StrObj)[]): string {
+  return tag('td', ...args);
+}
 export function icon(name: string, opt_class: (string | null) = null) {
   let c = 'bi-' + name;
   if (opt_class)

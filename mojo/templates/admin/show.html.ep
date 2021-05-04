@@ -1,0 +1,15 @@
+% layout 'default';
+% title 'NNSBBS/Admin';
+
+<h2><%= $page_title %></h2>
+<div id="main"></div>
+
+<script>
+function height_fit(){
+  var h = ($(window).height() || 800) - 120;
+  $('#main').css('height', h + 'px');
+}
+
+$(window).on('resize',height_fit);
+$(function(){  height_fit();});
+</script>

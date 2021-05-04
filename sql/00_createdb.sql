@@ -1,5 +1,5 @@
 --
--- mysqlに database "nnsbbs"を作成
+-- make database "nnnsbbs" on mysql
 -- 
 
 create database if not exists nnsbbs character set utf8;

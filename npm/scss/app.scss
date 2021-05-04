@@ -8,6 +8,7 @@
 @import "auth.scss";
 @import "topbar.scss";
 @import "menu.scss";
+@import "userAdmin.scss";
 
 BODY {
   background-color: #eee;
@@ -24,7 +25,7 @@ BODY.wait button {
     width: 100%;
     margin: 0px;
     padding: 2px;
-    border: solid green 1px;
+    border: solid lightgray 1px;
   }
   > div.gutter {
     height: 10px;
