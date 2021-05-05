@@ -15,6 +15,7 @@ export class NewsgroupAdmin {
   private newsgroups: INewsgroupAdmin[] = [];
   private root: NewsgroupTree = new NewsgroupTree('', '');
   private curNode: NewsgroupTree | null = null;
+  private savedData: string = '{}';
 
   constructor(parent: NnsBbs) {
     this.parent = parent;
@@ -37,6 +38,15 @@ export class NewsgroupAdmin {
   }
 
   bind() {
+    $(window).on('beforeunload', e => {
+      let sd = JSON.stringify(this.newsgroup_data());
+      if (sd != this.savedData) {
+        e.preventDefault();
+        return '未保存の変更があります';
+      }
+      $(window).off('beforeunload');
+    });
+
     $(`#${this.id} .btn-fold`).on('click', e => {
       let t = e.currentTarget;
       if (t.parentElement) {
@@ -46,10 +56,13 @@ export class NewsgroupAdmin {
         this.redisplay();
       }
     });
-    $(`#${this.id} .newsgroup-line`).on('click', e => {
+    $(`#${this.id} .newsgroup-line`).on('click', async (e) => {
+      if (await this.saveNeeded())
+        await this.save();
       let path = $(e.currentTarget).attr('path') || '';
       this.curNode = this.root.allocNewsgroup(path);
       this.redisplay();
+      this.savedData = JSON.stringify(this.newsgroup_data());
     });
 
     $(`#${this.id} .btn-new-newsgroup`).on('click', e => {
@@ -80,10 +93,9 @@ export class NewsgroupAdmin {
       let c = this.curNode;
       return div({ class: 'newsgroup-detail' }, tag('h3', c.path),
         tag('form',
-          form_row('パス', 3, input({ id: 'ng-name', class: 'form-control', value: c.path })),
+          form_row('パス', 3, input({ id: 'ng-name', class: 'form-control', value: c.path, readonly: null })),
           form_row('', 3,
-            form_check('ng-bLocked', '投稿不可', c.newsgroup ? c.newsgroup.bLocked : 1) +
-            form_check('ng-bDeleted', '削除', c.newsgroup ? c.newsgroup.bDeleted : 0)),
+            form_check('ng-bLocked', '投稿不可', c.newsgroup ? c.newsgroup.bLocked : 1)),
           div({ class: 'form-group' },
             label({ class: 'form-label' }, 'ニュースグループの説明'),
             tag('textarea', { class: 'form-control', id: 'ng-comment', rows: 10 }, c.newsgroup ? c.newsgroup.comment : '')),
@@ -95,28 +107,53 @@ export class NewsgroupAdmin {
     }
   }
 
-  save() {
+  newsgroup_data(): object {
+    let bLocked = $('#ng-bLocked').prop('checked');
+    let comment = $('#ng-comment').val();
+    return { bLocked, comment };
+  }
+
+  async save() {
     let tree_node = this.curNode;
     if (!tree_node) return;
 
-    let name = $('#ng-name').val() as string;
-    let bLocked = $('#ng-bLocked').prop('checked');
-    let bDeleted = $('#ng-bDeleted').prop('checked');
-    let comment = $('#ng-comment').val();
+    let nd = this.newsgroup_data();
+    let savedJson = JSON.stringify(nd);
+
     let data: any;
-    if (tree_node.newsgroup)
-      data = {
-        write: JSON.stringify([{
-          id: tree_node.newsgroup.id, name, bDeleted, bLocked, comment
-        }])
-      };
-    else
-      data = {
-        new: JSON.stringify([{ name, bDeleted, bLocked, comment }])
-      };
-    console.log('data:', data);
-    get_json('/admin/api/newsgroup', { method: 'post', data }).then(() => {
-      this.init();
+    if (tree_node.newsgroup) {
+      nd['id'] = tree_node.newsgroup.id;
+      data = { write: JSON.stringify([nd]) };
+    } else {
+      let name = $('#ng-name').val() as string;
+      nd['name'] = name;
+      data = { new: JSON.stringify([nd]) };
+    }
+
+    await get_json('/admin/api/newsgroup', { method: 'post', data });
+    this.savedData = savedJson;
+    this.init();
+  }
+
+  saveNeeded() {
+    return new Promise((resolve, reject) => {
+      let sd = JSON.stringify(this.newsgroup_data());
+      if (sd == this.savedData) {
+        resolve(false);
+        return;
+      }
+      $.confirm({
+        title: '保存確認',
+        content: '変更を保存しますか？',
+        buttons: {
+          'Save': () => {
+            resolve(true);
+          },
+          'Cancel': () => {
+            resolve(false);
+          }
+        }
+      });
     });
   }
 

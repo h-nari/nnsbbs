@@ -360,7 +360,6 @@ function form_membership(id: string, label_str: string, help_str: string, value:
 
 
 function quote_article(id: string, n: INewsGroup, a: IArticle) {
-  console.log('quote');
   let c = $('#' + id).val();
   let qs = 'In article ' + n.name + '/' + a.article_id + '\n';
   qs += a.author + ' writes:'
