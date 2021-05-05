@@ -16,7 +16,7 @@ export function get_json(path: string, option = {}) {
     opt['error'] = function (xhr, ts, es) {
       console.log('get_json:', path, "error.  time:", (performance.now() - tStart).toFixed(1), "ms");
       $('body').removeClass('wait');
-      reject(ts);
+      reject(es);
     }
     $.ajax(opt);
   });

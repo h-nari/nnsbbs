@@ -1,26 +1,10 @@
 #newsgroup-admin {
-  table.newsgroup-list {
-    width: 100%;
-    tr {
-      border-bottom: solid 2px darkgray;
-      th {
-        text-align: center;
-        border: solid 1px lightgray;
-      }
-      td {
-        padding: 5px;
-        border: solid 1px lightgray;
-      }
-      td.id,
-      td.ord,
-      td.ord0,
-      td.max_id {
-        text-align: right;
+  .newsgroup-tree {
+    .header {
+      label {
+        font-size: xx-small;
       }
     }
-  }
-
-  .newsgroup-tree {
     .sub-tree {
       margin-top: 2px;
       margin-left: 20px;
@@ -45,5 +29,17 @@
         display: none;
       }
     }
+  }
+
+  .newsgroup-detail {
+    button {
+      margin: 10px;
+    }
+  }
+}
+
+.new-newsgroup-dlg {
+  textarea {
+    width: 100%;
   }
 }

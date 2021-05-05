@@ -26,7 +26,13 @@ export class NewsgroupAdmin {
 
   innerHtml(): string {
     return div({ class: 'newsgroup-tree row' },
-      div({ class: 'col-sm-4' }, this.root.sub_html()),
+      div({ class: 'col-sm-4' }, div(
+        div({ class: 'header d-flex' },
+          span({ style: 'flex-grow:1' }),
+          form_check('show-deleted-newsgroup', '削除されたニュースグループも表示', 1),
+          button({ type: 'button', class: 'btn btn-new-newsgroup', title: '新規ニュースグループ' },
+            span({ class: 'bi-plus-square' }))),
+        this.root.sub_html(this.curNode))),
       div({ class: 'col-sm-8' }, this.detailHtml()));
   }
 
@@ -43,11 +49,15 @@ export class NewsgroupAdmin {
     });
     $(`#${this.id} .newsgroup-line`).on('click', e => {
       let path = $(e.currentTarget).attr('path') || '';
-      $(`#${this.id} .newsgroup-line`).removeClass('selected');
-      $(e.currentTarget).addClass('selected');
+      // $(`#${this.id} .newsgroup-line`).removeClass('selected');
+      // $(e.currentTarget).addClass('selected');
       console.log('path:', path);
       this.curNode = this.root.allocNewsgroup(path);
       this.redisplay();
+    });
+
+    $(`#${this.id} .btn-new-newsgroup`).on('click', e => {
+      this.new_newsgroups_dlg();
     });
   }
 
@@ -68,7 +78,7 @@ export class NewsgroupAdmin {
   detailHtml(): string {
     if (this.curNode) {
       let c = this.curNode;
-      return div(tag('h3', c.path),
+      return div({ class: 'newsgroup-detail' }, tag('h3', c.path),
         tag('form',
           form_row('パス', 3, input({ id: 'ng-name', class: 'form-control', value: c.path })),
           form_row('', 3,
@@ -77,12 +87,56 @@ export class NewsgroupAdmin {
           div({ class: 'form-group' },
             label({ class: 'form-label' }, 'ニュースグループの説明'),
             tag('textarea', { class: 'form-control', id: 'ng-comment', rows: 10 }, c.newsgroup ? c.newsgroup.comment : '')),
-          button({ type: 'button', class: 'btn btn-primary' }, '保存')
+          button({ type: 'button', class: 'btn btn-primary btn-save-newsgroup' }, '保存')
         )
       );
     } else {
       return div('ニュースグループが選択されていません')
     }
+  }
+  new_newsgroups_dlg() {
+    console.log('new newsgroup');
+    $.confirm({
+      title: 'ニュースグループの新規作成',
+      class: 'green',
+      columnClass: 'large',
+      content: div({ class: 'new-newsgroup-dlg' },
+        tag('textarea', {
+          id: 'new-newsgroups', rows: 15,
+          placeholder: '作成するニュースグループの名前を入力して下さい。\n複数可'
+        })
+      ),
+      buttons: {
+        ok: () => {
+          let lines = $('#new-newsgroups').val() as string;
+          let bad_names: string[] = [];
+          let names: any[] = [];
+          for (let line0 of lines.split('\n')) {
+            let line = line0.trim();
+            if (line == '') continue;
+            if (line.match(/^[^.\s]+(\.[^.\s]+)*$/))
+              names.push({ name: line });
+            else
+              bad_names.push(line);
+          }
+          if (bad_names.length > 0) {
+            $.alert({
+              content: div('以下の名前はニュースグループ名として不適当です。',
+                div(bad_names.join(','))
+              )
+            });
+            return false;
+          }
+          get_json('/admin/api/newsgroup', { method: 'post', data: { new: JSON.stringify(names) } })
+            .then(d => { this.init(); })
+            .catch(e => {
+              console.log(e);
+              $.alert(e);
+            });
+        },
+        cancel: () => { }
+      }
+    });
   }
 }
 
@@ -163,24 +217,24 @@ class NewsgroupTree {
     return i;
   }
 
-  sub_html(): string {
+  sub_html(selected_node: NewsgroupTree | null = null): string {
     let s = '';
     for (let c of this.children)
-      s += c.html();
+      s += c.html(selected_node);
     return s;
   }
 
-  html(): string {
+  html(selected_node: NewsgroupTree | null = null): string {
     let fold_icon = '';
     if (this.children.length > 0)
       fold_icon = span({ class: 'btn-fold ' + (this.fold ? 'bi-chevron-right' : 'bi-chevron-down') })
 
     return div({ class: 'sub-tree', fold: selected(this.fold) },
-      div({ class: 'newsgroup-line', path: this.path },
+      div({ path: this.path, class: this == selected_node ? 'newsgroup-line selected' : 'newsgroup-line' },
         span({ class: 'name' }, this.name),
         fold_icon,
         this.newsgroup ? span({ class: 'bi-newspaper' }) : ''),
-      this.fold ? '' : div(this.sub_html())
+      this.fold ? '' : div(this.sub_html(selected_node))
     );
   }
 };
