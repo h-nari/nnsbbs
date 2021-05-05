@@ -50,14 +50,12 @@ export class User {
           login: {
             text: 'Login',
             action: async () => {
-              console.log('login');
               let email = $('#email').val() as string;
               let password = $('#inputPassword').val() as string;
               let sha = createHash('sha1');
               sha.update(password);
               let pwd = sha.digest('hex');
               let data: any = await get_json('/api/login', { data: { email, pwd } });
-              console.log('data:', data);
               if (!data.login) {
                 let n = this.parent.i18next;
                 $.alert(n.t('login-failed'));
@@ -76,7 +74,6 @@ export class User {
   }
 
   logout() {
-    console.log('logout');
     $.confirm({
       title: 'Logout',
       content: 'Are you sure you want to log out?',
@@ -124,7 +121,6 @@ export class User {
               return false;
             } else {
               get_json('/api/mail_auth', { data: { email } }).then((d: any) => {
-                console.log('d:', d);
                 if (d.result == 0) {
                   $.alert('failed:' + d.mes);
                   return false;
@@ -133,7 +129,6 @@ export class User {
                     div('Please open the email and open the URL for authentication with your browser.'));
                 }
               }).catch(e => {
-                console.log('Error:', e);
                 $.alert(e);
               });
             }
@@ -153,7 +148,6 @@ export class User {
     }
     if (!this.user) return;
     let d = await get_json('/api/profile_read', { data: { user_id: this.user.id } }) as IProfile;
-    console.log('membership:', d.membership);
     let c = tag('form', { class: 'edit-profile' },
       form_input('p-user-id', 'User ID', { value: this.user.id, readonly: null }),
       form_input('p-email', 'Email', { help: '登録に使用したメールアドレス', value: d.mail, readonly: null }),
@@ -174,7 +168,6 @@ export class User {
         ok: {
           text: '書込み',
           action: () => {
-            console.log('profile write');
             if (!this.user) return;
             let disp_name = $('#p-name').val() || '';
             if (disp_name != d.disp_name)
@@ -243,11 +236,9 @@ export class User {
                 disp_name, title, content, reply_to
               }
             }).then((d: any) => {
-              console.log('d:', d.article_id);
               this.parent.top_page(n.name, d.article_id);
               $.alert('投稿に成功しました')
             }).catch(e => {
-              console.log('error:', e);
               $.alert('投稿に失敗しました');
             });
           }
@@ -261,7 +252,6 @@ export class User {
         this.parent.set_i18n_text();
         // $('.post-article [title]').tooltip();
         $('.btn-quote').on('click', () => {
-          console.log('quote');
           if (a) quote_article('post-content', n, a);
         });
       }

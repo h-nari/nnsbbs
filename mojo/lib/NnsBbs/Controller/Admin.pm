@@ -1,5 +1,6 @@
 package NnsBbs::Controller::Admin;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
+
 # use Mojo::JSON qw(decode_json);
 use JSON;
 use NnsBbs::Db;
@@ -54,7 +55,7 @@ sub api_newsgroup($self) {
         $self->render( json => { result => 'ok', executed_insert => $cnt } );
     }
     elsif ($write) {
-        my $list = decode_json($write);
+        my $list = from_json($write);
         my $cnt  = 0;
         for my $n (@$list) {
             eval { $cnt += update_newsgroup( $db, $n ); };
@@ -97,10 +98,10 @@ sub insert_newsgroup ( $db, $n ) {
 sub update_newsgroup ( $db, $n ) {
     my $cnt = 0;
     die "id not specified in newsgroup write\n" unless ( $n->{'id'} );
-    my $id  = $n->{'id'};
-    my $sql = 'update newsgroup set ?=? where id=?';
+    my $id = $n->{'id'};
     while ( my ( $key, $value ) = each(%$n) ) {
-        $db->execute( $sql, $key, $value, $id ) if $key ne 'id';
+        my $sql = "update newsgroup set $key=? where id=?";
+        $db->execute( $sql, $value, $id ) if $key ne 'id';
         $cnt++;
     }
     return $cnt;

@@ -38,7 +38,6 @@ export class NewsgroupAdmin {
 
   bind() {
     $(`#${this.id} .btn-fold`).on('click', e => {
-      console.log('fold');
       let t = e.currentTarget;
       if (t.parentElement) {
         let path = t.parentElement.attributes['path'].value as string;
@@ -49,15 +48,16 @@ export class NewsgroupAdmin {
     });
     $(`#${this.id} .newsgroup-line`).on('click', e => {
       let path = $(e.currentTarget).attr('path') || '';
-      // $(`#${this.id} .newsgroup-line`).removeClass('selected');
-      // $(e.currentTarget).addClass('selected');
-      console.log('path:', path);
       this.curNode = this.root.allocNewsgroup(path);
       this.redisplay();
     });
 
     $(`#${this.id} .btn-new-newsgroup`).on('click', e => {
       this.new_newsgroups_dlg();
+    });
+
+    $(`#${this.id} .btn-save-newsgroup`).on('click', e => {
+      this.save();
     });
   }
 
@@ -94,8 +94,33 @@ export class NewsgroupAdmin {
       return div('ニュースグループが選択されていません')
     }
   }
+
+  save() {
+    let tree_node = this.curNode;
+    if (!tree_node) return;
+
+    let name = $('#ng-name').val() as string;
+    let bLocked = $('#ng-bLocked').prop('checked');
+    let bDeleted = $('#ng-bDeleted').prop('checked');
+    let comment = $('#ng-comment').val();
+    let data: any;
+    if (tree_node.newsgroup)
+      data = {
+        write: JSON.stringify([{
+          id: tree_node.newsgroup.id, name, bDeleted, bLocked, comment
+        }])
+      };
+    else
+      data = {
+        new: JSON.stringify([{ name, bDeleted, bLocked, comment }])
+      };
+    console.log('data:', data);
+    get_json('/admin/api/newsgroup', { method: 'post', data }).then(() => {
+      this.init();
+    });
+  }
+
   new_newsgroups_dlg() {
-    console.log('new newsgroup');
     $.confirm({
       title: 'ニュースグループの新規作成',
       class: 'green',
@@ -171,7 +196,6 @@ class NewsgroupTree {
   }
 
   allocNewsgroup(path: string, n: (INewsgroupAdmin | null) = null): NewsgroupTree {
-    console.log('allocNewsgroup:', path);
     let i = path.indexOf('.');
     if (i < 0) {
       let child = this.allocChild(path);

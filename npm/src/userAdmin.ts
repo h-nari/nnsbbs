@@ -96,7 +96,6 @@ export class UserAdmin {
     });
     $('#' + this.id + ' .page-size').on('change', e => {
       this.limit = ($(e.currentTarget).val() || '') as number;
-      console.log('limit:', this.limit);
       this.show();
     });
   }
