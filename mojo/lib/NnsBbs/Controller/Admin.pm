@@ -17,8 +17,15 @@ sub user ($self) {
 
 sub newsgroup($self) {
     my $db = NnsBbs::Db::new($self);
+    my $s  = "<script>\n";
+    $s .= "\$(()=>{\n";
+    $s .= "var na = window.nnsbbs.newsgroupAdmin;\n";
+    $s .= "\$('#main').html(na.html());\n";
+    $s .= "na.init();";
+    $s .= " });\n";
+    $s .= "</script>\n";
     $self->stash(
-        script_part => '',
+        script_part => $s,
         page_title  => 'ニュースグループ管理'
     );
     $self->render( template => 'admin/show' );
@@ -26,10 +33,7 @@ sub newsgroup($self) {
 
 sub api_newsgroup($self) {
     my $db  = NnsBbs::Db::new($self);
-    my $sql = "select id,name,comment,max_id,posted_at";
-    $sql .= ",access_group,bLocked,bDeleted,created_at";
-    $sql .= ",locked_at,deleted_at,ord0,ord";
-    $sql .= " from newsgroup";
+    my $sql = "select * from newsgroup";
     $sql .= " order by ord,name";
     my $data = $db->select_ah($sql);
     $self->render( json => $data );
