@@ -199,10 +199,6 @@ sub post_article {
 
     my $sql = "select max_id from newsgroup where id=? for update";
     my ($max_id) = $db->select_ra( $sql, $newsgroup_id );
-    if ( !$max_id ) {
-        $self->render( text => 'invalid newsgroup_id', status => '400' );
-        return;
-    }
     my $article_id = $max_id + 1;
     $sql = "update newsgroup set max_id=?,posted_at=now() where id=?";
     $db->execute( $sql, $article_id, $newsgroup_id );
