@@ -7,11 +7,13 @@ export class Menu {
   public name: string;
   public subMenu: Menu[] = [];
   public link: string = '';
-  public action: (() => void) | null = null;
+  public action: ((e: JQuery.ClickEvent, arg: any) => void) | null = null;
+  public arg: any;
 
-  constructor(name: string, action: string | (() => void) | null = null) {
+  constructor(name: string, action: string | ((e: JQuery.ClickEvent, arg: any) => void) | null = null, arg: any = null) {
     this.id = 'menu-' + sn++;
     this.name = name;
+    this.arg = arg;
     if (typeof (action) == 'string')
       this.link = action;
     else
@@ -24,11 +26,12 @@ export class Menu {
 
   bind() {
     $(`#${this.id}`).on('click', e => {
+      $('.menu-back').remove();
       if (this.link != '') {
         document.location.href = this.link;
       }
       else if (this.action)
-        this.action();
+        this.action(e, this.arg);
       else if (this.subMenu.length > 0) {
         let s = this.subMenu.map(m => m.html()).join('');
         let sub_id = this.id + '-sub';
@@ -50,15 +53,19 @@ export class Menu {
           $('#' + sub_id).offset({ top: y, left: w0 - w });
         }
       }
+      e.preventDefault();
+      e.stopPropagation();
     })
   }
 
   add(m: Menu) {
     this.subMenu.push(m);
+    return this;
   }
 
   clear() {
     this.subMenu = [];
+    return this;
   }
 }
 

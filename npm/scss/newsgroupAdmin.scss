@@ -43,3 +43,17 @@
     width: 100%;
   }
 }
+
+.reorder-child {
+  .explain {
+    margin: 10px;
+    font-size: small;
+    color: darkgreen;
+  }
+  ul {
+    margin: 5px;
+    border: 1px solid lightgray;
+    height: 300px;
+    font-weight: bold;
+  }
+}

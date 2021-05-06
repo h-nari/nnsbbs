@@ -1,6 +1,7 @@
 import NnsBbs from "./nnsbbs";
-import { tag, div, span, table, td, th, tr, button, label, selected, input } from "./tag";
+import { tag, div, span, table, td, th, tr, button, label, selected, input, icon, option, li, ul } from "./tag";
 import { get_json } from "./util";
+import { Menu } from "./menu";
 
 interface INewsgroupAdmin {
   id: number, name: string, max_id: number, access_group: number,
@@ -13,7 +14,7 @@ export class NewsgroupAdmin {
   private id = 'newsgroup-admin';
   private parent: NnsBbs;
   private newsgroups: INewsgroupAdmin[] = [];
-  private root: NewsgroupTree = new NewsgroupTree('', '');
+  public root: NewsgroupTree = new NewsgroupTree(this, '', '');
   private curNode: NewsgroupTree | null = null;
   private savedData: string = '{}';
 
@@ -38,6 +39,7 @@ export class NewsgroupAdmin {
   }
 
   bind() {
+    this.root.bind();
     $(window).on('beforeunload', e => {
       let sd = JSON.stringify(this.newsgroup_data());
       if (sd != this.savedData) {
@@ -84,7 +86,7 @@ export class NewsgroupAdmin {
     for (let n of this.newsgroups)
       this.root.allocNewsgroup(n.name, n);
     this.root.sort();
-    this.root.number(1);
+    this.root.makeMenu();
     this.redisplay();
   }
 
@@ -155,6 +157,7 @@ export class NewsgroupAdmin {
         }
       });
     });
+
   }
 
   new_newsgroups_dlg() {
@@ -200,7 +203,36 @@ export class NewsgroupAdmin {
       }
     });
   }
+
+  async setNewsgroupOrder(list: string[]) {
+    for (let i = 0; i < list.length; i++) {
+      let node = this.root.allocNewsgroup(list[i]);
+      node.ord0 = i;
+    }
+    this.root.sort();
+    this.root.scan(100);
+    console.log('----------------------------');
+    this.root.map(node => {
+      console.log(node.path, '.ord=>', node.ord);
+    })
+
+    let new_list: any[] = [];
+    let update_list: any[] = [];
+
+    this.root.map(node => {
+      let n = node.newsgroup;
+      if (n)
+        update_list.push({ id: n.id, ord0: node.ord0, ord: node.ord });
+      else if (node.name != "")    // skip root node
+        new_list.push({ name: node.path, bLocked: 1, ord0: node.ord0, ord: node.ord });
+    });
+    if (new_list.length > 0)
+      await get_json('/admin/api/newsgroup', { method: 'post', data: { new: JSON.stringify(new_list) } });
+    if (update_list.length > 0)
+      await get_json('/admin/api/newsgroup', { method: 'post', data: { write: JSON.stringify(update_list) } });
+  }
 }
+//---------------------- End of class NewsgroupAdmin -----------------------  
 
 function form_row(label_str: string, ratio: number, content: string) {
   let ratio1 = 'col-sm-' + ratio;
@@ -219,17 +251,28 @@ function form_check(id: string, label_str: string, value: number) {
 }
 
 class NewsgroupTree {
+  public newsgroupAdmin: NewsgroupAdmin;
   public name: string;
   public path: string;
   public newsgroup: (INewsgroupAdmin | null) = null;
   public children: NewsgroupTree[] = [];
   public ord0: number = 0;
   public ord: number = 0;
+  public depth: number = 0;
   public fold: boolean = false;
+  public menu: Menu;
 
-  constructor(name: string, path: string) {
+  constructor(admin: NewsgroupAdmin, name: string, path: string) {
+    this.newsgroupAdmin = admin;
     this.name = name;
     this.path = path;
+    this.menu = new Menu(icon('three-dots'));
+  }
+
+  map(func: (n: NewsgroupTree) => void) {
+    func(this);
+    for (let c of this.children)
+      c.map(func);
   }
 
   allocNewsgroup(path: string, n: (INewsgroupAdmin | null) = null): NewsgroupTree {
@@ -255,7 +298,7 @@ class NewsgroupTree {
         return c;
     }
     let path = this.path == '' ? name : this.path + '.' + name;
-    let c = new NewsgroupTree(name, path);
+    let c = new NewsgroupTree(this.newsgroupAdmin, name, path);
     this.children.push(c);
     return c;
   }
@@ -270,12 +313,29 @@ class NewsgroupTree {
     })
   }
 
-  number(n: number): number {
-    let i = n;
-    this.ord = i++;
+  // update ord and depth
+  // return [depth,ord]
+  scan(ord: number): { depth: number, ord: number } {
+    console.log(this.path, '.ord=', ord);
+    this.ord = ord++;
+    let depth = 0;
+    for (let c of this.children) {
+      let r = c.scan(ord);
+      ord = r.ord;
+      depth = Math.max(depth, r.depth + 1);
+    }
+    this.depth = depth;
+    return { depth, ord };
+  }
+
+  makeMenu() {
+    this.menu.clear();
+    this.menu.add(new Menu('ニュースグループの削除'));
+    this.menu.add(new Menu('ニュースグループの名称変更'));
+    if (this.children.length > 1)
+      this.menu.add(new Menu('子要素の順番変更', reorderChildDlg, this));
     for (let c of this.children)
-      i = c.number(i);
-    return i;
+      c.makeMenu();
   }
 
   sub_html(selected_node: NewsgroupTree | null = null): string {
@@ -290,13 +350,64 @@ class NewsgroupTree {
     if (this.children.length > 0)
       fold_icon = span({ class: 'btn-fold ' + (this.fold ? 'bi-chevron-right' : 'bi-chevron-down') })
 
+    let c = 'newsgroup-line d-flex';
+    if (this == selected_node) c += ' selected';
     return div({ class: 'sub-tree', fold: selected(this.fold) },
-      div({ path: this.path, class: this == selected_node ? 'newsgroup-line selected' : 'newsgroup-line' },
+      div({ path: this.path, class: c },
         span({ class: 'name' }, this.name),
         fold_icon,
-        this.newsgroup ? span({ class: 'bi-newspaper' }) : ''),
+        span({ style: 'flex-grow:1' }),
+        this.menu.html()),
       this.fold ? '' : div(this.sub_html(selected_node))
     );
   }
+
+  bind() {
+    this.menu.bind();
+    for (let c of this.children)
+      c.bind();
+  }
+
 };
+
+function reorderChildDlg(e: JQuery.ClickEvent, arg: any) {
+  let node = arg as NewsgroupTree;
+
+  $.confirm({
+    title: 'ニュースグループの並び変更',
+    type: 'yellow',
+    columnClass: 'medium',
+    content: div({ class: 'reorder-child' },
+      div({ class: 'explain' }, 'ニュースグループ名をドラッグし順番を変更して下さい'),
+      ul({ class: 'sortable' }, node.children.map(c =>
+        li({ class: 'ui-state-default', path: c.path }, icon('grip-vertical'),
+          span(c.path))).join(''))),
+    onOpen: () => {
+      console.log('make sortable');
+      ($('.sortable') as any).sortable();
+      ($('.sortable') as any).disableSelection();
+    },
+    buttons: {
+      ok: {
+        text: '設定',
+        action: async () => {
+          let children = $('.sortable').children();
+          let list: string[] = [];
+          for (let i = 0; i < children.length; i++)
+            list.push($(children[i]).attr('path') || '');
+          await node.newsgroupAdmin.setNewsgroupOrder(list);
+          node.newsgroupAdmin.init();
+        }
+      },
+      cancel: {
+        text: 'キャンセル',
+      }
+    }
+  });
+}
+
+// TODO: 最上位ニュースグループの順序変更
+// TODO: 以下の階層を折りたたむ
+// TODO: 以下の階層を展開
+// TODO: 1層下まで展開
 
