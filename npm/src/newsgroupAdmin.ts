@@ -22,6 +22,15 @@ export class NewsgroupAdmin {
   constructor(parent: NnsBbs) {
     this.parent = parent;
     this.menu = new Menu(icon('three-dots'));
+    this.menu.add(new Menu('階層を全て折り畳む', e => {
+      this.root.map(n => { n.fold = true; });
+      this.root.fold = false;
+      this.redisplay();
+    }));
+    this.menu.add(new Menu('階層を全て展開する', e => {
+      this.root.map(n => { n.fold = false; });
+      this.redisplay();
+    }));
     this.menu.add(new Menu('ニュースグループの新規作成', e => {
       this.new_newsgroups_dlg();
     }));
@@ -90,6 +99,7 @@ export class NewsgroupAdmin {
     for (let n of this.newsgroups)
       this.root.allocNewsgroup(n.name, n);
     this.root.sort();
+    this.root.scan();
     this.root.makeMenu();
     this.redisplay();
   }
@@ -320,7 +330,7 @@ class NewsgroupTree {
 
   // update ord and depth
   // return [depth,ord]
-  scan(ord: number): { depth: number, ord: number } {
+  scan(ord: number = 0): { depth: number, ord: number } {
     console.log(this.path, '.ord=', ord);
     this.ord = ord++;
     let depth = 0;
@@ -339,6 +349,23 @@ class NewsgroupTree {
     this.menu.add(new Menu('ニュースグループの名称変更'));
     if (this.children.length > 1)
       this.menu.add(new Menu('子要素の順番変更', reorderChildDlg, this));
+    if (this.depth > 0) {
+      this.menu.add(new Menu('階層を全て折り畳む', e => {
+        this.map(n => { n.fold = true; });
+        this.newsgroupAdmin.redisplay();
+      }));
+      this.menu.add(new Menu('階層を全て展開する', e => {
+        this.map(n => { n.fold = false; });
+        this.newsgroupAdmin.redisplay();
+      }));
+    }
+    if (this.depth > 1) {
+      this.menu.add(new Menu('階層を1層下まで展開する', e => {
+        this.map(n => { n.fold = true; });
+        this.fold = false;
+        this.newsgroupAdmin.redisplay();
+      }));
+    }
     for (let c of this.children)
       c.makeMenu();
   }
@@ -411,7 +438,7 @@ function reorderChildDlg(e: JQuery.ClickEvent, arg: any) {
   });
 }
 
-// TODO: 以下の階層を折りたたむ
-// TODO: 以下の階層を展開
-// TODO: 1層下まで展開
-
+// TODO: ニュースグループ削除
+// TODO: 削除されたニュースグループも表示
+// TODO: ニュースグループの名称変更
+// TODO: 子ニュースグループを作成
