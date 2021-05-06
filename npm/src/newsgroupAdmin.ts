@@ -347,24 +347,37 @@ class NewsgroupTree {
 
   makeMenu() {
     this.menu.clear();
-    this.menu.add(new Menu('ニュースグループの削除', e => {
-      this.delete_newsgroup_dlg();
-    }));
-    this.menu.add(new Menu('ニュースグループの名称変更'));
+    if (this.bDeleted) {
+      this.menu.add(new Menu('削除取消', e => {
+        console.log('call undelete');
+        this.undelete();
+      }));
+      if (this.depth > 0) {
+        this.menu.add(new Menu('下位階層も削除取消', e => {
+          console.log('call undelete');
+          this.undelete('tree');
+        }));
+      }
+    } else {
+      this.menu.add(new Menu('削除', e => {
+        this.delete_newsgroup_dlg();
+      }));
+    }
+    this.menu.add(new Menu('名称変更'));
     if (this.children.length > 1)
-      this.menu.add(new Menu('子要素の順番変更', reorderChildDlg, this));
+      this.menu.add(new Menu('順番変更', reorderChildDlg, this));
     if (this.depth > 0) {
-      this.menu.add(new Menu('階層を全て折り畳む', e => {
+      this.menu.add(new Menu('全て折り畳む', e => {
         this.map(n => { n.fold = true; });
         this.newsgroupAdmin.redisplay();
       }));
-      this.menu.add(new Menu('階層を全て展開する', e => {
+      this.menu.add(new Menu('全て展開', e => {
         this.map(n => { n.fold = false; });
         this.newsgroupAdmin.redisplay();
       }));
     }
     if (this.depth > 1) {
-      this.menu.add(new Menu('階層を1層下まで展開する', e => {
+      this.menu.add(new Menu('1層下まで展開', e => {
         this.map(n => { n.fold = true; });
         this.fold = false;
         this.newsgroupAdmin.redisplay();
@@ -418,7 +431,7 @@ class NewsgroupTree {
           Yes: () => {
             this.map(n => { n.bDeleted = 1; });
             this.update_deleted('tree');
-            this.newsgroupAdmin.redisplay();
+            this.newsgroupAdmin.redisplay(true);
           },
           Cancel: () => { }
         }
@@ -434,7 +447,7 @@ class NewsgroupTree {
           Yes: () => {
             this.bDeleted = 1;
             this.update_deleted('node');
-            this.newsgroupAdmin.redisplay();
+            this.newsgroupAdmin.redisplay(true);
           },
           Cancel: () => { }
         }
@@ -493,6 +506,23 @@ class NewsgroupTree {
     if (update_list.length > 0)
       get_json('/admin/api/newsgroup', { method: 'post', data: { update: JSON.stringify(update_list) } });
   }
+
+  undelete(type: 'tree' | 'node' = 'node') {
+    let list: object[] = [];
+    if (type == 'node') {
+      this.bDeleted = 0;
+      let n = this.newsgroup;
+      if (n) list.push({ id: n.id, bDeleted: 0 });
+    } else {
+      this.map(node => {
+        node.bDeleted = 0;
+        let n = node.newsgroup;
+        if (n) list.push({ id: n.id, bDeleted: 0 });
+      });
+    }
+    get_json('/admin/api/newsgroup', { method: 'post', data: { update: JSON.stringify(list) } });
+    this.newsgroupAdmin.redisplay(true);
+  }
 }
 
 // --------------------- End of NewsgroupTree Class ------------------------
@@ -533,6 +563,5 @@ function reorderChildDlg(e: JQuery.ClickEvent, arg: any) {
 
 }
 
-// TODO: 削除フラグを解除
 // TODO: ニュースグループの名称変更
 // TODO: 子ニュースグループを作成
