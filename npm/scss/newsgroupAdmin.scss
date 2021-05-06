@@ -29,6 +29,9 @@
         background-color: #0040ff;
         color: white;
       }
+      .newsgroup-line.deleted {
+        text-decoration: line-through double red;
+      }
     }
     .sub-tree.fold {
       > div:nth-child(2) {

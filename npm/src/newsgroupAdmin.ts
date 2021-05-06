@@ -18,6 +18,7 @@ export class NewsgroupAdmin {
   private curNode: NewsgroupTree | null = null;
   private savedData: string = '{}';
   public menu;
+  public bShowDeleted: boolean = false;
 
   constructor(parent: NnsBbs) {
     this.parent = parent;
@@ -47,7 +48,7 @@ export class NewsgroupAdmin {
     return div({ class: 'newsgroup-tree row' },
       div({ class: 'col-sm-4' }, div(
         div({ class: 'header d-flex' },
-          form_check('show-deleted-newsgroup', '削除されたニュースグループも表示', 1),
+          form_check('show-deleted-newsgroup', '削除されたニュースグループも表示', this.bShowDeleted),
           span({ style: 'flex-grow:1' }),
           this.menu.html()),
         this.root.sub_html(this.curNode))),
@@ -87,21 +88,24 @@ export class NewsgroupAdmin {
     $(`#${this.id} .btn-save-newsgroup`).on('click', e => {
       this.save();
     });
+
+    $('#show-deleted-newsgroup').on('change', e => {
+      this.bShowDeleted = $(e.currentTarget).prop('checked') as boolean;
+      this.redisplay();
+    });
   }
 
-  redisplay() {
+  async redisplay(bFromDB: boolean = false) {
+    if (bFromDB) {
+      this.newsgroups = await get_json('/admin/api/newsgroup') as INewsgroupAdmin[];
+      for (let n of this.newsgroups)
+        this.root.allocNewsgroup(n.name, n);
+      this.root.sort();
+      this.root.scan();
+      this.root.makeMenu();
+    }
     $('#' + this.id).html(this.innerHtml());
     this.bind();
-  }
-
-  async init() {
-    this.newsgroups = await get_json('/admin/api/newsgroup') as INewsgroupAdmin[];
-    for (let n of this.newsgroups)
-      this.root.allocNewsgroup(n.name, n);
-    this.root.sort();
-    this.root.scan();
-    this.root.makeMenu();
-    this.redisplay();
   }
 
   detailHtml(): string {
@@ -111,7 +115,7 @@ export class NewsgroupAdmin {
         tag('form',
           form_row('ニュースグループ名', 4, span({ class: 'path' }, c.path)),
           form_row('', 4,
-            form_check('ng-bLocked', '投稿不可', c.newsgroup ? c.newsgroup.bLocked : 1)),
+            form_check('ng-bLocked', '投稿不可', c.newsgroup ? c.newsgroup.bLocked != 0 : true)),
           div({ class: 'form-group' },
             label({ class: 'form-label' }, 'ニュースグループの説明'),
             tag('textarea', { class: 'form-control', id: 'ng-comment', rows: 10 }, c.newsgroup ? c.newsgroup.comment : '')),
@@ -149,7 +153,7 @@ export class NewsgroupAdmin {
 
     await get_json('/admin/api/newsgroup', { method: 'post', data });
     this.savedData = savedJson;
-    this.init();
+    this.redisplay(true);
   }
 
   saveNeeded() {
@@ -208,7 +212,7 @@ export class NewsgroupAdmin {
             return false;
           }
           get_json('/admin/api/newsgroup', { method: 'post', data: { new: JSON.stringify(names) } })
-            .then(d => { this.init(); })
+            .then(d => { this.redisplay(true); })
             .catch(e => {
               console.log(e);
               $.alert(e);
@@ -226,10 +230,6 @@ export class NewsgroupAdmin {
     }
     this.root.sort();
     this.root.scan(100);
-    console.log('----------------------------');
-    this.root.map(node => {
-      console.log(node.path, '.ord=>', node.ord);
-    })
 
     let new_list: any[] = [];
     let update_list: any[] = [];
@@ -258,9 +258,9 @@ function form_row(label_str: string, ratio: number, content: string) {
     div({ class: ratio2 }, content));
 }
 
-function form_check(id: string, label_str: string, value: number) {
+function form_check(id: string, label_str: string, value: boolean) {
   return div({ class: 'form-check-inline' },
-    input({ class: 'form-control-input', type: 'checkbox', id, checked: selected(value != 0) }),
+    input({ class: 'form-control-input', type: 'checkbox', id, checked: selected(value) }),
     label({ class: 'form-check-label', for: id }, label_str)
   );
 }
@@ -276,6 +276,7 @@ class NewsgroupTree {
   public depth: number = 0;
   public fold: boolean = false;
   public menu: Menu;
+  public bDeleted: number = 0;
 
   constructor(admin: NewsgroupAdmin, name: string, path: string) {
     this.newsgroupAdmin = admin;
@@ -297,6 +298,7 @@ class NewsgroupTree {
       if (n) {
         child.newsgroup = n;
         child.ord0 = n.ord0;
+        child.bDeleted = n.bDeleted;
       }
       return child;
     } else {
@@ -331,7 +333,6 @@ class NewsgroupTree {
   // update ord and depth
   // return [depth,ord]
   scan(ord: number = 0): { depth: number, ord: number } {
-    console.log(this.path, '.ord=', ord);
     this.ord = ord++;
     let depth = 0;
     for (let c of this.children) {
@@ -345,7 +346,9 @@ class NewsgroupTree {
 
   makeMenu() {
     this.menu.clear();
-    this.menu.add(new Menu('ニュースグループの削除'));
+    this.menu.add(new Menu('ニュースグループの削除', e => {
+      this.delete_newsgroup_dlg();
+    }));
     this.menu.add(new Menu('ニュースグループの名称変更'));
     if (this.children.length > 1)
       this.menu.add(new Menu('子要素の順番変更', reorderChildDlg, this));
@@ -372,8 +375,10 @@ class NewsgroupTree {
 
   sub_html(selected_node: NewsgroupTree | null = null): string {
     let s = '';
-    for (let c of this.children)
-      s += c.html(selected_node);
+    for (let c of this.children) {
+      if (this.newsgroupAdmin.bShowDeleted || !c.bDeleted)
+        s += c.html(selected_node);
+    }
     return s;
   }
 
@@ -384,6 +389,7 @@ class NewsgroupTree {
 
     let c = 'newsgroup-line d-flex';
     if (this == selected_node) c += ' selected';
+    if (this.bDeleted) c += ' deleted';
     return div({ class: 'sub-tree', fold: selected(this.fold) },
       div({ path: this.path, class: c },
         span({ class: 'name' }, this.name),
@@ -400,7 +406,88 @@ class NewsgroupTree {
       c.bind();
   }
 
-};
+  delete_newsgroup_dlg() {
+    let ng = this.newsgroup;
+    if (this.children.length > 0) {
+      $.confirm({
+        title: '確認',
+        content: div('下位階層ニュースグループがあるので削除できません。',
+          '下位階層含めて 削除フラグをつけますか？'),
+        buttons: {
+          Yes: () => {
+            this.map(n => { n.bDeleted = 1; });
+            this.update_deleted('tree');
+            this.newsgroupAdmin.redisplay();
+          },
+          Cancel: () => { }
+        }
+      })
+      return;
+    }
+    else if (ng && ng.max_id > 0) {
+      $.confirm({
+        title: '確認',
+        content: div('記事が投稿済なので削除できません。',
+          '削除フラグをつけますか？'),
+        buttons: {
+          Yes: () => {
+            this.bDeleted = 1;
+            this.update_deleted('node');
+            this.newsgroupAdmin.redisplay();
+          },
+          Cancel: () => { }
+        }
+      })
+    }
+    else {
+      $.confirm({
+        title: '確認',
+        content: div('本当に削除しますか？',
+          'それとも削除フラグだけにしますか？'),
+        columnClass: 'medium',
+        buttons: {
+          'Real Delete': () => {
+            // TODO: DBから削除する
+            console.log('Real Delete');
+          },
+          'Flag Only': () => {
+            this.bDeleted = 1;
+            this.update_deleted('node');
+            this.newsgroupAdmin.redisplay();
+          },
+          Cancel: () => { }
+        }
+      })
+    }
+  };
+
+  update_deleted(type: 'node' | 'tree') {
+    let insert_list: object[] = [];
+    let update_list: object[] = [];
+
+    if (type == 'node') {
+      let n = this.newsgroup;
+      if (n)
+        update_list.push({ id: n.id, bDeleted: this.bDeleted });
+      else
+        insert_list.push({ name: this.path, bDeleted: this.bDeleted, bLocked: 1 });
+    } else {
+      this.map(node => {
+        let n = node.newsgroup;
+        if (n)
+          update_list.push({ id: n.id, bDeleted: node.bDeleted });
+        else
+          insert_list.push({ name: node.path, bDeleted: node.bDeleted, bLocked: 1 });
+      });
+    }
+    if (insert_list.length > 0)
+      get_json('/admin/api/newsgroup', { method: 'post', data: { new: JSON.stringify(insert_list) } });
+    if (update_list.length > 0)
+      get_json('/admin/api/newsgroup', { method: 'post', data: { write: JSON.stringify(update_list) } });
+  }
+}
+
+// --------------------- End of NewsgroupTree Class ------------------------
 
 function reorderChildDlg(e: JQuery.ClickEvent, arg: any) {
   let node = arg as NewsgroupTree;
@@ -415,7 +502,6 @@ function reorderChildDlg(e: JQuery.ClickEvent, arg: any) {
         li({ class: 'ui-state-default', path: c.path }, icon('grip-vertical'),
           span(c.path))).join(''))),
     onOpen: () => {
-      console.log('make sortable');
       ($('.sortable') as any).sortable();
       ($('.sortable') as any).disableSelection();
     },
@@ -428,7 +514,7 @@ function reorderChildDlg(e: JQuery.ClickEvent, arg: any) {
           for (let i = 0; i < children.length; i++)
             list.push($(children[i]).attr('path') || '');
           await node.newsgroupAdmin.setNewsgroupOrder(list);
-          node.newsgroupAdmin.init();
+          node.newsgroupAdmin.redisplay(true);
         }
       },
       cancel: {
@@ -436,9 +522,9 @@ function reorderChildDlg(e: JQuery.ClickEvent, arg: any) {
       }
     }
   });
+
 }
 
-// TODO: ニュースグループ削除
-// TODO: 削除されたニュースグループも表示
+// TODO: 削除フラグを解除
 // TODO: ニュースグループの名称変更
 // TODO: 子ニュースグループを作成

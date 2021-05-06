@@ -25,7 +25,7 @@ sub newsgroup($self) {
     $s .= "\$(()=>{\n";
     $s .= "var na = window.nnsbbs.newsgroupAdmin;\n";
     $s .= "\$('#main').html(na.html());\n";
-    $s .= "na.init();";
+    $s .= "na.redisplay(true);";
     $s .= " });\n";
     $s .= "</script>\n";
     $self->stash(
