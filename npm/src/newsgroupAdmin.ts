@@ -17,9 +17,17 @@ export class NewsgroupAdmin {
   public root: NewsgroupTree = new NewsgroupTree(this, '', '');
   private curNode: NewsgroupTree | null = null;
   private savedData: string = '{}';
+  public menu;
 
   constructor(parent: NnsBbs) {
     this.parent = parent;
+    this.menu = new Menu(icon('three-dots'));
+    this.menu.add(new Menu('ニュースグループの新規作成', e => {
+      this.new_newsgroups_dlg();
+    }));
+    this.menu.add(new Menu('トップレベル.ニュースグループの並び変更', e => {
+      reorderChildDlg(e, this.root);
+    }));
   }
 
   html(): string {
@@ -30,15 +38,15 @@ export class NewsgroupAdmin {
     return div({ class: 'newsgroup-tree row' },
       div({ class: 'col-sm-4' }, div(
         div({ class: 'header d-flex' },
-          span({ style: 'flex-grow:1' }),
           form_check('show-deleted-newsgroup', '削除されたニュースグループも表示', 1),
-          button({ type: 'button', class: 'btn btn-new-newsgroup', title: '新規ニュースグループ' },
-            span({ class: 'bi-plus-square' }))),
+          span({ style: 'flex-grow:1' }),
+          this.menu.html()),
         this.root.sub_html(this.curNode))),
       div({ class: 'col-sm-8' }, this.detailHtml()));
   }
 
   bind() {
+    this.menu.bind();
     this.root.bind();
     $(window).on('beforeunload', e => {
       let sd = JSON.stringify(this.newsgroup_data());
@@ -67,10 +75,6 @@ export class NewsgroupAdmin {
       this.savedData = JSON.stringify(this.newsgroup_data());
     });
 
-    $(`#${this.id} .btn-new-newsgroup`).on('click', e => {
-      this.new_newsgroups_dlg();
-    });
-
     $(`#${this.id} .btn-save-newsgroup`).on('click', e => {
       this.save();
     });
@@ -93,10 +97,10 @@ export class NewsgroupAdmin {
   detailHtml(): string {
     if (this.curNode) {
       let c = this.curNode;
-      return div({ class: 'newsgroup-detail' }, tag('h3', c.path),
+      return div({ class: 'newsgroup-detail' },
         tag('form',
-          form_row('パス', 3, input({ id: 'ng-name', class: 'form-control', value: c.path, readonly: null })),
-          form_row('', 3,
+          form_row('ニュースグループ名', 4, span({ class: 'path' }, c.path)),
+          form_row('', 4,
             form_check('ng-bLocked', '投稿不可', c.newsgroup ? c.newsgroup.bLocked : 1)),
           div({ class: 'form-group' },
             label({ class: 'form-label' }, 'ニュースグループの説明'),
@@ -105,7 +109,8 @@ export class NewsgroupAdmin {
         )
       );
     } else {
-      return div('ニュースグループが選択されていません')
+      return div({ class: 'newsgroup-detail center' },
+        div({ class: 'alert alert-primary mx-auto d-inline-block' }, 'ニュースグループが選択されていません'))
     }
   }
 
@@ -406,7 +411,6 @@ function reorderChildDlg(e: JQuery.ClickEvent, arg: any) {
   });
 }
 
-// TODO: 最上位ニュースグループの順序変更
 // TODO: 以下の階層を折りたたむ
 // TODO: 以下の階層を展開
 // TODO: 1層下まで展開

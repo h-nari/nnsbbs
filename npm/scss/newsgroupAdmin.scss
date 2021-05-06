@@ -1,4 +1,10 @@
 #newsgroup-admin {
+  .form-check-inline {
+    margin: 0px 3px;
+    input {
+      margin: 0px 3px;
+    }
+  }
   .newsgroup-tree {
     .header {
       label {
@@ -32,9 +38,27 @@
   }
 
   .newsgroup-detail {
+    margin: 10px;
+    padding: 10px;
+    border: 1px black solid;
+    height: calc(100% - 20px);
+    label {
+      font-size: small;
+    }
+    .path {
+      display: inline-block;
+      margin: 5px 0px;
+      font-size: larger;
+      font-weight: bold;
+    }
     button {
       margin: 10px;
     }
+  }
+  .newsgroup-detail.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 }
 
