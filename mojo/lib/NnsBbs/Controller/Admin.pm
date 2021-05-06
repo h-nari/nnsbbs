@@ -36,9 +36,10 @@ sub newsgroup($self) {
 }
 
 sub api_newsgroup($self) {
-    my $insert  = $self->param('insert');
+    my $insert = $self->param('insert');
     my $update = $self->param('update');
-    my $db    = NnsBbs::Db::new($self);
+    my $delete = $self->param('delete');
+    my $db     = NnsBbs::Db::new($self);
     my $sql;
     if ($insert) {
         my $list = from_json($insert);
@@ -65,6 +66,16 @@ sub api_newsgroup($self) {
         }
         $db->commit;
         $self->render( json => { result => 'ok', executed_update => $cnt } );
+    }
+    elsif ($delete) {
+        my $list = from_json($delete);
+        for my $n (@$list) {
+            if ( $n->{'id'} ) {
+                $db->execute( "delete from newsgroup where id=?", $n->{'id'} );
+            }
+        }
+        $db->commit;
+        $self->render( json => { result => 'ok' } );
     }
     else {
         $sql = "select * from newsgroup";

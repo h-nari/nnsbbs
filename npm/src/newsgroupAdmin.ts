@@ -98,6 +98,7 @@ export class NewsgroupAdmin {
   async redisplay(bFromDB: boolean = false) {
     if (bFromDB) {
       this.newsgroups = await get_json('/admin/api/newsgroup') as INewsgroupAdmin[];
+      this.root = new NewsgroupTree(this, '', '');
       for (let n of this.newsgroups)
         this.root.allocNewsgroup(n.name, n);
       this.root.sort();
@@ -446,9 +447,16 @@ class NewsgroupTree {
           'それとも削除フラグだけにしますか？'),
         columnClass: 'medium',
         buttons: {
-          'Real Delete': () => {
-            // TODO: DBから削除する
+          'Real Delete': async () => {
             console.log('Real Delete');
+            let n = this.newsgroup;
+            if (n) {
+              await get_json('/admin/api/newsgroup', {
+                method: 'post',
+                data: { delete: JSON.stringify([{ id: n.id }]) }
+              });
+            }
+            this.newsgroupAdmin.redisplay(true);
           },
           'Flag Only': () => {
             this.bDeleted = 1;
