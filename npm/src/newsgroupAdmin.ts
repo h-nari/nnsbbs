@@ -144,11 +144,11 @@ export class NewsgroupAdmin {
     let data: any;
     if (tree_node.newsgroup) {
       nd['id'] = tree_node.newsgroup.id;
-      data = { write: JSON.stringify([nd]) };
+      data = { update: JSON.stringify([nd]) };
     } else {
       let name = $('#ng-name').val() as string;
       nd['name'] = name;
-      data = { new: JSON.stringify([nd]) };
+      data = { insert: JSON.stringify([nd]) };
     }
 
     await get_json('/admin/api/newsgroup', { method: 'post', data });
@@ -211,7 +211,7 @@ export class NewsgroupAdmin {
             });
             return false;
           }
-          get_json('/admin/api/newsgroup', { method: 'post', data: { new: JSON.stringify(names) } })
+          get_json('/admin/api/newsgroup', { method: 'post', data: { insert: JSON.stringify(names) } })
             .then(d => { this.redisplay(true); })
             .catch(e => {
               console.log(e);
@@ -242,9 +242,9 @@ export class NewsgroupAdmin {
         new_list.push({ name: node.path, bLocked: 1, ord0: node.ord0, ord: node.ord });
     });
     if (new_list.length > 0)
-      await get_json('/admin/api/newsgroup', { method: 'post', data: { new: JSON.stringify(new_list) } });
+      await get_json('/admin/api/newsgroup', { method: 'post', data: { insert: JSON.stringify(new_list) } });
     if (update_list.length > 0)
-      await get_json('/admin/api/newsgroup', { method: 'post', data: { write: JSON.stringify(update_list) } });
+      await get_json('/admin/api/newsgroup', { method: 'post', data: { update: JSON.stringify(update_list) } });
   }
 }
 //---------------------- End of class NewsgroupAdmin -----------------------  
@@ -481,9 +481,9 @@ class NewsgroupTree {
       });
     }
     if (insert_list.length > 0)
-      get_json('/admin/api/newsgroup', { method: 'post', data: { new: JSON.stringify(insert_list) } });
+      get_json('/admin/api/newsgroup', { method: 'post', data: { insert: JSON.stringify(insert_list) } });
     if (update_list.length > 0)
-      get_json('/admin/api/newsgroup', { method: 'post', data: { write: JSON.stringify(update_list) } });
+      get_json('/admin/api/newsgroup', { method: 'post', data: { update: JSON.stringify(update_list) } });
   }
 }
 

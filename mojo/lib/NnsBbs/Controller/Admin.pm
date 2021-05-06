@@ -36,13 +36,12 @@ sub newsgroup($self) {
 }
 
 sub api_newsgroup($self) {
-    my $new   = $self->param('new');
-    my $write = $self->param('write');
+    my $insert  = $self->param('insert');
+    my $update = $self->param('update');
     my $db    = NnsBbs::Db::new($self);
     my $sql;
-    if ($new) {
-        print STDERR "\n*** new:$new ***\n\n";
-        my $list = from_json($new);
+    if ($insert) {
+        my $list = from_json($insert);
         my $cnt  = 0;
         for my $n (@$list) {
             eval { $cnt += insert_newsgroup( $db, $n ); };
@@ -54,8 +53,8 @@ sub api_newsgroup($self) {
         $db->commit;
         $self->render( json => { result => 'ok', executed_insert => $cnt } );
     }
-    elsif ($write) {
-        my $list = from_json($write);
+    elsif ($update) {
+        my $list = from_json($update);
         my $cnt  = 0;
         for my $n (@$list) {
             eval { $cnt += update_newsgroup( $db, $n ); };
