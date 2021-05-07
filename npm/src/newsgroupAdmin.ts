@@ -8,7 +8,7 @@ const newsgroup_pat = /^[^.\s]+(\.[^.\s]+)*$/;
 interface INewsgroupAdmin {
   id: number, name: string, max_id: number, access_group: number,
   bLocked: number, bDeleted: number, created_at: string, posted_at: string,
-  locked_at: string | null, deleted_at: string | null, ord0: number, ord: number,
+  locked_at: string | null, deleted_at: string | null, ord: number,
   comment: string
 };
 
@@ -273,9 +273,9 @@ export class NewsgroupAdmin {
     this.root.map(node => {
       let n = node.newsgroup;
       if (n)
-        update_list.push({ id: n.id, ord0: node.ord0, ord: node.ord });
+        update_list.push({ id: n.id, ord: node.ord });
       else if (node.name != "")    // skip root node
-        new_list.push({ name: node.path, bLocked: 1, ord0: node.ord0, ord: node.ord });
+        new_list.push({ name: node.path, bLocked: 1, ord: node.ord });
     });
     if (new_list.length > 0)
       await get_json('/admin/api/newsgroup', { method: 'post', data: { insert: JSON.stringify(new_list) } });
@@ -374,7 +374,7 @@ class NewsgroupTree {
       let child = this.allocChild(path);
       if (n) {
         child.newsgroup = n;
-        child.ord0 = n.ord0;
+        child.ord0 = n.ord;
         child.bDeleted = n.bDeleted;
       }
       return child;
