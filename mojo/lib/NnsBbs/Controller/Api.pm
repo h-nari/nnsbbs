@@ -135,7 +135,7 @@ sub profile_read {
     else {
         my $db  = NnsBbs::Db::new($self);
         my $sql = "select mail,disp_name,created_at,logined_at";
-        $sql .= ",membership,profile from user where id=?";
+        $sql .= ",membership_id,profile from user where id=?";
         my $ra = $db->select_rh( $sql, $user_id );
         $self->render( json => $ra ? $ra : {} );
     }
@@ -146,13 +146,13 @@ sub profile_write {
     my $user_id    = $self->param('user_id');
     my $name       = $self->param('name');
     my $profile    = $self->param('profile');
-    my $membership = $self->param('membership');
+    my $membership_id = $self->param('membership_id');
 
     if ( !$user_id ) {
         $self->render( text => 'user_id is required', status => '400' );
     }
-    elsif ( !$name && !$profile && !$membership) {
-        $self->render( text => 'name or profile or membership is required', status => '400' );
+    elsif ( !$name && !$profile && !$membership_id) {
+        $self->render( text => 'name or profile or membership_id is required', status => '400' );
     }
     else {
         my $db  = NnsBbs::Db::new($self);
@@ -160,8 +160,8 @@ sub profile_write {
         $db->execute( $sql, $name, $user_id ) if $name;
         $sql = "update user set profile=? where id=?";
         $db->execute( $sql, $profile, $user_id ) if $profile;
-        $sql = "update user set membership=? where id=?";
-        $db->execute( $sql, $membership, $user_id ) if $membership;
+        $sql = "update user set membership_id=? where id=?";
+        $db->execute( $sql, $membership_id, $user_id ) if $membership_id;
         $db->commit;
         $self->render( json => { result => 'Ok' } );
     }

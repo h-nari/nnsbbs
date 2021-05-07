@@ -15,7 +15,7 @@ interface IProfile {
   disp_name: string,
   created_at: string,
   logined_at: string,
-  membership: string,
+  membership_id: string,
   profile: string
 };
 
@@ -152,7 +152,7 @@ export class User {
       form_input('p-user-id', 'User ID', { value: this.user.id, readonly: null }),
       form_input('p-email', 'Email', { help: '登録に使用したメールアドレス', value: d.mail, readonly: null }),
       form_input('p-name', '表示名', { help: 'ユーザ名として表示されます', value: d.disp_name }),
-      form_membership('p-membership', '党員資格', '党員資格を選択して下さい', d.membership),
+      form_membership('p-membership', '党員資格', '党員資格を選択して下さい', d.membership_id),
       form_profile_textarea('p-profile', 'プロファイル',
         {
           help: '自己紹介を記入して下さい。ここに書かれた内容は公開されますので注意して下さい。',
@@ -177,9 +177,9 @@ export class User {
             let profile = $('#p-profile').val() || '';
             if (profile != d.profile)
               get_json('/api/profile_write', { method: 'post', data: { user_id: this.user.id, profile } });
-            let membership = $('#p-membership').val() || '';
-            if (membership != d.membership)
-              get_json('/api/profile_write', { method: 'post', data: { user_id: this.user.id, membership } });
+            let membership_id = $('#p-membership').val() || '';
+            if (membership_id != d.membership_id)
+              get_json('/api/profile_write', { method: 'post', data: { user_id: this.user.id, membership_id } });
           }
         },
         close: {
@@ -271,7 +271,7 @@ export class User {
       content: div({ class: 'show-profile' },
         div(
           div({ class: 'title' }, this.t('membership')),
-          div({ class: 'membership' }, membership[d.membership])),
+          div({ class: 'membership' }, membership[d.membership_id])),
         div(
           div({ class: 'title' }, this.t('disp_name')),
           div({ class: 'disp-name' }, escape_html(d.disp_name))),
@@ -341,6 +341,7 @@ function form_post_textarea(id: string, label_str: string, a: IArticle | null, o
     input_part, help);
 }
 
+// TODO: membershipをDBから
 const membership = ['党員外', '参政党 サポーター', '参政党 一般党員', '参政党 運営党員'];
 
 function form_membership(id: string, label_str: string, help_str: string, value: string): string {

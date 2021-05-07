@@ -5,7 +5,7 @@ import { get_json } from "./util";
 interface IUserAdmin {
   id: string, mail: string, disp_name: string, password: string,
   created_at: string, logined_at: string | null, reset_count: number,
-  membership: string, moderator: number, admin: number, bBanned: number,
+  membership_id: string, moderator: number, admin: number, bBanned: number,
   bannned_at: string | null, profile: string
 };
 
