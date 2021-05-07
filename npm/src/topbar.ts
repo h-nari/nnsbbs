@@ -49,7 +49,7 @@ export class TopBar {
       this.parent.user.logout();
     }));
     m.add(new Menu('Profile', () => {
-      this.parent.user.profile();
+      this.parent.user.profile_dlg();
     }));
     m.add(new Menu('user-manager','/admin/user'));
     m.add(new Menu('newsgroup-manager','/admin/newsgroup'));

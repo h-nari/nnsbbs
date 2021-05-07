@@ -22,6 +22,7 @@ interface IProfile {
 export class User {
   public parent: NnsBbs;
   public user: (IUser | null) = null;
+  public membership: (string | null)[] = [];
 
   constructor(parent: NnsBbs) {
     this.parent = parent;
@@ -142,17 +143,19 @@ export class User {
     });
   }
 
-  async profile() {
+  async profile_dlg() {
     if (!this.user) {
       if (!await this.login()) return;
     }
+    this.membership = await get_json('/api/membership') as (string | null)[];
+
     if (!this.user) return;
     let d = await get_json('/api/profile_read', { data: { user_id: this.user.id } }) as IProfile;
     let c = tag('form', { class: 'edit-profile' },
       form_input('p-user-id', 'User ID', { value: this.user.id, readonly: null }),
       form_input('p-email', 'Email', { help: '登録に使用したメールアドレス', value: d.mail, readonly: null }),
       form_input('p-name', '表示名', { help: 'ユーザ名として表示されます', value: d.disp_name }),
-      form_membership('p-membership', '党員資格', '党員資格を選択して下さい', d.membership_id),
+      form_membership('p-membership', '党員資格', '党員資格を選択して下さい', d.membership_id, this.membership),
       form_profile_textarea('p-profile', 'プロファイル',
         {
           help: '自己紹介を記入して下さい。ここに書かれた内容は公開されますので注意して下さい。',
@@ -271,7 +274,7 @@ export class User {
       content: div({ class: 'show-profile' },
         div(
           div({ class: 'title' }, this.t('membership')),
-          div({ class: 'membership' }, membership[d.membership_id])),
+          div({ class: 'membership' }, this.membership[d.membership_id])),
         div(
           div({ class: 'title' }, this.t('disp_name')),
           div({ class: 'disp-name' }, escape_html(d.disp_name))),
@@ -341,15 +344,13 @@ function form_post_textarea(id: string, label_str: string, a: IArticle | null, o
     input_part, help);
 }
 
-// TODO: membershipをDBから
-const membership = ['党員外', '参政党 サポーター', '参政党 一般党員', '参政党 運営党員'];
-
-function form_membership(id: string, label_str: string, help_str: string, value: string): string {
+function form_membership(id: string, label_str: string, help_str: string, value: string, membership: (string | null)[]): string {
   let c = '';
   for (let idx in membership) {
     let m = membership[idx];
     let v = String(idx);
-    c += option({ value: v, selected: selected(v == value) }, m);
+    if (m)
+      c += option({ value: v, selected: selected(v == value) }, m);
   }
   return div({ class: 'form-group row' },
     label({ class: 'col-sm-2' }, label_str),

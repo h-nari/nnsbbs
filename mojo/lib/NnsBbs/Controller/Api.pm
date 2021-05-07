@@ -142,17 +142,20 @@ sub profile_read {
 }
 
 sub profile_write {
-    my $self       = shift;
-    my $user_id    = $self->param('user_id');
-    my $name       = $self->param('name');
-    my $profile    = $self->param('profile');
+    my $self          = shift;
+    my $user_id       = $self->param('user_id');
+    my $name          = $self->param('name');
+    my $profile       = $self->param('profile');
     my $membership_id = $self->param('membership_id');
 
     if ( !$user_id ) {
         $self->render( text => 'user_id is required', status => '400' );
     }
-    elsif ( !$name && !$profile && !$membership_id) {
-        $self->render( text => 'name or profile or membership_id is required', status => '400' );
+    elsif ( !$name && !$profile && !$membership_id ) {
+        $self->render(
+            text   => 'name or profile or membership_id is required',
+            status => '400'
+        );
     }
     else {
         my $db  = NnsBbs::Db::new($self);
@@ -197,8 +200,8 @@ sub post_article {
 
     # TODO: ckeck user permissions
 
-    my $sql = "select max_id from newsgroup where id=? for update";
-    my ($max_id) = $db->select_ra( $sql, $newsgroup_id );
+    my $sql        = "select max_id from newsgroup where id=? for update";
+    my ($max_id)   = $db->select_ra( $sql, $newsgroup_id );
     my $article_id = $max_id + 1;
     $sql = "update newsgroup set max_id=?,posted_at=now() where id=?";
     $db->execute( $sql, $article_id, $newsgroup_id );
@@ -213,6 +216,16 @@ sub post_article {
     );
     $db->commit;
     $self->render( json => { result => 'ok', article_id => $article_id } );
+}
+
+sub membership ($self) {
+    my $db         = NnsBbs::Db::new($self);
+    my $ah         = $db->select_ah("select * from membership");
+    my $membership = [];
+    for my $h (@$ah) {
+        $membership->[ $h->{'id'} ] = $h->{'name'};
+    }
+    $self->render( json => $membership );
 }
 
 1;
