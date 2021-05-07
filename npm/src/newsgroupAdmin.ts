@@ -182,19 +182,26 @@ export class NewsgroupAdmin {
 
   }
 
-  new_newsgroups_dlg() {
+  new_newsgroups_dlg(parent: NewsgroupTree | null = null) {
+    let upper_node = '';
+    if (parent) {
+      upper_node = div({ class: 'parent' }, span('親ニュースグループ:'),
+        span(parent.path)
+      );
+    }
     $.confirm({
       title: 'ニュースグループの新規作成',
       class: 'green',
       columnClass: 'large',
       content: div({ class: 'new-newsgroup-dlg' },
+        upper_node,
         tag('textarea', {
           id: 'new-newsgroups', rows: 15,
           placeholder: '作成するニュースグループの名前を入力して下さい。\n複数可'
         })
       ),
       buttons: {
-        ok: () => {
+        ok: async () => {
           let lines = $('#new-newsgroups').val() as string;
           let bad_names: string[] = [];
           let names: any[] = [];
@@ -202,7 +209,7 @@ export class NewsgroupAdmin {
             let line = line0.trim();
             if (line == '') continue;
             if (line.match(newsgroup_pat))
-              names.push({ name: line });
+              names.push({ name: parent ? parent.path + '.' + line : line });
             else
               bad_names.push(line);
           }
@@ -214,19 +221,18 @@ export class NewsgroupAdmin {
             });
             return false;
           }
-          get_json('/admin/api/newsgroup', { method: 'post', data: { insert: JSON.stringify(names) } })
-            .then(d => { this.redisplay(true); })
-            .catch(e => {
-              console.log(e);
-              $.alert(e);
-            });
+          await get_json('/admin/api/newsgroup', { method: 'post', data: { insert: JSON.stringify(names) } });
+          await this.redisplay(true);
+          await this.setNewsgroupOrder();
         },
         cancel: () => { }
       }
     });
   }
 
-  async setNewsgroupOrder(list: string[]) {
+  // after fixing the order of the nodes specified in the list
+  // fix the order of the whole tree and write it to the DB
+  async setNewsgroupOrder(list: string[] = []) {
     for (let i = 0; i < list.length; i++) {
       let node = this.root.allocNewsgroup(list[i]);
       node.ord0 = i;
@@ -349,6 +355,9 @@ class NewsgroupTree {
 
   makeMenu() {
     this.menu.clear();
+    this.menu.add(new Menu('下位ニュースグループを作成', e => {
+      this.newsgroupAdmin.new_newsgroups_dlg(this);
+    }));
     if (this.bDeleted) {
       this.menu.add(new Menu('削除取消', e => {
         console.log('call undelete');
@@ -640,5 +649,3 @@ function reorderChildDlg(e: JQuery.ClickEvent, arg: any) {
   });
 
 }
-
-// TODO: 子ニュースグループを作成
