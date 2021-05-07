@@ -40,6 +40,23 @@ export class NewsgroupAdmin {
     this.menu.add(new Menu('トップレベル.ニュースグループの並び変更', e => {
       reorderChildDlg(e, this.root);
     }));
+    this.menu.add(new Menu('マーク済の削除可能なニュースグループを削除', e => {
+      $.confirm({
+        title: '確認',
+        content: '本当に削除しますか？',
+        buttons: {
+          Yes: async () => {
+            let result = { cnt: 0, list: [] };
+            let n = await this.deleteMarkedNewsgroup(this.root, result);
+            this.redisplay(true);
+            $.alert(`${result.cnt}個のニュースグループを削除しました` +
+              result.list.map(s => div(s)).join('\n')
+            );
+          },
+          No: () => { }
+        }
+      });
+    }));
   }
 
   html(): string {
@@ -255,8 +272,34 @@ export class NewsgroupAdmin {
     if (update_list.length > 0)
       await get_json('/admin/api/newsgroup', { method: 'post', data: { update: JSON.stringify(update_list) } });
   }
+
+  async deleteMarkedNewsgroup(node: NewsgroupTree, result: { cnt: number, list: string[] }): Promise<boolean> {
+    let children: NewsgroupTree[] = [];
+    for (let c of node.children) {
+      let deleted = await this.deleteMarkedNewsgroup(c, result);
+      if (!deleted) children.push(c);
+    }
+    if (!node.bDeleted || children.length > 0 && node.newsgroup && node.newsgroup.max_id > 0) {
+      console.log(node.path, ' is keep');
+      node.children = children;
+      return false;
+    } else {
+      console.log(node.path, ' is deleted');
+      if (node.newsgroup) {
+        await get_json('/admin/api/newsgroup', { method: 'post', data: { delete: JSON.stringify([{ id: node.newsgroup.id }]) } });
+      }
+      result.cnt++;
+      result.list.push(node.path);
+      return true;
+    }
+  }
 }
-//---------------------- End of class NewsgroupAdmin -----------------------  
+
+
+//============================================================================================================
+//================================= End of class NewsgroupAdmin ==============================================
+//============================================================================================================
+
 
 function form_row(label_str: string, ratio: number, content: string) {
   let ratio1 = 'col-sm-' + ratio;
