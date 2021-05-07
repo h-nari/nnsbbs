@@ -67,6 +67,14 @@ sub select_ra {
     return $sth->fetchrow_array;
 }
 
+sub select_hh {
+    my ( $self, $sql, $key_field, @params ) = @_;
+    my $sth = $self->{conn}->prepare($sql);
+    $sth->execute(@params);
+    return $sth->fetchall_hashref($key_field);
+}
+
+
 sub DESTROY {
     my $self = shift;
     $self->{conn}->disconnect();

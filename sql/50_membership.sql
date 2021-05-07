@@ -5,12 +5,14 @@
 drop table if exists membership;
 create table membership (
   id        integer       primary key,
-  name      varchar(255)  not null
+  name       varchar(255)  not null,
+  selectable boolean       default true
 );
 
-insert into membership (id,name)
+insert into membership (id,name,selectable)
 values
-(1, 'class1'),
-(2, 'class2'),
-(3, 'class3'),
-(4, 'class4');
+(0, 'not logged in', false),
+(1, 'class1', true),
+(2, 'class2', true),
+(3, 'class3', true),
+(10, 'moderator', false);

@@ -220,12 +220,8 @@ sub post_article {
 
 sub membership ($self) {
     my $db         = NnsBbs::Db::new($self);
-    my $ah         = $db->select_ah("select * from membership");
-    my $membership = [];
-    for my $h (@$ah) {
-        $membership->[ $h->{'id'} ] = $h->{'name'};
-    }
-    $self->render( json => $membership );
+    my $ah         = $db->select_hh("select * from membership order by id",'id');
+    $self->render( json => $ah );
 }
 
 1;

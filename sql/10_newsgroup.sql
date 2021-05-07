@@ -15,6 +15,6 @@ create table  newsgroup (
   locked_at    datetime,
   deleted_at   datetime,
   ord          integer      default 0,         -- Value for determining the display order.
-  comment      text         default ""         -- Newsgroups Description  
+  comment      text         default ""         -- Newsgroups Description２  
 );
 

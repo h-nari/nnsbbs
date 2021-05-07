@@ -1,12 +1,13 @@
 import NnsBbs from "./nnsbbs";
-import { tag, div, span, table, td, th, tr, button, label, selected, input, icon, option, li, ul } from "./tag";
+import { tag, div, span, table, td, th, tr, button, label, selected, input, icon, select, option, li, ul } from "./tag";
 import { get_json } from "./util";
 import { Menu } from "./menu";
+import { IMembership } from "./dbif";
 
 const newsgroup_pat = /^[^.\s]+(\.[^.\s]+)*$/;
 
 interface INewsgroupAdmin {
-  id: number, name: string, max_id: number, access_group: number,
+  id: number, name: string, max_id: number, rpl: number, wpl: number,
   bLocked: number, bDeleted: number, created_at: string, posted_at: string,
   locked_at: string | null, deleted_at: string | null, ord: number,
   comment: string
@@ -21,6 +22,7 @@ export class NewsgroupAdmin {
   private savedData: string = '{}';
   public menu;
   public bShowDeleted: boolean = false;
+  private membership: IMembership | null = null;
 
   constructor(parent: NnsBbs) {
     this.parent = parent;
@@ -112,11 +114,19 @@ export class NewsgroupAdmin {
       this.bShowDeleted = $(e.currentTarget).prop('checked') as boolean;
       this.redisplay();
     });
+
+    //TODO: btn-permission : permissionの変更ダイアログ
+    $(`#${this.id} .btn-permission`).on('click', e => {
+      console.log('permission dialog');
+      if (this.curNode)
+        this.permission_dlg();
+    });
   }
 
   async redisplay(bFromDB: boolean = false) {
     if (bFromDB) {
       this.newsgroups = await get_json('/admin/api/newsgroup') as INewsgroupAdmin[];
+      this.membership = await get_json('/api/membership') as IMembership;
       let old_root = this.root;
       this.root = new NewsgroupTree(this, '', '');
       for (let n of this.newsgroups)
@@ -143,19 +153,29 @@ export class NewsgroupAdmin {
       let c = this.curNode;
       return div({ class: 'newsgroup-detail' },
         tag('form',
-          form_row('ニュースグループ名', 4, span({ class: 'path' }, c.path)),
-          form_row('', 4,
+          form_row('Newsgroup', 3, span({ class: 'path' }, c.path)),
+          form_row('', 3,
             form_check('ng-bLocked', '投稿不可', c.newsgroup ? c.newsgroup.bLocked != 0 : true)),
+          form_row('Access Control', 3, button({ class: 'form-row btn-permission', type: 'button' },
+            this.permission_html('Read:', 'rpl'), this.permission_html('Write:', 'wpl'))),
           div({ class: 'form-group' },
-            label({ class: 'form-label' }, 'ニュースグループの説明'),
+            label({ class: 'form-label' }, 'Newsgroups Description'),
             tag('textarea', { class: 'form-control', id: 'ng-comment', rows: 10 }, c.newsgroup ? c.newsgroup.comment : '')),
-          button({ type: 'button', class: 'btn btn-primary btn-save-newsgroup' }, '保存')
+          button({ type: 'button', class: 'btn btn-primary btn-save-newsgroup' }, 'save')
         )
       );
     } else {
       return div({ class: 'newsgroup-detail center' },
-        div({ class: 'alert alert-primary mx-auto d-inline-block' }, 'ニュースグループが選択されていません'))
+        div({ class: 'alert alert-primary mx-auto d-inline-block' }, 'no newsgroup selected'))
     }
+  }
+
+  permission_html(title: string, field: string): string {
+    let val = '';
+    if (this.curNode && this.curNode.newsgroup)
+      val = String(this.curNode.newsgroup[field]);
+    return span({ class: 'permission' }, span(title), span('&ge;'),
+      span(this.membership ? this.membership[val].name : ''))
   }
 
   newsgroup_data(): object {
@@ -303,6 +323,78 @@ export class NewsgroupAdmin {
       return true;
     }
   }
+
+  permission_dlg() {
+    let node = this.curNode;
+    if (!node || !node.newsgroup) return;
+    let rpl = node.newsgroup.rpl;
+    let wpl = node.newsgroup.wpl;
+
+    $.confirm({
+      title: 'newsgroup permission setting',
+      type: 'green',
+      columnClass: 'large',
+      content: div({ class: 'permission-dlg' },
+        this.permission_select('Read:', 'rpl', rpl),
+        this.permission_select('Write:', 'wpl', wpl)),
+      buttons: {
+        ok1: {
+          text: 'このニュースグループのみ変更',
+          action: () => {
+            let rpl = $('.permission-dlg .rpl').val() as string;
+            let wpl = $('.permission-dlg .wpl').val() as string;
+            this.set_permission('node', rpl, wpl);
+          }
+        },
+        ok2: {
+          text: '下位のニュースグループも変更',
+          action: () => {
+            let rpl = $('.permission-dlg .rpl').val() as string;
+            let wpl = $('.permission-dlg .wpl').val() as string;
+            this.set_permission('tree', rpl, wpl);
+          }
+        },
+        cancel: {
+          text: 'キャンセル'
+        }
+      }
+    });
+  }
+
+  permission_select(label_str: string, class_str: string, val: number): string {
+    let opt = '';
+    for (let i in this.membership) {
+      let m = this.membership[i];
+      opt += option({ value: i, selected: selected(i == String(val)) },
+        span('&ge;'), span(m.name));
+    }
+    return div({ class: 'permission-select' }, label(label_str), select({ class: class_str }, opt));
+  }
+
+  async set_permission(type: 'node' | 'tree', rpl: string, wpl: string) {
+    let cur = this.curNode;
+    if (!cur) return;
+    let insert_list: Object[] = [];
+    let update_list: Object[] = [];
+
+    if (type == 'node') {
+      let n = cur.newsgroup;
+      if (n) update_list.push({ id: n.id, rpl, wpl });
+      else insert_list.push({ name: cur.path, rpl, wpl, bLocked: 1 });
+    } else {
+      cur.map(node => {
+        let n = node.newsgroup;
+        if (n) update_list.push({ id: n.id, rpl, wpl });
+        else insert_list.push({ name: node.path, rpl, wpl, bLocked: 1 });
+      });
+    }
+    if (insert_list.length > 0)
+      await get_json('/admin/api/newsgroup', { method: 'post', data: { insert: JSON.stringify(insert_list) } });
+    if (update_list.length > 0)
+      await get_json('/admin/api/newsgroup', { method: 'post', data: { update: JSON.stringify(update_list) } });
+    this.redisplay(true);
+  }
+
 }
 
 

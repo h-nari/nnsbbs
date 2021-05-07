@@ -54,8 +54,20 @@
       font-size: larger;
       font-weight: bold;
     }
-    button {
-      margin: 10px;
+    button.btn-permission {
+      border-radius: 10px;
+      .permission {
+        margin: 0 10px;
+        span:nth-child(2) {
+          margin-left: 10px;
+          font-weight: bold;
+          font-size: larger;
+        }
+        span:nth-child(3) {
+          margin-left: 5px;
+          font-weight: bold;
+        }
+      }
     }
   }
   .newsgroup-detail.center {
@@ -94,4 +106,17 @@
 
 input#newsgroup-name {
   width: 100%;
+}
+
+.permission-dlg {
+  .permission-select {
+    text-align: center;
+    margin: 5px;
+    label {
+      margin: 5px;
+    }
+    select {
+      margin: 5px;
+    }
+  }
 }

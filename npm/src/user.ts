@@ -3,6 +3,7 @@ import { escape_html, get_json } from './util';
 import { createHash } from 'sha1-uint8array';
 import { INewsGroup } from './newsgroup';
 import { IArticle } from './article';
+import { IMembership } from './dbif';
 import NnsBbs from './nnsbbs';
 
 interface IUser {
@@ -15,14 +16,14 @@ interface IProfile {
   disp_name: string,
   created_at: string,
   logined_at: string,
-  membership_id: string,
+  membership_id: number,
   profile: string
 };
 
 export class User {
   public parent: NnsBbs;
   public user: (IUser | null) = null;
-  public membership: (string | null)[] = [];
+  public membership: IMembership | null = null;
 
   constructor(parent: NnsBbs) {
     this.parent = parent;
@@ -147,7 +148,7 @@ export class User {
     if (!this.user) {
       if (!await this.login()) return;
     }
-    this.membership = await get_json('/api/membership') as (string | null)[];
+    this.membership = await get_json('/api/membership') as IMembership;
 
     if (!this.user) return;
     let d = await get_json('/api/profile_read', { data: { user_id: this.user.id } }) as IProfile;
@@ -274,7 +275,7 @@ export class User {
       content: div({ class: 'show-profile' },
         div(
           div({ class: 'title' }, this.t('membership')),
-          div({ class: 'membership' }, this.membership[d.membership_id])),
+          div({ class: 'membership' }, this.membership ? this.membership[d.membership_id].name : '')),
         div(
           div({ class: 'title' }, this.t('disp_name')),
           div({ class: 'disp-name' }, escape_html(d.disp_name))),
@@ -344,13 +345,13 @@ function form_post_textarea(id: string, label_str: string, a: IArticle | null, o
     input_part, help);
 }
 
-function form_membership(id: string, label_str: string, help_str: string, value: string, membership: (string | null)[]): string {
+function form_membership(id: string, label_str: string, help_str: string, value: number, membership: IMembership | null): string {
   let c = '';
-  for (let idx in membership) {
-    let m = membership[idx];
-    let v = String(idx);
-    if (m)
-      c += option({ value: v, selected: selected(v == value) }, m);
+  if (!membership) return div('no-membership');
+  for (let id in membership) {
+    let m = membership[id];
+    if (m.selectable)
+      c += option({ value: id, selected: selected(id == String(value)) }, m.name);
   }
   return div({ class: 'form-group row' },
     label({ class: 'col-sm-2' }, label_str),
