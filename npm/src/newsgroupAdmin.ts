@@ -3,6 +3,8 @@ import { tag, div, span, table, td, th, tr, button, label, selected, input, icon
 import { get_json } from "./util";
 import { Menu } from "./menu";
 
+const newsgroup_pat = /^[^.\s]+(\.[^.\s]+)*$/;
+
 interface INewsgroupAdmin {
   id: number, name: string, max_id: number, access_group: number,
   bLocked: number, bDeleted: number, created_at: string, posted_at: string,
@@ -199,7 +201,7 @@ export class NewsgroupAdmin {
           for (let line0 of lines.split('\n')) {
             let line = line0.trim();
             if (line == '') continue;
-            if (line.match(/^[^.\s]+(\.[^.\s]+)*$/))
+            if (line.match(newsgroup_pat))
               names.push({ name: line });
             else
               bad_names.push(line);
@@ -363,7 +365,9 @@ class NewsgroupTree {
         this.delete_newsgroup_dlg();
       }));
     }
-    this.menu.add(new Menu('名称変更'));
+    this.menu.add(new Menu('名称変更', e => {
+      this.rename_dlg();
+    }));
     if (this.children.length > 1)
       this.menu.add(new Menu('順番変更', reorderChildDlg, this));
     if (this.depth > 0) {
@@ -523,6 +527,80 @@ class NewsgroupTree {
     get_json('/admin/api/newsgroup', { method: 'post', data: { update: JSON.stringify(list) } });
     this.newsgroupAdmin.redisplay(true);
   }
+
+  rename_dlg() {
+    $.confirm({
+      title: 'ニュースグループの名称変更',
+      type: 'red',
+      columnClass: 'large',
+      content: div(input({ id: 'newsgroup-name', type: 'text', value: this.path })),
+      buttons: {
+        ok1: {
+          text: 'このニュースグループだけ変更',
+          action: () => {
+            let name = $('#newsgroup-name').val() as string;
+            if (this.invalid_newname(name)) return false;
+            this.rename(name, 'node');
+          }
+        },
+        ok2: {
+          text: '下位のニュースグループも変更',
+          action: () => {
+            let name = $('#newsgroup-name').val() as string;
+            if (this.invalid_newname(name)) return false;
+            this.rename(name, 'tree');
+          }
+        },
+        cancel: {
+          text: 'キャンセル'
+        }
+      }
+    });
+  }
+
+  invalid_newname(newname: string): boolean {
+    if (!newname) {
+      $.alert('名前が空です');
+      return true;
+    } else if (newname == this.path) {
+      $.alert('名前が変更されていません');
+      return true;
+    } else if (!newname.match(newsgroup_pat)) {
+      $.alert('名前の形式が正しくありません');
+      return true;
+    }
+    return false;
+  }
+
+  async rename(newname: string, type: 'node' | 'tree') {
+    let insert_list: object[] = [];
+    let update_list: object[] = [];
+
+    if (type == 'node') {
+      let n = this.newsgroup;
+      if (n)
+        update_list.push({ id: n.id, name: newname });
+      else
+        insert_list.push({ name: newname, bLocked: 1 });
+    } else { // tree
+      this.path = newname;
+      this.map(node => {
+        for (let c of this.children) {
+          c.path = this.path + '.' + c.name;
+        }
+        let n = node.newsgroup;
+        if (n)
+          update_list.push({ id: n.id, name: node.path });
+        else
+          insert_list.push({ name: node.path, bLocked: 1 });
+      });
+    }
+    if (insert_list.length > 0)
+      await get_json('/admin/api/newsgroup', { method: 'post', data: { insert: JSON.stringify(insert_list) } });
+    if (update_list.length > 0)
+      await get_json('/admin/api/newsgroup', { method: 'post', data: { update: JSON.stringify(update_list) } });
+    this.newsgroupAdmin.redisplay(true);
+  }
 }
 
 // --------------------- End of NewsgroupTree Class ------------------------
@@ -563,5 +641,4 @@ function reorderChildDlg(e: JQuery.ClickEvent, arg: any) {
 
 }
 
-// TODO: ニュースグループの名称変更
 // TODO: 子ニュースグループを作成
