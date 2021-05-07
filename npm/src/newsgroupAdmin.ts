@@ -117,9 +117,19 @@ export class NewsgroupAdmin {
   async redisplay(bFromDB: boolean = false) {
     if (bFromDB) {
       this.newsgroups = await get_json('/admin/api/newsgroup') as INewsgroupAdmin[];
+      let old_root = this.root;
       this.root = new NewsgroupTree(this, '', '');
       for (let n of this.newsgroups)
         this.root.allocNewsgroup(n.name, n);
+      if (this.curNode)
+        this.curNode = this.root.findNewsgroup(this.curNode.path);
+      else
+        this.curNode = null;
+      this.root.map(node => {
+        let old = old_root.findNewsgroup(node.path);
+        if (old)
+          node.fold = old.fold;
+      });
       this.root.sort();
       this.root.scan();
       this.root.makeMenu();
@@ -326,7 +336,7 @@ class NewsgroupTree {
   public ord0: number = 0;
   public ord: number = 0;
   public depth: number = 0;
-  public fold: boolean = false;
+  public fold: boolean = true;
   public menu: Menu;
   public bDeleted: number = 0;
 
@@ -341,6 +351,21 @@ class NewsgroupTree {
     func(this);
     for (let c of this.children)
       c.map(func);
+  }
+
+  findNewsgroup(path: string): NewsgroupTree | null {
+    let s = splitPath(path);
+    let parent: NewsgroupTree | null;
+    if (s.parent) {
+      parent = this.findNewsgroup(s.parent);
+    } else parent = this;
+
+    if (parent) {
+      for (let c of parent.children)
+        if (c.path == path)
+          return c;
+    }
+    return null;
   }
 
   allocNewsgroup(path: string, n: (INewsgroupAdmin | null) = null): NewsgroupTree {
@@ -691,4 +716,10 @@ function reorderChildDlg(e: JQuery.ClickEvent, arg: any) {
     }
   });
 
+}
+
+function splitPath(path: string): { parent: string | null, base: string } {
+  let i = path.indexOf('.');
+  if (i < 0) return { parent: null, base: path };
+  else return { parent: path.substring(0, i), base: path.substring(i + 1) };
 }
