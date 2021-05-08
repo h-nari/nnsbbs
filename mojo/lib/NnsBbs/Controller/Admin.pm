@@ -12,7 +12,7 @@ sub user ($self) {
     $s .= "\$(()=>{\n";
     $s .= "var ua = window.nnsbbs.userAdmin;\n";
     $s .= "\$('#main').html(ua.html());\n";
-    $s .= "ua.init();";
+    $s .= "ua.redisplay(true);";
     $s .= " });\n";
     $s .= "</script>\n";
     $self->stash( script_part => $s, page_title => 'ユーザ管理' );
@@ -118,46 +118,75 @@ sub update_newsgroup ( $db, $n ) {
 }
 
 sub api_user($self) {
-    my $limit  = $self->param('limit');
-    my $offset = $self->param('offset');
-    my $search = $self->param('search');
-    my $count  = $self->param('count');
-    my $order  = $self->param('order');
+    my $update = $self->param('update');
     my $db     = NnsBbs::Db::new($self);
-    my $sql    = "select";
-    my @param  = ();
-    $sql .= $count ? " count(*) as count" : " *";
-    $sql .= " from user";
 
-    if ($search) {
-        my $pat = '%' . $search . '%';
-        $sql .= " where disp_name like ? or mail like ? ";
-        $sql .= " or id like ? or profile like ?";
-        push( @param, $pat, $pat, $pat, $pat );
-    }
-
-    if ($order) {
-        $sql .= " order by $order";
-    }
-    else {
-        $sql .= " order by created_at";
-    }
-    if ($limit) {
-        $sql .= " limit ?";
-        push( @param, $limit );
-        if ($offset) {
-            $sql .= " offset ?";
-            push( @param, $offset );
+    if ($update) {
+        my $list = from_json($update);
+        my $cnt  = 0;
+        for my $n (@$list) {
+            eval { $cnt += update_user( $db, $n ); };
+            if ($@) {
+                $self->render( text => $@, status => '400' );
+                return;
+            }
         }
-    }
-    my $data;
-    if ($count) {
-        $data = $db->select_rh( $sql, @param );
+        $db->commit;
+        $self->render( json => { result => 'ok', executed_update => $cnt } );
     }
     else {
-        $data = $db->select_ah( $sql, @param );
+        my $limit  = $self->param('limit');
+        my $offset = $self->param('offset');
+        my $search = $self->param('search');
+        my $count  = $self->param('count');
+        my $order  = $self->param('order');
+        my $sql    = "select";
+        my @param  = ();
+        $sql .= $count ? " count(*) as count" : " *";
+        $sql .= " from user";
+
+        if ($search) {
+            my $pat = '%' . $search . '%';
+            $sql .= " where disp_name like ? or mail like ? ";
+            $sql .= " or id like ? or profile like ?";
+            push( @param, $pat, $pat, $pat, $pat );
+        }
+
+        if ($order) {
+            $sql .= " order by $order";
+        }
+        else {
+            $sql .= " order by created_at";
+        }
+        if ($limit) {
+            $sql .= " limit ?";
+            push( @param, $limit );
+            if ($offset) {
+                $sql .= " offset ?";
+                push( @param, $offset );
+            }
+        }
+        my $data;
+        if ($count) {
+            $data = $db->select_rh( $sql, @param );
+        }
+        else {
+            $data = $db->select_ah( $sql, @param );
+        }
+        $self->render( json => $data );
     }
-    $self->render( json => $data );
+}
+
+sub update_user ( $db, $n ) {
+    my $cnt = 0;
+    die "id not specified in newsgroup write\n" unless ( $n->{'id'} );
+    my $id = $n->{'id'};
+    while ( my ( $key, $value ) = each(%$n) ) {
+        my $sql = "update user set $key=? where id=?";
+        $db->execute( $sql, $value, $id ) if $key ne 'id';
+        $cnt++;
+    }
+    return $cnt;
 }
 
 1;
