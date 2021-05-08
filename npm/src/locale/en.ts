@@ -32,6 +32,11 @@ export const en = {
     'post-new-article': 'Post new article',
     'reply-to-article': 'Reply to article',
     'quote-article': 'Quote article',
-    'login-failed': 'Login failed'
+    'login-failed': 'Login failed',
+    'show-profile': 'User profile',
+    'user-id': 'User ID',
+    'disp_name': 'Display name',
+    'last-post': 'Last post',
+    'membership': 'Membership'
   }
 };
