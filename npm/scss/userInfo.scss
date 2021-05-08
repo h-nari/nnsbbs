@@ -1,0 +1,44 @@
+#userInfo {
+  .user-info1 {
+    > div {
+      display: inline-block;
+      margin: 0px;
+      padding: 5px;
+      > div {
+        margin: 5px;
+        display: inline-block;
+      }
+      > div:nth-child(2) {
+        font-weight: bold;
+      }
+    }
+  }
+  .profile {
+    > div {
+      margin: 5px;
+    }
+    > div:nth-child(2) {
+      padding: 5px;
+      white-space: pre;
+      font-weight: bold;
+      border: solid 1px lightgray;
+    }
+  }
+  .titles {
+    overflow: auto;
+    margin: 10px 5px;
+    height: 400px;
+    .count {
+      font-weight: bold;
+    }
+    > div {
+      > span {
+        margin: 0px 5px;
+        white-space: pre;
+      }
+      .disp_name {
+        font-weight: bold;
+      }
+    }
+  }
+}

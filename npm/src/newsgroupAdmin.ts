@@ -115,7 +115,6 @@ export class NewsgroupAdmin {
       this.redisplay();
     });
 
-    //TODO: btn-permission : permissionの変更ダイアログ
     $(`#${this.id} .btn-permission`).on('click', e => {
       console.log('permission dialog');
       if (this.curNode)

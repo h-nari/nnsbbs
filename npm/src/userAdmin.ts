@@ -1,15 +1,8 @@
-import { IMembership, membership_select } from "./dbif";
+import { IMembership, IUserAdmin, membership_select } from "./dbif";
 import { Menu } from "./menu";
 import NnsBbs from "./nnsbbs";
 import { div, table, tr, td, th, button, span, input, label, select, option, selected, a, icon, tag } from "./tag";
 import { get_json } from "./util";
-
-interface IUserAdmin {
-  id: string, mail: string, disp_name: string, password: string,
-  created_at: string, logined_at: string | null, reset_count: number,
-  membership_id: string, moderator: number, admin: number, bBanned: number,
-  bannned_at: string | null, profile: string
-};
 
 export class UserAdmin {
   public id = 'user-admin';
@@ -44,7 +37,7 @@ export class UserAdmin {
       else if (this.membership)
         membership = this.membership[u.membership_id].name;
       c += tr(
-        td(u.id),
+        td(a({ href: window.nnsbbs_baseURL + 'admin/user/' + u.id }, u.id)),
         td(u.disp_name),
         td(membership),
         td(u.mail),

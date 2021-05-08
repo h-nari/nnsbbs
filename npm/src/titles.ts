@@ -192,10 +192,16 @@ export class TitlesPane extends ToolbarPane {
     });
   }
 
-  select_article(id: number) {
+  async select_article(id: number) {
     const scroller = `#${this.id} .titles`;
     const scrollee = scroller + ' >div';
     const line = scrollee + ` >button[article_id=${id}]`;
+
+    if ($(line).length == 0 && this.newsgroup) {
+      console.log('load titles');
+      await this.load(this.newsgroup, Math.max(1, id - 50), Math.min(id + 50, this.newsgroup.max_id))
+    }
+
     $(scrollee + ' >button').removeClass('active');
     $(line).addClass('active');
     this.cur_article_id = id;

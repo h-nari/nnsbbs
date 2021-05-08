@@ -11,11 +11,13 @@ import { i18n } from "i18next";
 import { div, select, option, label, selected } from "./tag";
 import { UserAdmin } from "./userAdmin";
 import { NewsgroupAdmin } from "./newsgroupAdmin";
+import { UserInfo } from "./userInfo";
 
 export default class NnsBbs {
   public topBar = new TopBar(this);
   public user = new User(this);
   public userAdmin = new UserAdmin(this);
+  public userInfo = new UserInfo(this);
   public newsgroupAdmin = new NewsgroupAdmin(this);
   public gm = new GeometryManager('main');
   public i18next: i18n;

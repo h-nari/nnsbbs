@@ -32,10 +32,12 @@ sub startup ($self) {
     $r->get('/bbs')->to('top#bbs');
     $r->get('/bbs/#newsgroup')->to('top#bbs');
     $r->get('/bbs/#newsgroup/:article_id')->to('top#bbs');
-    $r->get('/admin/user')->to('admin#user');
+    $r->get('/admin/user')->to('admin#user_list');
+    $r->get('/admin/user/#id')->to('admin#user');
     $r->get('/admin/newsgroup')->to('admin#newsgroup');
     $r->any('/admin/api/newsgroup')->to('admin#api_newsgroup');
     $r->any('/admin/api/user')->to('admin#api_user');
+    $r->any('/admin/api/title')->to('admin#api_title');
 }
 
 sub _load_config {

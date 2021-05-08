@@ -8,8 +8,7 @@ use utf8;
 
 sub newsgroup ($self) {
     my $db  = NnsBbs::Db::new($self);
-    my $sql = "select id,name,comment,max_id,posted_at from newsgroup";
-    $sql .= " where not bDeleted";
+    my $sql = "select * from newsgroup";
     $sql .= " order by ord,name";
     my $data = $db->select_ah($sql);
     $self->render( json => $data );

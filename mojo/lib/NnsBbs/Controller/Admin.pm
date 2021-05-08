@@ -7,15 +7,29 @@ use NnsBbs::Db;
 use Data::Dumper;
 use utf8;
 
-sub user ($self) {
+sub user_list ($self) {
     my $s = "<script>\n";
     $s .= "\$(()=>{\n";
     $s .= "var ua = window.nnsbbs.userAdmin;\n";
     $s .= "\$('#main').html(ua.html());\n";
-    $s .= "ua.redisplay(true);";
+    $s .= "ua.redisplay(true);\n";
     $s .= " });\n";
     $s .= "</script>\n";
     $self->stash( script_part => $s, page_title => 'ユーザ管理' );
+    $self->render( template => 'admin/show' );
+}
+
+sub user ($self) {
+    my $id = $self->param('id');
+    my $s  = "<script>\n";
+    $s .= "\$(()=>{\n";
+    $s .= "var ui = window.nnsbbs.userInfo;\n";
+    $s .= "\$('#main').html(ui.html());\n";
+    $s .= "ui.setUserId('$id');\n";
+    $s .= "ui.redisplay(true);\n";
+    $s .= " });\n";
+    $s .= "</script>\n";
+    $self->stash( script_part => $s, page_title => 'ユーザ情報' );
     $self->render( template => 'admin/show' );
 }
 
@@ -140,12 +154,17 @@ sub api_user($self) {
         my $search = $self->param('search');
         my $count  = $self->param('count');
         my $order  = $self->param('order');
+        my $id     = $self->param('id');
         my $sql    = "select";
         my @param  = ();
         $sql .= $count ? " count(*) as count" : " *";
         $sql .= " from user";
 
-        if ($search) {
+        if ($id) {
+            $sql .= " where id=?";
+            push( @param, $id );
+        }
+        elsif ($search) {
             my $pat = '%' . $search . '%';
             $sql .= " where disp_name like ? or mail like ? ";
             $sql .= " or id like ? or profile like ?";
@@ -170,6 +189,9 @@ sub api_user($self) {
         if ($count) {
             $data = $db->select_rh( $sql, @param );
         }
+        elsif ($id) {
+            $data = $db->select_rh( $sql, @param );
+        }
         else {
             $data = $db->select_ah( $sql, @param );
         }
@@ -187,6 +209,27 @@ sub update_user ( $db, $n ) {
         $cnt++;
     }
     return $cnt;
+}
+
+sub api_title($self) {
+    my $user_id = $self->param('user_id');
+    my $data    = "";
+    my $db      = NnsBbs::Db::new($self);
+    eval {
+        die "user_id is required" if ( !$user_id );
+
+        my $sql = "select newsgroup_id,id,rev,rev_reason,title,reply_to";
+        $sql .= ",reply_rev";
+        $sql .= ",user_id,disp_name,ip,bDeleted,created_at,deleted_at";
+        $sql .= " from article where user_id=? order by created_at";
+        $data = $db->select_ah( $sql, $user_id );
+    };
+    if ($@) {
+        $self->render( text => $@, status => '400' );
+    }
+    else {
+        $self->render( json => $data );
+    }
 }
 
 1;

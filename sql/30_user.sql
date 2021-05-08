@@ -10,7 +10,7 @@ create table user (
   created_at    datetime      default now(),
   logined_at    datetime,                     -- last login time
   reset_count   int           default 0,      -- password reset count
-  membership_id int           default 0,      -
+  membership_id int           default 0, 
   moderator     boolean       default false,
   admin         boolean       default false,
   bBanned       boolean       default false,
