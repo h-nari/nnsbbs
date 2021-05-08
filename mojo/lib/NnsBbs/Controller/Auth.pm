@@ -144,6 +144,8 @@ sub api_login {
             $self->render( json => { login => 0 } );
         }
         else {
+            $db->execute( "update user set logined_at=now() where id=?", $user_id );
+            $db->commit;
             &new_session( $self, $db, $user_id );
             $self->render( json => { login => 1 } );
         }
