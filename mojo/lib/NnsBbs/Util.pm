@@ -16,6 +16,9 @@ sub access_level {
     $sql .= " where u.id = s.user_id and s.id=?";
     my ( $level, $moderator, $admin, $user_id ) =
       $db->select_ra( $sql, $session_id );
+    $sql = "update session set last_access=now() where id=?";
+    $db->execute( $sql, $session_id );
+    $db->commit;
 
     $c->session( id => $session_id, expiration => 3600 * 24 * 7 );
 

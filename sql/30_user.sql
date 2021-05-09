@@ -15,6 +15,7 @@ create table user (
   admin         boolean       default false,
   bBanned       boolean       default false,
   banned_at     datetime,  
+  banned_reason text          default "",
   profile       text          default ""      
 );
 create unique index user_mail on user(mail);
