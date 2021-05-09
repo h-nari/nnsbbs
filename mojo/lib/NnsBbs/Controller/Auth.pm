@@ -56,7 +56,6 @@ sub register($self) {
 
     my $sql = "select email from mail_auth where id=?";
     my ($db_email) = $db->select_ra( $sql, $id );
-    print STDERR "*** email:$email db_email:$db_email\n";
     if ( !$db_email ) {
         push( @errors, "idが正しくありません" );
     }
@@ -144,7 +143,8 @@ sub api_login {
             $self->render( json => { login => 0 } );
         }
         else {
-            $db->execute( "update user set logined_at=now() where id=?", $user_id );
+            $db->execute( "update user set logined_at=now() where id=?",
+                $user_id );
             $db->commit;
             &new_session( $self, $db, $user_id );
             $self->render( json => { login => 1 } );
@@ -168,17 +168,23 @@ sub api_logout {
 sub api_session {
     my $self       = shift;
     my $session_id = $self->session('id') || '';
-    print STDERR "*** api_session: session_id:$session_id\n";
+
     if ($session_id) {
         my $db = NnsBbs::Db::new($self);
         &update_session($db);
         my $sql =
-          "select disp_name, u.id as user_id from user as u,session as s";
+"select disp_name, u.id as user_id,u.membership_id from user as u,session as s";
         $sql .= " where u.id = s.user_id and s.id=?";
-        my ( $disp_name, $user_id ) = $db->select_ra( $sql, $session_id );
+        my ( $disp_name, $user_id, $membership_id ) =
+          $db->select_ra( $sql, $session_id );
         if ($disp_name) {
             $self->render(
-                json => { login => 1, name => $disp_name, user_id => $user_id }
+                json => {
+                    login         => 1,
+                    name          => $disp_name,
+                    user_id       => $user_id,
+                    membership_id => $membership_id
+                }
             );
             return;
         }

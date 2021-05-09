@@ -28,7 +28,7 @@ export class TopBar {
       get_json('/api/session').then((d: any) => {
         if (d.login) {
           this.set_login_menu(d.name);
-          this.parent.user.user = { id: d.user_id as string, name: d.name as string };
+          this.parent.user.user = { id: d.user_id as string, name: d.name as string, membership_id: d.membership_id };
           resolve(true);
         }
         else {
@@ -51,8 +51,8 @@ export class TopBar {
     m.add(new Menu('Profile', () => {
       this.parent.user.profile_dlg();
     }));
-    m.add(new Menu('user-manager','/admin/user'));
-    m.add(new Menu('newsgroup-manager','/admin/newsgroup'));
+    m.add(new Menu('user-manager', '/admin/user'));
+    m.add(new Menu('newsgroup-manager', '/admin/newsgroup'));
   }
 
   set_logout_menu() {

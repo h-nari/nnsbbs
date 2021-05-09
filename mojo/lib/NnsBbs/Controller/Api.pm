@@ -2,15 +2,24 @@ package NnsBbs::Controller::Api;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use NnsBbs::Db;
 use NnsBbs::Mail;
+use NnsBbs::Util qw/access_level/;
 use Data::Dumper;
 use String::Random;
 use utf8;
 
 sub newsgroup ($self) {
-    my $db  = NnsBbs::Db::new($self);
-    my $sql = "select * from newsgroup";
+    my $db = NnsBbs::Db::new($self);
+    my ( $level, $moderator ) = access_level( $self, $db );
+
+    my $sql   = "select * from newsgroup";
+    my @param = ();
+    unless ($moderator) {
+        $sql .= " where not bDeleted and ? >= rpl";
+        push( @param, $level );
+    }
     $sql .= " order by ord,name";
-    my $data = $db->select_ah($sql);
+    my $data = $db->select_ah( $sql, @param );
+
     $self->render( json => $data );
 }
 
@@ -19,8 +28,13 @@ sub titles($self) {
     my $from         = $self->param("from");
     my $to           = $self->param("to");
 
-    if ($newsgroup_id) {
-        my $db  = NnsBbs::Db::new($self);
+    eval {
+        die "newsgroup_id is required\n" unless ($newsgroup_id);
+        my $db = NnsBbs::Db::new($self);
+        my ( $level, $moderator ) = access_level( $self, $db );
+        my ($rpl) = $db->select_ra( "select rpl from newsgroup where id=?",
+            $newsgroup_id );
+        die "no read permission.\n" if ( !defined($rpl) || $rpl > $level );
         my $sql = "select id as article_id ,title,reply_to";
         $sql .= ",created_at as date,user_id,disp_name";
         $sql .= " from article";
@@ -38,36 +52,27 @@ sub titles($self) {
         }
         $sql .= " order by id";
         my $data = $db->select_ah( $sql, @params );
-        print STDERR "newsgroup=", $newsgroup_id, " count=", ( @$data + 0 ),
+        print STDERR "newsgroup=", $newsgroup_id, " count=",
+          ( @$data + 0 ),
           "\n";
         $self->render( json => $data );
-    }
-    else {
-        $self->render(
-            text   => "param newsgroup_id is required",
-            status => '400'
-        );
-    }
+    };
+    $self->render( text => $@, status => '400' ) if $@;
 }
 
 sub article($self) {
     my $newsgroup_id = $self->param("newsgroup_id");
     my $article_id   = $self->param("article_id");
 
-    if ( !$newsgroup_id ) {
-        $self->render(
-            text   => "param newsgroup_id is required",
-            status => '400'
-        );
-    }
-    elsif ( !$article_id ) {
-        $self->render(
-            text   => "param article_id is required",
-            status => '400'
-        );
-    }
-    else {
-        my $db  = NnsBbs::Db::new($self);
+    eval {
+        die "param newsgroup_id is required\n" unless ($newsgroup_id);
+        die "param article_id is required\n"   unless ($article_id);
+        my $db = NnsBbs::Db::new($self);
+        my ( $level, $moderator ) = access_level( $self, $db );
+        my ($rpl) = $db->select_ra( "select rpl from newsgroup where id=?",
+            $newsgroup_id );
+        die "No read permission.\n" if ( !defined($rpl) || $rpl > $level );
+
         my $sql = "select content,created_at as date,disp_name as author";
         $sql .= ",title,rev,id as article_id,user_id";
         $sql .= " from article";
@@ -75,7 +80,8 @@ sub article($self) {
         $sql .= " order by rev desc limit 1";
         my $hr = $db->select_rh( $sql, $newsgroup_id, $article_id );
         $self->render( json => $hr );
-    }
+    };
+    $self->render( text => $@, status => '400' ) if ($@);
 }
 
 sub mail_auth($self) {
@@ -133,7 +139,7 @@ sub profile_read {
     }
     else {
         my $db  = NnsBbs::Db::new($self);
-        my $sql = "select mail,disp_name,created_at,logined_at";
+        my $sql = "select disp_name,created_at";
         $sql .= ",membership_id,profile from user where id=?";
         my $ra = $db->select_rh( $sql, $user_id );
         $self->render( json => $ra ? $ra : {} );
@@ -147,17 +153,15 @@ sub profile_write {
     my $profile       = $self->param('profile');
     my $membership_id = $self->param('membership_id');
 
-    if ( !$user_id ) {
-        $self->render( text => 'user_id is required', status => '400' );
-    }
-    elsif ( !$name && !$profile && !$membership_id ) {
-        $self->render(
-            text   => 'name or profile or membership_id is required',
-            status => '400'
-        );
-    }
-    else {
-        my $db  = NnsBbs::Db::new($self);
+    eval {
+        die "user_id is required\n" unless ($user_id);
+        die "name,profile or membership_id is required\n"
+          if ( !$name && !$profile && !$membership_id );
+        my $db = NnsBbs::Db::new($self);
+        my ( $level, $moderator, $admin, $user_id2 ) =
+          access_level( $self, $db );
+        die "no write profile permission\n"
+          unless ( ( $user_id eq $user_id2 ) || $moderator );
         my $sql = "update user set disp_name=? where id=?";
         $db->execute( $sql, $name, $user_id ) if $name;
         $sql = "update user set profile=? where id=?";
@@ -166,7 +170,8 @@ sub profile_write {
         $db->execute( $sql, $membership_id, $user_id ) if $membership_id;
         $db->commit;
         $self->render( json => { result => 'Ok' } );
-    }
+    };
+    $self->render( text => $@, status => '400' ) if $@;
 }
 
 sub post_article {
@@ -181,45 +186,47 @@ sub post_article {
     my $reply_rev     = $self->param('reply_rev') || 0;
     my @missing_param = ();
 
-    push( @missing_param, 'newsgroup_id' ) unless $newsgroup_id;
-    push( @missing_param, 'title' )        unless $title;
-    push( @missing_param, 'user_id' )      unless $user_id;
-    push( @missing_param, 'disp_name' )    unless $disp_name;
-    push( @missing_param, 'content' )      unless $content;
+    eval {
+        push( @missing_param, 'newsgroup_id' ) unless $newsgroup_id;
+        push( @missing_param, 'title' )        unless $title;
+        push( @missing_param, 'user_id' )      unless $user_id;
+        push( @missing_param, 'disp_name' )    unless $disp_name;
+        push( @missing_param, 'content' )      unless $content;
 
-    if ( @missing_param > 0 ) {
-        $self->render(
-            text => 'parameter ',
-            join( ',', @missing_param ) . ' are missing',
-            status => '400'
+        die 'parameter ' . join( ',', @missing_param ) . " are missing\n"
+          if ( @missing_param > 0 );
+
+        my $db = NnsBbs::Db::new($self);
+        my ( $level, $moderator ) = access_level( $self, $db );
+        my ($wpl) = $db->select_ra( "select wpl from newsgroup where id=?",
+            $newsgroup_id );
+
+        die "no write permission" if ( !$moderator && $level < $wpl );
+
+        my $sql        = "select max_id from newsgroup where id=? for update";
+        my ($max_id)   = $db->select_ra( $sql, $newsgroup_id );
+        my $article_id = $max_id + 1;
+        $sql = "update newsgroup set max_id=?,posted_at=now() where id=?";
+        $db->execute( $sql, $article_id, $newsgroup_id );
+
+        $sql = "insert into article";
+        $sql .= "(newsgroup_id,id,title,reply_to,reply_rev,";
+        $sql .= "user_id,disp_name,ip,content)";
+        $sql .= "values(?,?,?,?,?,?,?,?,?)";
+        $db->execute(
+            $sql,      $newsgroup_id, $article_id, $title,
+            $reply_to, $reply_rev,    $user_id,    $disp_name,
+            $ip,       $content
         );
-        return;
-    }
-    my $db = NnsBbs::Db::new($self);
-
-    # TODO: ckeck user permissions
-
-    my $sql        = "select max_id from newsgroup where id=? for update";
-    my ($max_id)   = $db->select_ra( $sql, $newsgroup_id );
-    my $article_id = $max_id + 1;
-    $sql = "update newsgroup set max_id=?,posted_at=now() where id=?";
-    $db->execute( $sql, $article_id, $newsgroup_id );
-
-    $sql = "insert into article";
-    $sql .= "(newsgroup_id,id,title,reply_to,reply_rev,";
-    $sql .= "user_id,disp_name,ip,content)";
-    $sql .= "values(?,?,?,?,?,?,?,?,?)";
-    $db->execute(
-        $sql,       $newsgroup_id, $article_id, $title, $reply_to,
-        $reply_rev, $user_id,      $disp_name,  $ip,    $content
-    );
-    $db->commit;
-    $self->render( json => { result => 'ok', article_id => $article_id } );
+        $db->commit;
+        $self->render( json => { result => 'ok', article_id => $article_id } );
+    };
+    $self->render( text => $@, status => '400' ) if $@;
 }
 
 sub membership ($self) {
-    my $db         = NnsBbs::Db::new($self);
-    my $ah         = $db->select_hh("select * from membership order by id",'id');
+    my $db = NnsBbs::Db::new($self);
+    my $ah = $db->select_hh( "select * from membership order by id", 'id' );
     $self->render( json => $ah );
 }
 

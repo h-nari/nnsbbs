@@ -1,52 +1,72 @@
 package NnsBbs::Controller::Admin;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
-
-# use Mojo::JSON qw(decode_json);
+use NnsBbs::Util qw/access_level/;
 use JSON;
 use NnsBbs::Db;
 use Data::Dumper;
 use utf8;
 
 sub user_list ($self) {
-    my $s = "<script>\n";
-    $s .= "\$(()=>{\n";
-    $s .= "var ua = window.nnsbbs.userAdmin;\n";
-    $s .= "\$('#main').html(ua.html());\n";
-    $s .= "ua.redisplay(true);\n";
-    $s .= " });\n";
-    $s .= "</script>\n";
-    $self->stash( script_part => $s, page_title => 'ユーザ管理' );
-    $self->render( template => 'admin/show' );
+    my $db = NnsBbs::Db::new($self);
+    my ( $level, $moderator ) = access_level( $self, $db );
+    if ($moderator) {
+        my $s = "<script>\n";
+        $s .= "\$(()=>{\n";
+        $s .= "var ua = window.nnsbbs.userAdmin;\n";
+        $s .= "\$('#main').html(ua.html());\n";
+        $s .= "ua.redisplay(true);\n";
+        $s .= " });\n";
+        $s .= "</script>\n";
+        $self->stash( script_part => $s, page_title => 'ユーザ管理' );
+        $self->render( template => 'admin/show' );
+    }
+    else {
+        $self->render( text => 'Access Forbidden', status => '403' );
+    }
 }
 
 sub user ($self) {
-    my $id = $self->param('id');
-    my $s  = "<script>\n";
-    $s .= "\$(()=>{\n";
-    $s .= "var ui = window.nnsbbs.userInfo;\n";
-    $s .= "\$('#main').html(ui.html());\n";
-    $s .= "ui.setUserId('$id');\n";
-    $s .= "ui.redisplay(true);\n";
-    $s .= " });\n";
-    $s .= "</script>\n";
-    $self->stash( script_part => $s, page_title => 'ユーザ情報' );
-    $self->render( template => 'admin/show' );
+    my $db = NnsBbs::Db::new($self);
+    my ( $level, $moderator ) = access_level( $self, $db );
+    if ($moderator) {
+        my $id = $self->param('id');
+        my $s  = "<script>\n";
+        $s .= "\$(()=>{\n";
+        $s .= "var ui = window.nnsbbs.userInfo;\n";
+        $s .= "\$('#main').html(ui.html());\n";
+        $s .= "ui.setUserId('$id');\n";
+        $s .= "ui.redisplay(true);\n";
+        $s .= " });\n";
+        $s .= "</script>\n";
+        $self->stash( script_part => $s, page_title => 'ユーザ情報' );
+        $self->render( template => 'admin/show' );
+    }
+    else {
+        $self->render( text => 'Access Forbidden', status => '403' );
+    }
+
 }
 
 sub newsgroup($self) {
     my $db = NnsBbs::Db::new($self);
-    my $s  = "<script>\n";
-    $s .= "\$(()=>{\n";
-    $s .= "var na = window.nnsbbs.newsgroupAdmin;\n";
-    $s .= "\$('#main').html(na.html());\n";
-    $s .= "na.redisplay(true);";
-    $s .= " });\n";
-    $s .= "</script>\n";
-    $self->stash(
-        script_part => $s,
-        page_title  => 'ニュースグループ管理'
-    );
-    $self->render( template => 'admin/show' );
+    my ( $level, $moderator ) = access_level( $self, $db );
+    if ($moderator) {
+        my $s = "<script>\n";
+        $s .= "\$(()=>{\n";
+        $s .= "var na = window.nnsbbs.newsgroupAdmin;\n";
+        $s .= "\$('#main').html(na.html());\n";
+        $s .= "na.redisplay(true);";
+        $s .= " });\n";
+        $s .= "</script>\n";
+        $self->stash(
+            script_part => $s,
+            page_title  => 'ニュースグループ管理'
+        );
+        $self->render( template => 'admin/show' );
+    }
+    else {
+        $self->render( text => 'Access Forbidden', status => '403' );
+    }
 }
 
 sub api_newsgroup($self) {
@@ -54,6 +74,12 @@ sub api_newsgroup($self) {
     my $update = $self->param('update');
     my $delete = $self->param('delete');
     my $db     = NnsBbs::Db::new($self);
+    my ( $level, $moderator ) = access_level( $self, $db );
+
+    unless($moderator) {
+        $self->render( text => 'Access Forbidden', status => '403' );
+    }
+
     my $sql;
     if ($insert) {
         my $list = from_json($insert);
@@ -134,6 +160,11 @@ sub update_newsgroup ( $db, $n ) {
 sub api_user($self) {
     my $update = $self->param('update');
     my $db     = NnsBbs::Db::new($self);
+    my ( $level, $moderator ) = access_level( $self, $db );
+
+    unless($moderator) {
+        $self->render( text => 'Access Forbidden', status => '403' );
+    }
 
     if ($update) {
         my $list = from_json($update);
@@ -215,6 +246,12 @@ sub api_title($self) {
     my $user_id = $self->param('user_id');
     my $data    = "";
     my $db      = NnsBbs::Db::new($self);
+    my ( $level, $moderator ) = access_level( $self, $db );
+    
+    unless($moderator) {
+        $self->render( text => 'Access Forbidden', status => '403' );
+    }
+
     eval {
         die "user_id is required" if ( !$user_id );
 

@@ -3,21 +3,21 @@ import { escape_html, get_json } from './util';
 import { createHash } from 'sha1-uint8array';
 import { INewsGroup } from './newsgroup';
 import { IArticle } from './article';
-import { IMembership } from './dbif';
+import { api_membership, IMembership } from './dbif';
 import NnsBbs from './nnsbbs';
 
 interface IUser {
   id: string;
   name: string;
+  membership_id: number;
 };
 
 interface IProfile {
-  mail: string,
-  disp_name: string,
-  created_at: string,
-  logined_at: string,
-  membership_id: number,
-  profile: string
+  mail: string;
+  disp_name: string;
+  created_at: string;
+  membership_id: number;
+  profile: string;
 };
 
 export class User {
@@ -268,6 +268,7 @@ export class User {
 
   async show_profile(user_id: string) {
     let d = await get_json('/api/profile_read', { data: { user_id } }) as IProfile;
+    if (!this.membership) this.membership = await api_membership();
     $.alert({
       title: this.t('show-profile'),
       type: 'green',
