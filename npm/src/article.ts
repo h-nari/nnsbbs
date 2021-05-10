@@ -35,14 +35,14 @@ export class ArticlePane extends ToolbarPane {
         let url = window.nnsbbs_baseURL + 'attachment/' + a.file_id;
         if (a.content_type.startsWith('image/')) {
           attachment += div({ class: 'image' },
-            div(tag('a', { href: url }, img({ src: url }))),
+            div(tag('a', { href: url }, img({ src0: url }))),
             div({ class: 'comment' }, a.comment));
         } else {
           attachment += div({ class: 'attached-file' },
             div(tag('a', { href: url },
               span({ class: 'filename' }, a.filename),
               span({ class: 'size' }, size_str(a.size)))),
-            div({ class: 'comment' }, a.comment));
+            div({ class: 'comment' }, escape_html(a.comment)));
         }
       }
 
@@ -68,6 +68,23 @@ export class ArticlePane extends ToolbarPane {
       if (this.article)
         this.parent.user.show_profile(this.article.user_id);
     });
+
+    let imgs = $(`#${this.id} .article .image IMG`);
+    for (let i = 0; i < imgs.length; i++) {
+      let img = imgs[i] as HTMLImageElement;
+      img.onload = e => {
+        let nw = img.naturalWidth;
+        let nh = img.naturalHeight;
+        let w = img.width;
+        let h = img.height;
+        let sx = w / nw;
+        let sy = h / nh;
+        let ss = Math.min(sx);
+        $(img).attr('style', `width: ${ss * nw}px; height: ${ss * nh}px;`);
+      };
+      $(img).attr('src', $(img).attr('src0') || '');
+      $(img).removeAttr('src0');
+    }
   }
 
   redisplay() {
