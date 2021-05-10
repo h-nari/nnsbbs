@@ -68,3 +68,34 @@ export interface TNewsgroup {
 export function api_newsgroup(): Promise<TNewsgroup[]> {
   return get_json('/api/newsgroup') as Promise<TNewsgroup[]>;
 }
+
+interface IPostArg {
+  newsgroup_id: number;
+  user_id: string;
+  disp_name: string;
+  title: string;
+  content: string;
+  reply_to: number;
+}
+
+interface IResult {
+  result: 'ok' | 'ng';
+}
+
+interface IPostResult {
+  result: 'ok' | 'ng';
+  article_id: string;
+}
+
+export function api_post(arg: IPostArg): Promise<IPostResult> {
+  return get_json('/api/post', { method: 'post', data: arg }) as Promise<IPostResult>;
+}
+
+export function api_attachment(fd: FormData): Promise<IResult> {
+  return get_json('/api/attachment', {
+    type: 'post',
+    data: fd,
+    processData: false,
+    contentType: false
+  }) as Promise<IResult>;
+}

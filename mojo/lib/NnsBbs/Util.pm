@@ -1,8 +1,9 @@
 package NnsBbs::Util;
 use NnsBbs::Controller::Auth;
+use String::Random;
 
 use Exporter 'import';
-our @EXPORT_OK = qw/access_level/;
+our @EXPORT_OK = qw/access_level random_id/;
 
 sub access_level {
     my $c  = shift;    # Mojo::Controller
@@ -24,6 +25,11 @@ sub access_level {
 
     return ( $level, $moderator, $admin, $user_id ) if ( defined($level) );
     return ( 0,      0,          0,      0 );
+}
+
+sub random_id {
+    my $length = shift || 12;
+    return String::Random->new->randregex("[A-Za-z0-9]{$length}");
 }
 
 1;

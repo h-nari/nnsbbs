@@ -2,9 +2,10 @@ package NnsBbs::Controller::Api;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use NnsBbs::Db;
 use NnsBbs::Mail;
-use NnsBbs::Util qw/access_level/;
+use NnsBbs::Util qw/access_level random_id/;
 use Data::Dumper;
 use String::Random;
+use JSON;
 use utf8;
 
 sub newsgroup ($self) {
@@ -231,10 +232,55 @@ sub membership ($self) {
 }
 
 sub attachment($self) {
-    my $file = $self->req->upload('file');
-    printf STDERR "*** filename:%s ***\n", $file->filename;
-    printf STDERR "*** name:%s ***\n", $file->name;
-    $self->render( json => { result => 'ok' } );
+    my $newsgroup_id = $self->param('newsgroup_id');
+    my $article_id   = $self->param('article_id');
+    my $rev          = $self->param('rev') || 0;
+    my $cmt_json     = $self->param('comments') || '';
+    my $files        = $self->req->every_upload('file');
+    print STDERR "*** newsgroup_id:$newsgroup_id ***\n";
+    print STDERR "*** article_id:$article_id ***\n";
+    print STDERR "*** cmt_json:$cmt_json ***\n";
+
+    eval {
+        die "no newsgroup_id\n" unless $newsgroup_id;
+        die "no article_id\n"   unless $article_id;
+        my $comment = $cmt_json ? from_json($cmt_json) : undef;
+        my $db = NnsBbs::Db::new($self);
+        my ( $level, $moderator, $admin, $user_id ) =
+          access_level( $self, $db );
+        my ($wpl) = $db->select_ra( "select wpl from newsgroup where id=?",
+            $newsgroup_id );
+        die "no write permission" if ( !$moderator && $level < $wpl );
+
+        my ( $id, $sql );
+        my $ord = 0;
+        for my $file (@$files) {
+            while (1) {
+                $id  = random_id(12);
+                $sql = "select count(*) from attached_file where id=?";
+                my ($c) = $db->select_ra( $sql, $id );
+                last if $c == 0;
+            }
+            $sql = "insert into attached_file";
+            $sql .= "(id,filename,content_type,user_id,data)";
+            $sql .= "values(?,?,?,?,?)";
+            $db->execute(
+                $sql, $id, $file->filename,
+                $file->headers->content_type,
+                $user_id, $file->slurp
+            );
+            my $cmt = "";
+             $cmt = $comment->[$ord] if($comment);
+
+            $sql = "insert into attachment";
+            $sql .= "(newsgroup_id,article_id,rev,file_id,ord,comment)";
+            $sql .= "values(?,?,?,?,?,?)";
+            $db->execute( $sql, $newsgroup_id, $article_id, $rev, $id, $ord++,$cmt );
+        }
+        $db->commit;
+        $self->render( json => { result => 'ok' } );
+    };
+    $self->render( text => $@, status => '400' ) if $@;
 }
 
 1;

@@ -37,6 +37,8 @@ export const jp = {
     'user-id': 'ユーザID',
     'disp_name': '表示名',
     'last-post': '最終投稿',
-    'membership': '党員資格'
+    'membership': '党員資格',
+    'attach-file': '添付ファイル',
+    'delete-this-attachment': 'この添付ファイルを削除'
   }
 };

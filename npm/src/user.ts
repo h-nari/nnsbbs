@@ -3,7 +3,7 @@ import { escape_html, get_json } from './util';
 import { createHash } from 'sha1-uint8array';
 import { INewsGroup } from './newsgroup';
 import { IArticle } from './article';
-import { api_membership, IMembership } from './dbif';
+import { api_membership, IMembership, api_post, api_attachment } from './dbif';
 import NnsBbs from './nnsbbs';
 import { Attachment } from './attachemnt';
 
@@ -222,31 +222,33 @@ export class User {
       buttons: {
         ok: {
           text: this.parent.i18next.t('post'),
-          action: () => {
-            let user_id = this.user?.id;
+          action: async () => {
+            let user_id = this.user?.id || '';
             let newsgroup_id = n.id;
-            let reply_to = a ? a.article_id : 0;
-            let title = $('#post-title').val() || '';
-            let disp_name = $('#post-name').val() || '';
-            let content = $('#post-content').val() || '';
-
+            let reply_to = a ? Number(a.article_id) : 0;
+            let title = $('#post-title').val() as string;
+            let disp_name = $('#post-name').val() as string;
+            let content = $('#post-content').val() as string;
             if (title == '') return error_dlg('title-is-blank');
             if (disp_name == '') return error_dlg('name-is-blank');
             if (content == '') return error_dlg('content-is-blank');
 
             content = 'content-type: text/plain\n\n' + content;
 
-            get_json('/api/post', {
-              method: 'post',
-              data: {
-                newsgroup_id, user_id,
-                disp_name, title, content, reply_to
-              }
-            }).then((d: any) => {
-              this.parent.top_page(n.name, d.article_id);
-            }).catch(e => {
-              $.alert('投稿に失敗しました');
-            });
+            let r = await api_post({ newsgroup_id, user_id, disp_name, title, content, reply_to });
+            if (attachment_list.length > 0) {
+              let fd = new FormData();
+              attachment_list.forEach(a => fd.append('file', a.file));
+              fd.append('newsgroup_id', String(newsgroup_id));
+              fd.append('article_id', r.article_id);
+              let comments = attachment_list.map(a => a.comment);
+              console.log('comments:', comments);
+              fd.append('comments', JSON.stringify(comments));
+              let r2 = await api_attachment(fd);
+            }
+
+            this.parent.top_page(n.name, r.article_id);
+
           }
         },
         close: {

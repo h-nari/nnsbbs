@@ -19,8 +19,28 @@ sub bbs ($self) {
     $s .= "});\n";
     $s .= "</script>\n";
 
-    $self->stash( script_part => $s);
+    $self->stash( script_part => $s );
     $self->render( template => 'top/show' );
+}
+
+sub attachment ($self) {
+    my $id = $self->param('id');
+
+    eval {
+        die "no id\n" unless ($id);
+        my $db = NnsBbs::Db::new($self);
+        my $sql =
+          "select filename,content_type,data from attached_file where id=?";
+        my ( $filename, $type, $data ) = $db->select_ra( $sql, $id );
+        die "no data found\n" unless ($filename);
+        my $hdrs = $self->res->headers;
+
+        # $hdrs->content_disposition("attachement;filename=$filename");
+        $hdrs->content_disposition("filename=$filename");
+        $hdrs->content_type($type);
+        $self->render( data => $data );
+    };
+    $self->render( text => $@, status => '400' ) if $@;
 }
 
 1;

@@ -14,6 +14,14 @@ sub startup ($self) {
     # Router
     my $r = $self->routes;
 
+    $r->get('/index.html')->to('top#show');
+    $r->get('/')->to('top#show');
+    $r->get('/mail_auth/#id')->to('auth#mail');
+    $r->post('/register')->to('auth#register');
+    $r->get('/bbs')->to('top#bbs');
+    $r->get('/bbs/#newsgroup')->to('top#bbs');
+    $r->get('/bbs/#newsgroup/:article_id')->to('top#bbs');
+    $r->get('/attachment/#id')->to('top#attachment');
     $r->get('/api/newsgroup')->to('api#newsgroup');
     $r->get('/api/titles')->to('api#titles');
     $r->get('/api/article')->to('api#article');
@@ -25,14 +33,7 @@ sub startup ($self) {
     $r->get('/api/profile_read')->to('api#profile_read');
     $r->post('/api/profile_write')->to('api#profile_write');
     $r->post('/api/post')->to('api#post_article');
-    $r->post('/api/attachment')->to('api#attachment');
-    $r->get('/index.html')->to('top#show');
-    $r->get('/')->to('top#show');
-    $r->get('/mail_auth/#id')->to('auth#mail');
-    $r->post('/register')->to('auth#register');
-    $r->get('/bbs')->to('top#bbs');
-    $r->get('/bbs/#newsgroup')->to('top#bbs');
-    $r->get('/bbs/#newsgroup/:article_id')->to('top#bbs');
+    $r->any('/api/attachment')->to('api#attachment');
     $r->get('/admin/user')->to('admin#user_list');
     $r->get('/admin/user/#id')->to('admin#user');
     $r->get('/admin/newsgroup')->to('admin#newsgroup');

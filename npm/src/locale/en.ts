@@ -37,6 +37,8 @@ export const en = {
     'user-id': 'User ID',
     'disp_name': 'Display name',
     'last-post': 'Last post',
-    'membership': 'Membership'
+    'membership': 'Membership',
+    'attach-file': 'Attach file',
+    'delete-this-attachment': 'Delete this attachment'
   }
 };

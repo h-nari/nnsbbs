@@ -1,0 +1,7 @@
+Perltidy version is 20200110
+
+<stdin>: Begin Error Output Stream
+
+272: if($comment) $cmt = $comment->[$ord];
+                - ^
+found Scalar where operator expected (previous token underlined)
