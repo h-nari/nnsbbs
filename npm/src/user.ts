@@ -1,10 +1,11 @@
-import { div, input, button, tag, label, a, span, select, option, selected } from './tag';
+import { div, input, button, tag, label, a, span, select, option, selected, icon } from './tag';
 import { escape_html, get_json } from './util';
 import { createHash } from 'sha1-uint8array';
 import { INewsGroup } from './newsgroup';
 import { IArticle } from './article';
 import { api_membership, IMembership } from './dbif';
 import NnsBbs from './nnsbbs';
+import { Attachment } from './attachemnt';
 
 interface IUser {
   id: string;
@@ -194,7 +195,8 @@ export class User {
     });
   }
 
-  async post_article(n: INewsGroup, a: (IArticle | null) = null) {
+  async post_article_dlg(n: INewsGroup, a: (IArticle | null) = null) {
+    var attachment_list: Attachment[] = [];
     if (!this.user) {
       if (!await this.login()) return;
     }
@@ -210,7 +212,8 @@ export class User {
     let c = tag('form', { class: 'post-article' },
       form_input('post-name', '表示名', { value: this.user.name }),
       form_input('post-title', '表題', { value: title }),
-      form_post_textarea('post-content', '本文', a, { value: content, rows: 10 }));
+      form_post_textarea('post-content', '本文', a, { value: content, rows: 10 }),
+      div({ class: 'attachment-area' }));
     $.confirm({
       title: '記事投稿',
       columnClass: 'large',
@@ -218,7 +221,7 @@ export class User {
       content: c,
       buttons: {
         ok: {
-          text: '投稿',
+          text: this.parent.i18next.t('post'),
           action: () => {
             let user_id = this.user?.id;
             let newsgroup_id = n.id;
@@ -241,14 +244,13 @@ export class User {
               }
             }).then((d: any) => {
               this.parent.top_page(n.name, d.article_id);
-              $.alert('投稿に成功しました')
             }).catch(e => {
               $.alert('投稿に失敗しました');
             });
           }
         },
         close: {
-          text: '閉じる',
+          text: this.parent.i18next.t('close'),
           action: () => { }
         }
       },
@@ -257,6 +259,27 @@ export class User {
         // $('.post-article [title]').tooltip();
         $('.btn-quote').on('click', () => {
           if (a) quote_article('post-content', n, a);
+        });
+        $('.btn-attach').on('click', () => {
+          const redisplay_func = () => {
+            let htmls = attachment_list.map(a => a.html());
+            $('.post-article .attachment-area').html(div(...htmls));
+            this.parent.set_i18n_text();
+            attachment_list.forEach(a => {
+              a.bind();
+              a.onDelete = () => {
+                console.log('before delete:', attachment_list);
+                attachment_list = attachment_list.filter(b => b != a);
+                console.log('after delete:', attachment_list);
+                redisplay_func();
+              }
+            });
+          };
+          this.attachment_dlg().then(list => {
+            console.log('list:', list);
+            attachment_list.push(...list);
+            redisplay_func();
+          });
         });
       }
     });
@@ -282,6 +305,43 @@ export class User {
           div({ class: 'disp-name' }, escape_html(d.disp_name))),
         div({ class: 'profile' }, escape_html(d.profile)))
     })
+  }
+
+  attachment_dlg(): Promise<Attachment[]> {
+    return new Promise((resolve, reject) => {
+      $.confirm({
+        title: '添付ファイル/画像の指定',
+        type: 'blue',
+        columnClass: 'medium',
+        content: tag('form',
+          {
+            method: 'POST', action: window.nnsbbs_baseURL + 'api/attachment',
+            enctype: 'multipart/form-data', id: 'upload-form'
+          },
+          input({ type: 'file', name: 'upload', id: 'upload-file', multiple: null, placeholder: 'ファイルを選択して下さい' })
+        ),
+        buttons: {
+          add: {
+            text: 'Add',
+            action: () => {
+              let list: Attachment[] = []
+              if ($('#upload-file').val()) {
+                for (let f of $('#upload-file').prop("files")) {
+                  list.push(new Attachment(f));
+                }
+              }
+              resolve(list);
+            }
+          },
+          cancel: {
+            text: 'Cancel',
+            action: () => {
+              resolve([]);
+            }
+          }
+        }
+      });
+    });
   }
 }
 
@@ -333,8 +393,10 @@ function form_post_textarea(id: string, label_str: string, a: IArticle | null, o
   }, opt.value || '');
   let reply_btn = '';
   if (a)
-    reply_btn = button({ class: 'btn ml-auto btn-quote', type: 'button', 'title-i18n': 'quote-article' },
-      span({ class: 'bi-chat-left-quote' }));
+    reply_btn = button({ class: 'btn ml-2 btn-quote', type: 'button', 'title-i18n': 'quote-article' },
+      icon('chat-left-quote'));
+  let attach_btn = button({ class: 'btn ml-auto btn-attach', type: 'button', 'title-i18n': 'attach-file' },
+    icon('paperclip'));
 
   let help = '';
   if (opt.help)
@@ -342,7 +404,7 @@ function form_post_textarea(id: string, label_str: string, a: IArticle | null, o
 
   return div({ class: 'form-group' },
     div({ class: 'd-flex' },
-      label({ for: id }, label_str), reply_btn),
+      label({ for: id }, label_str), attach_btn, reply_btn),
     input_part, help);
 }
 

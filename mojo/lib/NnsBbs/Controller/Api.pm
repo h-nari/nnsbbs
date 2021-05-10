@@ -230,4 +230,11 @@ sub membership ($self) {
     $self->render( json => $ah );
 }
 
+sub attachment($self) {
+    my $file = $self->req->upload('file');
+    printf STDERR "*** filename:%s ***\n", $file->filename;
+    printf STDERR "*** name:%s ***\n", $file->name;
+    $self->render( json => { result => 'ok' } );
+}
+
 1;

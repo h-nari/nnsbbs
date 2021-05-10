@@ -123,7 +123,7 @@ export default class NnsBbs {
       explain: 'post-new-article',
       action: () => {
         if (this.titles_pane.newsgroup)
-          this.user.post_article(this.titles_pane.newsgroup);
+          this.user.post_article_dlg(this.titles_pane.newsgroup);
       }
     }));
 
@@ -147,7 +147,7 @@ export default class NnsBbs {
       explain: 'reply-to-article',
       action: () => {
         if (this.titles_pane.newsgroup && this.article_pane.article)
-          this.user.post_article(this.titles_pane.newsgroup, this.article_pane.article);
+          this.user.post_article_dlg(this.titles_pane.newsgroup, this.article_pane.article);
       }
     }));
 

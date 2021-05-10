@@ -25,6 +25,7 @@ sub startup ($self) {
     $r->get('/api/profile_read')->to('api#profile_read');
     $r->post('/api/profile_write')->to('api#profile_write');
     $r->post('/api/post')->to('api#post_article');
+    $r->post('/api/attachment')->to('api#attachment');
     $r->get('/index.html')->to('top#show');
     $r->get('/')->to('top#show');
     $r->get('/mail_auth/#id')->to('auth#mail');

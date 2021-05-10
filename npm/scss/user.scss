@@ -43,3 +43,20 @@ form.edit-profile {
     padding: 5px;
   }
 }
+
+.attachment {
+  margin: 10px;
+  padding: 10px;
+  border: dotted darkgray 2px;
+  .file-mark {
+    font-size: xx-large;
+    color: green;
+  }
+  .name {
+    margin: 10px;
+  }
+  .size {
+    margin: 10px;
+    font-weight: bold;
+  }
+}
