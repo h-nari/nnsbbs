@@ -1,7 +1,5 @@
-import { get_json } from "./util";
 import { div, button, span, input, tag } from "./tag";
-import { Btn, ToolBar } from "./toolbar";
-import { Pane, ToolbarPane } from './pane';
+import { ToolbarPane } from './pane';
 import { ReadSet } from "./readSet";
 import NnsBbs from "./nnsbbs";
 const moment = require('moment');
@@ -21,7 +19,7 @@ export interface ISubsInfo {
   read: ReadSet;
 };
 // Json expression of ISubsInfo
-interface ISubsJson {
+export interface ISubsJson {
   subscribe: boolean;
   read: string;
 };

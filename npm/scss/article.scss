@@ -61,5 +61,43 @@
       font-style: italic;
       cursor: pointer;
     }
+
+    .image {
+      display: inline-block;
+      margin: 10px;
+      border: dotted lightgray 2px;
+      padding: 5px;
+      width: 30%;
+      > div {
+        display: inline-block;
+        img {
+          width: 250px;
+          height: 250px;
+          object-fit: scale-down;
+          object-position: bottom;
+        }
+      }
+    }
+    .attached-file {
+      display: inline-block;
+      width: 30%;
+      margin: 10px;
+      padding: 10px;
+      border: dotted lightgray 2px;
+      border-radius: 10px;
+      .filename {
+        margin: 5px;
+        font-weight: bold;
+      }
+      .size {
+        margin: 5px;
+      }
+    }
+
+    .image .comment,
+    .attached-file .comment {
+      display: inline-block;
+      text-align: center;
+    }
   }
 }

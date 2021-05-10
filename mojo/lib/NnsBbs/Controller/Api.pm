@@ -64,6 +64,7 @@ sub titles($self) {
 sub article($self) {
     my $newsgroup_id = $self->param("newsgroup_id");
     my $article_id   = $self->param("article_id");
+    my $rev          = $self->param("rev") || '0';
 
     eval {
         die "param newsgroup_id is required\n" unless ($newsgroup_id);
@@ -77,9 +78,18 @@ sub article($self) {
         my $sql = "select content,created_at as date,disp_name as author";
         $sql .= ",title,rev,id as article_id,user_id";
         $sql .= " from article";
-        $sql .= " where newsgroup_id = ? and id = ?";
+        $sql .= " where newsgroup_id = ? and id = ? and rev=?";
         $sql .= " order by rev desc limit 1";
-        my $hr = $db->select_rh( $sql, $newsgroup_id, $article_id );
+        my $hr = $db->select_rh( $sql, $newsgroup_id, $article_id, $rev );
+
+        $sql = "select file_id,comment,filename,content_type";
+        $sql .= ",length(data) as size";
+        $sql .= " from attachment as a,attached_file as f";
+        $sql .= " where a.file_id=f.id and newsgroup_id=?";
+        $sql .= " and article_id=? and rev=?";
+        $sql .= " order by ord";
+        my $ah = $db->select_ah( $sql, $newsgroup_id, $article_id, $rev );
+        $hr->{'attachment'} = $ah;
         $self->render( json => $hr );
     };
     $self->render( text => $@, status => '400' ) if ($@);
@@ -245,7 +255,7 @@ sub attachment($self) {
         die "no newsgroup_id\n" unless $newsgroup_id;
         die "no article_id\n"   unless $article_id;
         my $comment = $cmt_json ? from_json($cmt_json) : undef;
-        my $db = NnsBbs::Db::new($self);
+        my $db      = NnsBbs::Db::new($self);
         my ( $level, $moderator, $admin, $user_id ) =
           access_level( $self, $db );
         my ($wpl) = $db->select_ra( "select wpl from newsgroup where id=?",
@@ -264,18 +274,17 @@ sub attachment($self) {
             $sql = "insert into attached_file";
             $sql .= "(id,filename,content_type,user_id,data)";
             $sql .= "values(?,?,?,?,?)";
-            $db->execute(
-                $sql, $id, $file->filename,
+            $db->execute( $sql, $id, $file->filename,
                 $file->headers->content_type,
-                $user_id, $file->slurp
-            );
+                $user_id, $file->slurp );
             my $cmt = "";
-             $cmt = $comment->[$ord] if($comment);
+            $cmt = $comment->[$ord] if ($comment);
 
             $sql = "insert into attachment";
             $sql .= "(newsgroup_id,article_id,rev,file_id,ord,comment)";
             $sql .= "values(?,?,?,?,?,?)";
-            $db->execute( $sql, $newsgroup_id, $article_id, $rev, $id, $ord++,$cmt );
+            $db->execute( $sql, $newsgroup_id, $article_id, $rev, $id, $ord++,
+                $cmt );
         }
         $db->commit;
         $self->render( json => { result => 'ok' } );

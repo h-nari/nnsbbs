@@ -1,4 +1,5 @@
 import { div, icon, span, button, input } from "./tag";
+import { size_str } from "./util";
 
 var sn = 0;
 
@@ -14,32 +15,11 @@ export class Attachment {
   }
 
   html(): string {
-    let size = this.file.size;
-    const kilo = 1024;
-    const mega = kilo * kilo;
-    const giga = mega * kilo;
-    let size_str = size + ' bytes';
-
-    if (size > giga)
-      size_str = (size / giga).toFixed(2) + 'Gbyte';
-    else if (size > 100 * mega)
-      size_str = (size / mega).toFixed(0) + 'Mbyte'
-    else if (size > 10 * mega)
-      size_str = (size / mega).toFixed(1) + 'Mbyte'
-    else if (size > 1 * mega)
-      size_str = (size / mega).toFixed(2) + 'Mbyte'
-    else if (size > 100 * kilo)
-      size_str = (size / kilo).toFixed(0) + 'Kbyte'
-    else if (size > 10 * kilo)
-      size_str = (size / kilo).toFixed(1) + 'Kbyte'
-    else if (size > 1 * kilo)
-      size_str = (size / kilo).toFixed(2) + 'Kbyte'
-
     return div({ id: this.id, class: 'attachment' },
       div({ class: 'd-flex' },
         icon('file-earmark-arrow-up file-mark'),
         span({ class: 'name' }, this.file.name),
-        span({ class: 'size' }, size_str),
+        span({ class: 'size' }, size_str(this.file.size)),
         span({ class: 'flex-fill' }),
         button({ class: 'btn-close btn btn-sm', type: 'button', 'title-i18n': 'delete-this-attachment' },
           icon('x-square'))),

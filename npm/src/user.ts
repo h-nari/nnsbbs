@@ -1,9 +1,8 @@
 import { div, input, button, tag, label, a, span, select, option, selected, icon } from './tag';
+import { api_membership, IMembership, api_post, api_attachment, IArticle } from './dbif';
+import { INewsGroup } from "./newsgroup";
 import { escape_html, get_json } from './util';
 import { createHash } from 'sha1-uint8array';
-import { INewsGroup } from './newsgroup';
-import { IArticle } from './article';
-import { api_membership, IMembership, api_post, api_attachment } from './dbif';
 import NnsBbs from './nnsbbs';
 import { Attachment } from './attachemnt';
 

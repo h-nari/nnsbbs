@@ -1,4 +1,4 @@
-import { IMembership, IUserAdmin, membership_select } from "./dbif";
+import { api_membership, IMembership, IUserAdmin, membership_select } from "./dbif";
 import { Menu } from "./menu";
 import NnsBbs from "./nnsbbs";
 import { div, table, tr, td, th, button, span, input, label, select, option, selected, a, icon, tag } from "./tag";
@@ -78,7 +78,8 @@ export class UserAdmin {
   async redisplay(bFromDB: boolean = false) {
     if (bFromDB) {
       if (!this.membership)
-        this.membership = await get_json('/api/membership') as IMembership;
+        this.membership = await api_membership();
+
       let d = await get_json('/admin/api/user', { data: { search: this.searchText, count: 1 } }) as any;
       this.cUser = d.count as number;
       this.userList = await get_json('/admin/api/user', { data: { limit: this.limit, offset: this.offset, search: this.searchText } }) as IUserAdmin[];

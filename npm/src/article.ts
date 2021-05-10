@@ -1,19 +1,9 @@
-import { get_json, escape_html } from "./util";
-import { div, button, span } from "./tag";
+import { get_json, escape_html, size_str } from "./util";
+import { div, button, span, img, tag } from "./tag";
 import { ToolBar } from "./toolbar";
 import { ToolbarPane } from "./pane";
 import NnsBbs from "./nnsbbs";
-
-export interface IArticle {
-  header?: string;
-  content: string;
-  date: string;
-  author: string;
-  user_id: string;
-  title: string;
-  article_id: string;
-  rev: number;
-};
+import { api_newsgroup, api_article, IArticle } from "./dbif";
 
 export class ArticlePane extends ToolbarPane {
   private id_header: string;
@@ -38,14 +28,33 @@ export class ArticlePane extends ToolbarPane {
 
   inner_html(): string {
     let d = this.article;
-    let header = d && d.header ? d.header : "";
-    let content = d ? d.content : "";
 
-    return this.toolbar.html() +
-      div({ class: 'article' },
-        div({ class: 'article-header', id: this.id_header }, escape_html(header)),
-        div({ class: 'article-body' }, escape_html(content)),
-        div({ class: 'article-end', 'html-i18n': 'end-click-to-next' }, "--- End (click to next)---"));
+    if (d) {
+      let attachment = '';
+      for (let a of d.attachment) {
+        let url = window.nnsbbs_baseURL + 'attachment/' + a.file_id;
+        if (a.content_type.startsWith('image/')) {
+          attachment += div({ class: 'image' },
+            div(tag('a', { href: url }, img({ src: url }))),
+            div({ class: 'comment' }, a.comment));
+        } else {
+          attachment += div({ class: 'attached-file' },
+            div(tag('a', { href: url },
+              span({ class: 'filename' }, a.filename),
+              span({ class: 'size' }, size_str(a.size)))),
+            div({ class: 'comment' }, a.comment));
+        }
+      }
+
+      return this.toolbar.html() +
+        div({ class: 'article' },
+          div({ class: 'article-header', id: this.id_header }, escape_html(d.header)),
+          div({ class: 'article-body' }, escape_html(d.content)),
+          div(attachment),
+          div({ class: 'article-end', 'html-i18n': 'end-click-to-next' }, "--- End (click to next)---"));
+    } else {
+      return this.toolbar.html();
+    }
   }
 
   bind() {
@@ -67,8 +76,7 @@ export class ArticlePane extends ToolbarPane {
   }
 
   async open(newsgroup_id: number, article_id: number) {
-    let data = await get_json('/api/article',
-      { data: { newsgroup_id, article_id } }) as IArticle;
+    let data = await api_article(newsgroup_id, article_id);
     let c = data.content;
     let i = c.indexOf('\n\n');
     if (i >= 0) {

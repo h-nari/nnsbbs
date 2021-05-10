@@ -22,15 +22,43 @@ export function get_json(path: string, option = {}) {
   });
 }
 
-export function escape_html(str: string): string {
-  return str.replace(/[&'`"<>]/g, function (match) {
-    return {
-      '&': '&amp;',
-      "'": '&#X27;',
-      '`': '&#x60;',
-      '"': '&quot;',
-      '<': '&lt;',
-      '>': '&gt;'
-    }[match] || '?' + match + '?';
-  });
+export function escape_html(str: string | null | undefined): string {
+  if (!str)
+    return '';
+  else
+    return str.replace(/[&'`"<>]/g, function (match) {
+      return {
+        '&': '&amp;',
+        "'": '&#X27;',
+        '`': '&#x60;',
+        '"': '&quot;',
+        '<': '&lt;',
+        '>': '&gt;'
+      }[match] || '?' + match + '?';
+    });
+}
+
+export function size_str(size: number): string {
+  const kilo = 1024;
+  const mega = kilo * kilo;
+  const giga = mega * kilo;
+
+  let str: string;
+  if (size > giga)
+    str = (size / giga).toFixed(2) + ' Gbyte';
+  else if (size > 100 * mega)
+    str = (size / mega).toFixed(0) + ' Mbyte'
+  else if (size > 10 * mega)
+    str = (size / mega).toFixed(1) + ' Mbyte'
+  else if (size > 1 * mega)
+    str = (size / mega).toFixed(2) + ' Mbyte'
+  else if (size > 100 * kilo)
+    str = (size / kilo).toFixed(0) + ' Kbyte'
+  else if (size > 10 * kilo)
+    str = (size / kilo).toFixed(1) + ' Kbyte'
+  else if (size > 1 * kilo)
+    str = (size / kilo).toFixed(2) + ' Kbyte'
+  else
+    str = size + ' bytes';
+  return str;
 }
