@@ -172,8 +172,8 @@ sub api_session {
     if ($session_id) {
         my $db = NnsBbs::Db::new($self);
         &update_session($db);
-        my $sql =
-"select disp_name, u.id as user_id,u.membership_id from user as u,session as s";
+        my $sql = "select disp_name, u.id as user_id";
+        $sql .= ",u.membership_id from user as u,session as s";
         $sql .= " where u.id = s.user_id and s.id=?";
         my ( $disp_name, $user_id, $membership_id ) =
           $db->select_ra( $sql, $session_id );

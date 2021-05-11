@@ -2,14 +2,11 @@ import { div, button, span, input, tag } from "./tag";
 import { ToolbarPane } from './pane';
 import { ReadSet } from "./readSet";
 import NnsBbs from "./nnsbbs";
+import { TNewsgroup, api_session } from "./dbif";
 const moment = require('moment');
 
 export interface INewsGroup {
-  id: number;
-  name: string;
-  comment: string;
-  max_id: number;
-  posted_at: string;
+  n: TNewsgroup;
   subsInfo: ISubsInfo | null;
 };
 
@@ -45,18 +42,18 @@ export class NewsGroupsPane extends ToolbarPane {
     }, 5000);
   }
 
-  setNewsgroups(data: INewsGroup[]) {
-    this.newsgroups = data;
+  setNewsgroups(data: TNewsgroup[]) {
+    this.newsgroups = data.map(t => { return { n: t, subsInfo: null } });
     this.setSubsInfoIntoNewsgroup();
   }
 
   setSubsInfoIntoNewsgroup() {
     if (this.subsInfo && this.newsgroups.length > 0) {
       for (let ng of this.newsgroups) {
-        ng.subsInfo = this.subsInfo[ng.name];
+        ng.subsInfo = this.subsInfo[ng.n.name];
         if (!ng.subsInfo) {
           ng.subsInfo = { subscribe: false, read: new ReadSet() };
-          this.subsInfo[ng.name] = ng.subsInfo;
+          this.subsInfo[ng.n.name] = ng.subsInfo;
         }
       }
     }
@@ -75,21 +72,21 @@ export class NewsGroupsPane extends ToolbarPane {
     for (let d of this.newsgroups) {
       let si = d.subsInfo;
       if (si?.subscribe || this.bShowAll) {
-        let unread = d.max_id;
+        let unread = d.n.max_id;
         let c = "";
         let opt = { type: 'checkbox', class: 'newsgroup-check', title: 'subscribe-newsgroup' };
         if (si && si.subscribe) opt['checked'] = null;
         c += input(opt);
-        c += span({ class: 'newsgroup-name' }, d.name);
+        c += span({ class: 'newsgroup-name' }, d.n.name);
         if (si)
-          unread = Math.max(d.max_id - si.read.count(), 0);
+          unread = Math.max(d.n.max_id - si.read.count(), 0);
         c += span({ class: 'newsgroup-status' },
           '(', span({ class: 'unread', 'title-i18n': 'unread-articles' }, unread,),
-          '/', span({ class: 'max-id', 'title-i18n': 'total-articles' }, d.max_id), ')');
-        let m = moment(d.posted_at);
+          '/', span({ class: 'max-id', 'title-i18n': 'total-articles' }, d.n.max_id), ')');
+        let m = moment(d.n.posted_at);
         c += span({ class: 'posted-at' }, this.t('last-post'), ': ', m.format('YYYY/MM/DD HH:mm:ss'));
-        let opt2 = { class: 'newsgroup-line', 'newsgroup-name': d.name, 'newsgroup-id': d.id };
-        if (this.cur_newsgroup && this.cur_newsgroup.name == d.name)
+        let opt2 = { class: 'newsgroup-line', 'newsgroup-name': d.n.name, 'newsgroup-id': d.n.id };
+        if (this.cur_newsgroup && this.cur_newsgroup.n.name == d.n.name)
           opt2.class += " active"
         if (si?.subscribe) opt2.class += " subscribe";
         s += button(opt2, c);
@@ -156,10 +153,10 @@ export class NewsGroupsPane extends ToolbarPane {
   select_newsgroup(newsgroup: INewsGroup) {
     const scroller = `#${this.id} .newsgroup`;
     const scrollee = scroller + " >div";
-    const line = scrollee + ` >button[newsgroup-id=${newsgroup.id}]`;
+    const line = scrollee + ` >button[newsgroup-id=${newsgroup.n.id}]`;
     $(scrollee + ' >button').removeClass('active');
     if ($(line).length < 1) {
-      console.log('newsgroup:', newsgroup.name, 'id:', newsgroup.id, ' not found');
+      console.log('newsgroup:', newsgroup.n.name, 'id:', newsgroup.n.id, ' not found');
       return;
     }
     $(line).addClass('active');
@@ -177,15 +174,17 @@ export class NewsGroupsPane extends ToolbarPane {
 
   name2newsgroup(name: string): INewsGroup | null {
     for (let ng of this.newsgroups) {
-      if (ng.name == name) return ng;
+      if (ng.n.name == name) return ng;
     }
     return null;
   }
 
   // Load subscription information
-  loadSubsInfo(json_data: string | null = null) {
-    if (!json_data)
-      json_data = localStorage.getItem('nnsbbsSubsInfo');
+  // TODO: DBからロード
+  async loadSubsInfo() {
+    let s = await api_session();
+
+    let json_data = localStorage.getItem('nnsbbsSubsInfo');
     if (json_data) {
       let data = JSON.parse(json_data) as { [n: string]: ISubsJson };
       let subsInfo: { [key: string]: ISubsInfo } = {};
@@ -197,6 +196,7 @@ export class NewsGroupsPane extends ToolbarPane {
     }
   }
   // Save your subscription information
+  //TODO DBへセーブ
   saveSubsInfo(bForced: boolean = false) {
     let subsJson: { [key: string]: ISubsJson } = {};
     for (let ng in this.subsInfo) {
@@ -229,7 +229,7 @@ export class NewsGroupsPane extends ToolbarPane {
     let si = this.getSubsInfo(newsgroup)
     if (si) {
       si.read.clear();
-      si.read.add_range(1, d.max_id - last);
+      si.read.add_range(1, d.n.max_id - last);
     }
   }
 
@@ -243,7 +243,7 @@ export class NewsGroupsPane extends ToolbarPane {
   scrollToNextSubscribedNewsgroup(bFromTop: boolean = false): boolean {
     let cur: HTMLElement;
     if (this.cur_newsgroup && !bFromTop) {
-      cur = $(`#${this.id} .nb-list-group button[newsgroup-id=${this.cur_newsgroup.id}]`)[0];
+      cur = $(`#${this.id} .nb-list-group button[newsgroup-id=${this.cur_newsgroup.n.id}]`)[0];
       cur = cur.nextSibling as HTMLElement;
     } else {
       let n = $(`#${this.id} .nb-list-group button`);

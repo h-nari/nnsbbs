@@ -12,6 +12,7 @@ import { div, select, option, label, selected } from "./tag";
 import { UserAdmin } from "./userAdmin";
 import { NewsgroupAdmin } from "./newsgroupAdmin";
 import { UserInfo } from "./userInfo";
+import { api_newsgroup, api_sesion, ISession } from "./dbif";
 
 export default class NnsBbs {
   public topBar = new TopBar(this);
@@ -106,7 +107,7 @@ export default class NnsBbs {
         let a = this.article_pane;
         t.scrollToNextUnread() || t.scrollToNextUnread(true);   // search from Top
         if (!a.bClosed && t.newsgroup && t.cur_article_id)
-          this.select_article(t.newsgroup.id, t.cur_article_id);
+          this.select_article(t.newsgroup.n.id, t.cur_article_id);
       }
     })).add_btn(new Btn({
       icon: 'chevron-bar-up',
@@ -116,7 +117,7 @@ export default class NnsBbs {
         let a = this.article_pane;
         t.scrollToPrevUnread() || t.scrollToPrevUnread(true);  // search from Botttom
         if (!a.bClosed && t.newsgroup && t.cur_article_id)
-          this.select_article(t.newsgroup.id, t.cur_article_id);
+          this.select_article(t.newsgroup.n.id, t.cur_article_id);
       }
     })).add_btn(new Btn({
       icon: 'chat-square-text-fill',
@@ -151,7 +152,7 @@ export default class NnsBbs {
       }
     }));
 
-    this.ng_pane.loadSubsInfo();
+    // this.ng_pane.loadSubsInfo();
   }
 
   html(): string {
@@ -248,8 +249,9 @@ export default class NnsBbs {
   // Called from the built-in script of topPage
   // Read and display a list of newsgroups
   async top_page(newsgroup: string = '', article_id: string = '') {
-    let data = await get_json('/api/newsgroup');
-    this.ng_pane.setNewsgroups(data as INewsGroup[]);
+    let data = await api_newsgroup();
+    this.ng_pane.setNewsgroups(data);
+    await this.ng_pane.loadSubsInfo();
     $('#newsgroup').html(this.ng_pane.inner_html());
     this.ng_pane.bind();
 
@@ -287,11 +289,11 @@ export default class NnsBbs {
     this.article_pane.close();
     this.redisplay();
 
-    let name = newsgroup.name;
+    let name = newsgroup.n.name;
     window.history.pushState(null, '', `/bbs/${name}`);
     document.title = `nnsbbs/${name}`;
     this.cur_newsgroup = name;
-    this.cur_newsgroup_id = newsgroup.id;
+    this.cur_newsgroup_id = newsgroup.n.id;
   }
 
   async select_article(newsgroup_id: number, article_id: number) {
@@ -317,7 +319,7 @@ export default class NnsBbs {
       t.scrollToNextUnread();
     }
     if (t.cur_article_id && t.newsgroup)
-      this.select_article(t.newsgroup.id, t.cur_article_id);
+      this.select_article(t.newsgroup.n.id, t.cur_article_id);
   }
 
   redisplay() {

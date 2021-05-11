@@ -27,10 +27,10 @@ sub startup ($self) {
     $r->get('/api/article')->to('api#article');
     $r->get('/api/mail_auth')->to('api#mail_auth');
     $r->get('/api/membership')->to('api#membership');
-    $r->get('/api/login')->to('auth#api_login');
-    $r->get('/api/logout')->to('auth#api_logout');
-    $r->get('/api/session')->to('auth#api_session');
-    $r->get('/api/profile_read')->to('api#profile_read');
+    $r->any('/api/login')->to('auth#api_login');
+    $r->any('/api/logout')->to('auth#api_logout');
+    $r->any('/api/session')->to('auth#api_session');
+    $r->any('/api/profile_read')->to('api#profile_read');
     $r->post('/api/profile_write')->to('api#profile_write');
     $r->post('/api/post')->to('api#post_article');
     $r->any('/api/attachment')->to('api#attachment');

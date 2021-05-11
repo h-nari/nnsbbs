@@ -9,17 +9,17 @@ import { ReadSet } from "./readSet";
 export interface TNewsgroup {
   id: number,
   name: string,
+  comment: string,
   max_id: number,
+  posted_at: string,
   rpl: number,
   wpl: number,
   bLocked: number,
   bDeleted: number,
   created_at: string,
-  posted_at: string,
   locked_at: string | null,
   deleted_at: string | null,
-  ord: number,
-  comment: string
+  ord: number
 }
 
 export function api_newsgroup(): Promise<TNewsgroup[]> {
@@ -106,6 +106,31 @@ export function api_attachment(fd: FormData): Promise<IResult> {
     contentType: false
   }) as Promise<IResult>;
 }
+//
+// api/login
+//
+export interface ILogin {
+  login: number;
+}
+export interface ISession {
+  login: number;
+  name: string,
+  user_id: string,
+  membership_id: number
+}
+
+export function api_login(mail: string, pwd: string): Promise<ILogin> {
+  return get_json('/api/login', { method: 'post', data: { email: mail, pwd } }) as Promise<ILogin>;
+}
+
+export function api_logout(): Promise<ILogin> {
+  return get_json('/api/login') as Promise<ILogin>;
+}
+
+export function api_session(): Promise<ILogin> {
+  return get_json('/api/session') as Promise<ILogin>;
+}
+
 
 //
 //  admin/api/user
