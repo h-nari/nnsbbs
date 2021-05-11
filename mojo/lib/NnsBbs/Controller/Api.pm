@@ -35,7 +35,8 @@ sub titles($self) {
         my ( $level, $moderator ) = access_level( $self, $db );
         my ($rpl) = $db->select_ra( "select rpl from newsgroup where id=?",
             $newsgroup_id );
-        die "no read permission.\n" if ( !defined($rpl) || $rpl > $level );
+        die "no read permission.\n"
+          if ( ( !defined($rpl) || $rpl > $level ) && !$moderator );
         my $sql = "select id as article_id ,title,reply_to";
         $sql .= ",created_at as date,user_id,disp_name";
         $sql .= " from article";
@@ -53,9 +54,6 @@ sub titles($self) {
         }
         $sql .= " order by id";
         my $data = $db->select_ah( $sql, @params );
-        print STDERR "newsgroup=", $newsgroup_id, " count=",
-          ( @$data + 0 ),
-          "\n";
         $self->render( json => $data );
     };
     $self->render( text => $@, status => '400' ) if $@;
@@ -73,7 +71,7 @@ sub article($self) {
         my ( $level, $moderator ) = access_level( $self, $db );
         my ($rpl) = $db->select_ra( "select rpl from newsgroup where id=?",
             $newsgroup_id );
-        die "No read permission.\n" if ( !defined($rpl) || $rpl > $level );
+        die "No read permission.\n" if (( !defined($rpl) || $rpl > $level )&& !$moderator);
 
         my $sql = "select content,created_at as date,disp_name as author";
         $sql .= ",title,rev,id as article_id,user_id";
@@ -247,9 +245,6 @@ sub attachment($self) {
     my $rev          = $self->param('rev') || 0;
     my $cmt_json     = $self->param('comments') || '';
     my $files        = $self->req->every_upload('file');
-    print STDERR "*** newsgroup_id:$newsgroup_id ***\n";
-    print STDERR "*** article_id:$article_id ***\n";
-    print STDERR "*** cmt_json:$cmt_json ***\n";
 
     eval {
         die "no newsgroup_id\n" unless $newsgroup_id;
