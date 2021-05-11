@@ -33,7 +33,7 @@ export class TitlesPane extends ToolbarPane {
 
   async open(newsgroup: INewsGroup) {
     let from = 1;
-    let to = newsgroup.max_id;
+    let to = newsgroup.n.max_id;
     let si = newsgroup.subsInfo;
     if (si && si.read.ranges.length > 0) {
       let r = si.read.ranges[0];
@@ -45,7 +45,7 @@ export class TitlesPane extends ToolbarPane {
   }
 
   async load(newsgroup: INewsGroup, from: number, to: number) {
-    let data = await get_json('/api/titles', { data: { newsgroup_id: newsgroup.id, from, to } });
+    let data = await get_json('/api/titles', { data: { newsgroup_id: newsgroup.n.id, from, to } });
     this.loaded_titles.clear().add_range(from, to);
     this.titles = [];
     this.threads = [];
@@ -87,7 +87,7 @@ export class TitlesPane extends ToolbarPane {
     }
     if (!this.loaded_titles.includes(1))
       s = this.more_titles('backward') + s;
-    if (this.newsgroup && !this.loaded_titles.includes(this.newsgroup.max_id))
+    if (this.newsgroup && !this.loaded_titles.includes(this.newsgroup.n.max_id))
       s += this.more_titles('forward');
     this.set_title();
     return this.toolbar.html() + div({ class: 'titles' }, div({ id: this.id_lg, class: 'nb-list-group' }, s));
@@ -108,7 +108,7 @@ export class TitlesPane extends ToolbarPane {
     if (dir == 'forward') {
       let last = this.loaded_titles.last();
       if (last && this.newsgroup) {
-        let max_id = this.newsgroup.max_id;
+        let max_id = this.newsgroup.n.max_id;
         let left = max_id - last;
         if (left > 0) {
           if (left > 100)
@@ -170,7 +170,7 @@ export class TitlesPane extends ToolbarPane {
       let article_id: number = target.attributes['article_id'].value;
       this.select_article(article_id);
       if (this.newsgroup && this.clickCb) {
-        this.clickCb(this.newsgroup.id, article_id);
+        this.clickCb(this.newsgroup.n.id, article_id);
       }
     });
     $(`#${this.id} .more-titles button`).on('click', async e => {
@@ -180,7 +180,7 @@ export class TitlesPane extends ToolbarPane {
       if (this.newsgroup) {
         let rs = this.loaded_titles;
         rs.add_range(from, to);
-        await this.load(this.newsgroup, rs.first() || 1, rs.last() || this.newsgroup.max_id);
+        await this.load(this.newsgroup, rs.first() || 1, rs.last() || this.newsgroup.n.max_id);
         this.parent.redisplay();
       }
     })
@@ -199,7 +199,7 @@ export class TitlesPane extends ToolbarPane {
 
     if ($(line).length == 0 && this.newsgroup) {
       console.log('load titles');
-      await this.load(this.newsgroup, Math.max(1, id - 50), Math.min(id + 50, this.newsgroup.max_id))
+      await this.load(this.newsgroup, Math.max(1, id - 50), Math.min(id + 50, this.newsgroup.n.max_id))
     }
 
     $(scrollee + ' >button').removeClass('active');
@@ -225,12 +225,12 @@ export class TitlesPane extends ToolbarPane {
   set_title() {
     let s = "";
     if (this.newsgroup) {
-      let max_id = this.newsgroup.max_id;
+      let max_id = this.newsgroup.n.max_id;
       let cUnread = max_id;
       let si = this.newsgroup.subsInfo;
       if (si) cUnread = Math.max(cUnread - si.read.count(), 0);
 
-      s += span({ class: 'newsgroup-name' }, this.newsgroup.name);
+      s += span({ class: 'newsgroup-name' }, this.newsgroup.n.name);
       s += span({ class: 'number-of-articles' }, '(',
         span({ 'title-i18n': 'unread-articles' }, cUnread), '/',
         span({ 'title-i18n': 'total-articles' }, max_id), ')');

@@ -136,18 +136,24 @@ sub api_login {
     }
     else {
         my $db  = NnsBbs::Db::new($self);
-        my $sql = "select id,disp_name from user";
-        $sql .= " where mail=? and password=?";
-        my ( $user_id, $disp_name ) = $db->select_ra( $sql, $email, $pwd );
-        if ( !$user_id ) {
+        my $sql = "select id,disp_name,membership_id,signature,subsInfo";
+        $sql .= " from user";
+        $sql .= " where mail=? and password=? and not bBanned";
+        my $rh = $db->select_rh( $sql, $email, $pwd );
+        if ( !$rh ) {
             $self->render( json => { login => 0 } );
         }
         else {
             $db->execute( "update user set logined_at=now() where id=?",
-                $user_id );
+                $rh->{'id'} );
             $db->commit;
-            &new_session( $self, $db, $user_id );
-            $self->render( json => { login => 1 } );
+            &new_session( $self, $db, $rh->{'id'});
+            $self->render(
+                json => {
+                    login => 1,
+                    user  => $rh
+                }
+            );
         }
     }
 }
@@ -172,20 +178,13 @@ sub api_session {
     if ($session_id) {
         my $db = NnsBbs::Db::new($self);
         &update_session($db);
-        my $sql = "select disp_name, u.id as user_id";
-        $sql .= ",u.membership_id from user as u,session as s";
+        my $sql = "select disp_name, u.id as id";
+        $sql .= ",membership_id, signature,subsInfo";
+        $sql .= " from user as u,session as s";
         $sql .= " where u.id = s.user_id and s.id=?";
-        my ( $disp_name, $user_id, $membership_id ) =
-          $db->select_ra( $sql, $session_id );
-        if ($disp_name) {
-            $self->render(
-                json => {
-                    login         => 1,
-                    name          => $disp_name,
-                    user_id       => $user_id,
-                    membership_id => $membership_id
-                }
-            );
+        my $rh = $db->select_rh( $sql, $session_id );
+        if ($rh) {
+            $self->render( json => { login => 1, user => $rh } );
             return;
         }
     }

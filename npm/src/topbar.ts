@@ -2,6 +2,7 @@ import { a, div, tag, icon, label, select, option, selected } from './tag';
 import { Menu } from './menu';
 import { escape_html, get_json } from './util';
 import NnsBbs from './nnsbbs';
+import { api_session } from './dbif';
 
 export class TopBar {
   private id = "TopBar";
@@ -25,15 +26,14 @@ export class TopBar {
 
   check_login_status() {
     return new Promise((resolve, reject) => {
-      get_json('/api/session').then((d: any) => {
+      api_session().then(d => {
         if (d.login) {
-          this.set_login_menu(d.name);
-          this.parent.user.user = { id: d.user_id as string, name: d.name as string, membership_id: d.membership_id };
+          this.set_login_menu(d.user.name);
           resolve(true);
         }
         else {
-          this.set_logout_menu();
           this.parent.user.user = null;
+          this.parent.onLogout();
           resolve(false);
         }
       });

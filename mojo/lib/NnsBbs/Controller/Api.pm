@@ -71,7 +71,8 @@ sub article($self) {
         my ( $level, $moderator ) = access_level( $self, $db );
         my ($rpl) = $db->select_ra( "select rpl from newsgroup where id=?",
             $newsgroup_id );
-        die "No read permission.\n" if (( !defined($rpl) || $rpl > $level )&& !$moderator);
+        die "No read permission.\n"
+          if ( ( !defined($rpl) || $rpl > $level ) && !$moderator );
 
         my $sql = "select content,created_at as date,disp_name as author";
         $sql .= ",title,rev,id as article_id,user_id";
@@ -149,7 +150,9 @@ sub profile_read {
     else {
         my $db  = NnsBbs::Db::new($self);
         my $sql = "select disp_name,created_at";
-        $sql .= ",membership_id,profile from user where id=?";
+        $sql .= ",membership_id,profile";
+        $sql .= ",signature,subsInfo,mail";
+        $sql .= "  from user where id=?";
         my $ra = $db->select_rh( $sql, $user_id );
         $self->render( json => $ra ? $ra : {} );
     }
@@ -158,27 +161,38 @@ sub profile_read {
 sub profile_write {
     my $self          = shift;
     my $user_id       = $self->param('user_id');
-    my $name          = $self->param('name');
+    my $disp_name     = $self->param('disp_name');
     my $profile       = $self->param('profile');
     my $membership_id = $self->param('membership_id');
+    my $signature     = $self->param('signature');
+    my $subsInfo      = $self->param('subsInfo');
 
     eval {
         die "user_id is required\n" unless ($user_id);
-        die "name,profile or membership_id is required\n"
-          if ( !$name && !$profile && !$membership_id );
+        die "name,profile,membership_id,signature of subsInfo is required\n"
+          if ( !$disp_name
+            && !$profile
+            && !$membership_id
+            && !$signature
+            && !$subsInfo );
         my $db = NnsBbs::Db::new($self);
         my ( $level, $moderator, $admin, $user_id2 ) =
           access_level( $self, $db );
         die "no write profile permission\n"
           unless ( ( $user_id eq $user_id2 ) || $moderator );
         my $sql = "update user set disp_name=? where id=?";
-        $db->execute( $sql, $name, $user_id ) if $name;
+        $db->execute( $sql, $disp_name, $user_id ) if $disp_name;
         $sql = "update user set profile=? where id=?";
         $db->execute( $sql, $profile, $user_id ) if $profile;
         $sql = "update user set membership_id=? where id=?";
         $db->execute( $sql, $membership_id, $user_id ) if $membership_id;
+        $sql = "update user set signature? where id=?";
+        $db->execute( $sql, $signature, $user_id ) if $signature;
+        $sql = "update user set subsInfo=? where id=?";
+        $db->execute( $sql, $subsInfo, $user_id ) if $subsInfo;
+
         $db->commit;
-        $self->render( json => { result => 'Ok' } );
+        $self->render( json => { result => 'ok' } );
     };
     $self->render( text => $@, status => '400' ) if $@;
 }

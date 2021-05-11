@@ -1,8 +1,8 @@
-import { div, button, span, input, tag } from "./tag";
+import { div, button, span, input, tag, a } from "./tag";
 import { ToolbarPane } from './pane';
 import { ReadSet } from "./readSet";
 import NnsBbs from "./nnsbbs";
-import { TNewsgroup, api_session } from "./dbif";
+import { TNewsgroup, api_session, api_profile_read, api_profile_write } from "./dbif";
 const moment = require('moment');
 
 export interface INewsGroup {
@@ -180,11 +180,14 @@ export class NewsGroupsPane extends ToolbarPane {
   }
 
   // Load subscription information
-  // TODO: DBからロード
-  async loadSubsInfo() {
-    let s = await api_session();
-
-    let json_data = localStorage.getItem('nnsbbsSubsInfo');
+  async loadSubsInfo(json_data: string | null = null) {
+    if (!json_data) {
+      let s = await api_session();
+      if (s.login)
+        json_data = s.user.subsInfo;
+      else
+        json_data = localStorage.getItem('nnsbbsSubsInfo');
+    }
     if (json_data) {
       let data = JSON.parse(json_data) as { [n: string]: ISubsJson };
       let subsInfo: { [key: string]: ISubsInfo } = {};
@@ -197,7 +200,7 @@ export class NewsGroupsPane extends ToolbarPane {
   }
   // Save your subscription information
   //TODO DBへセーブ
-  saveSubsInfo(bForced: boolean = false) {
+  async saveSubsInfo(bForced: boolean = false) {
     let subsJson: { [key: string]: ISubsJson } = {};
     for (let ng in this.subsInfo) {
       let s = this.subsInfo[ng];
@@ -208,7 +211,11 @@ export class NewsGroupsPane extends ToolbarPane {
     }
     let str = JSON.stringify(subsJson, null, 2);
     if (bForced || str != this.savedSubsString) {
-      localStorage.setItem('nnsbbsSubsInfo', str);
+      let s = await api_session();
+      if (s.login) 
+        api_profile_write({ user_id: s.user.id, subsInfo: str });
+       else 
+        localStorage.setItem('nnsbbsSubsInfo', str);
       this.savedSubsString = str;
     }
   }

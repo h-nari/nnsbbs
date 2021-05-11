@@ -1,24 +1,11 @@
 import { div, input, button, tag, label, a, span, select, option, selected, icon } from './tag';
-import { api_membership, IMembership, api_post, api_attachment, IArticle } from './dbif';
+import { api_membership, IMembership, api_post, api_attachment, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout } from './dbif';
 import { INewsGroup } from "./newsgroup";
 import { escape_html, get_json } from './util';
 import { createHash } from 'sha1-uint8array';
 import NnsBbs from './nnsbbs';
 import { Attachment } from './attachemnt';
 
-interface IUser {
-  id: string;
-  name: string;
-  membership_id: number;
-};
-
-interface IProfile {
-  mail: string;
-  disp_name: string;
-  created_at: string;
-  membership_id: number;
-  profile: string;
-};
 
 export class User {
   public parent: NnsBbs;
@@ -57,13 +44,16 @@ export class User {
               let sha = createHash('sha1');
               sha.update(password);
               let pwd = sha.digest('hex');
-              let data: any = await get_json('/api/login', { data: { email, pwd } });
+              let data = await api_login(email, pwd);
               if (!data.login) {
-                let n = this.parent.i18next;
-                $.alert(n.t('login-failed'));
+                $.alert(this.parent.i18next.t('login-failed'));
+                this.user = null;
+                resolve(false);
+              } else {
+                this.user = data.user;
+                this.parent.onLogin();
+                resolve(true);
               }
-              let r = await this.parent.topBar.check_login_status();
-              resolve(r);
             }
           },
           cancel: {
@@ -83,8 +73,9 @@ export class User {
         logout: {
           text: 'Logout',
           action: () => {
-            get_json('/api/logout').then(() => {
-              this.parent.topBar.check_login_status();
+            this.parent.beforeLogout();
+            api_logout().then(() => {
+              this.parent.onLogout();
             });
           }
         },
@@ -151,7 +142,7 @@ export class User {
     this.membership = await get_json('/api/membership') as IMembership;
 
     if (!this.user) return;
-    let d = await get_json('/api/profile_read', { data: { user_id: this.user.id } }) as IProfile;
+    let d = await api_profile_read(this.user.id);
     let c = tag('form', { class: 'edit-profile' },
       form_input('p-user-id', 'User ID', { value: this.user.id, readonly: null }),
       form_input('p-email', 'Email', { help: '登録に使用したメールアドレス', value: d.mail, readonly: null }),
@@ -173,17 +164,18 @@ export class User {
           text: '書込み',
           action: () => {
             if (!this.user) return;
-            let disp_name = $('#p-name').val() || '';
+            let user_id = this.user.id;
+            let disp_name = $('#p-name').val() as string;
             if (disp_name != d.disp_name)
-              get_json('/api/profile_write', { method: 'post', data: { user_id: this.user.id, name: disp_name } }).then(() => {
+              api_profile_write({ user_id, disp_name }).then(() => {
                 this.parent.topBar.check_login_status();
               });
-            let profile = $('#p-profile').val() || '';
+            let profile = $('#p-profile').val() as string;
             if (profile != d.profile)
-              get_json('/api/profile_write', { method: 'post', data: { user_id: this.user.id, profile } });
-            let membership_id = $('#p-membership').val() || '';
+              api_profile_write({ user_id, profile });
+            let membership_id = $('#p-membership').val() as string;
             if (membership_id != d.membership_id)
-              get_json('/api/profile_write', { method: 'post', data: { user_id: this.user.id, membership_id } });
+              api_profile_write({ user_id, membership_id });
           }
         },
         close: {
@@ -223,7 +215,7 @@ export class User {
           text: this.parent.i18next.t('post'),
           action: async () => {
             let user_id = this.user?.id || '';
-            let newsgroup_id = n.id;
+            let newsgroup_id = n.n.id;
             let reply_to = a ? Number(a.article_id) : 0;
             let title = $('#post-title').val() as string;
             let disp_name = $('#post-name').val() as string;
@@ -246,7 +238,7 @@ export class User {
               let r2 = await api_attachment(fd);
             }
 
-            this.parent.top_page(n.name, r.article_id);
+            this.parent.top_page(n.n.name, r.article_id);
 
           }
         },
@@ -291,7 +283,7 @@ export class User {
   }
 
   async show_profile(user_id: string) {
-    let d = await get_json('/api/profile_read', { data: { user_id } }) as IProfile;
+    let d = await api_profile_read(user_id);
     if (!this.membership) this.membership = await api_membership();
     $.alert({
       title: this.t('show-profile'),
@@ -409,13 +401,13 @@ function form_post_textarea(id: string, label_str: string, a: IArticle | null, o
     input_part, help);
 }
 
-function form_membership(id: string, label_str: string, help_str: string, value: number, membership: IMembership | null): string {
+function form_membership(id: string, label_str: string, help_str: string, value: string, membership: IMembership | null): string {
   let c = '';
   if (!membership) return div('no-membership');
   for (let id in membership) {
     let m = membership[id];
     if (m.selectable)
-      c += option({ value: id, selected: selected(id == String(value)) }, m.name);
+      c += option({ value: id, selected: selected(id == value) }, m.name);
   }
   return div({ class: 'form-group row' },
     label({ class: 'col-sm-2' }, label_str),
@@ -428,7 +420,7 @@ function form_membership(id: string, label_str: string, help_str: string, value:
 
 function quote_article(id: string, n: INewsGroup, a: IArticle) {
   let c = $('#' + id).val();
-  let qs = 'In article ' + n.name + '/' + a.article_id + '\n';
+  let qs = 'In article ' + n.n.name + '/' + a.article_id + '\n';
   qs += a.author + ' writes:'
   qs += '\n';
 

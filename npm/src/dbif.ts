@@ -2,6 +2,12 @@ import { option, select, selected } from "./tag"
 import { get_json } from "./util";
 import { ReadSet } from "./readSet";
 
+
+
+interface IResult {
+  result: 'ok' | 'ng';
+}
+
 //
 // api/newsgroup
 //
@@ -22,7 +28,7 @@ export interface TNewsgroup {
   ord: number
 }
 
-export function api_newsgroup(): Promise<TNewsgroup[]> {
+export function api_newsgroup() {
   return get_json('/api/newsgroup') as Promise<TNewsgroup[]>;
 }
 
@@ -49,7 +55,7 @@ export interface IAttachment {
   size: number;
 };
 
-export function api_article(newsgroup_id: number, article_id: number): Promise<IArticle> {
+export function api_article(newsgroup_id: number, article_id: number) {
   return get_json('/api/article',
     { data: { newsgroup_id, article_id } }) as Promise<IArticle>;
 }
@@ -59,7 +65,7 @@ export function api_article(newsgroup_id: number, article_id: number): Promise<I
 //
 export interface IMembership { string: { id: number, name: string, selectable: number } };
 
-export function api_membership(): Promise<IMembership> {
+export function api_membership() {
   return get_json('/api/membership') as Promise<IMembership>;
 }
 export function membership_select(membership: IMembership, value: string, type: 'normal' | 'all' = 'normal', opt_str: string = ''): string {
@@ -73,6 +79,38 @@ export function membership_select(membership: IMembership, value: string, type: 
   }
   return select(opt);
 }
+//
+// api/profile_read
+//
+export interface IProfile {
+  disp_name: string;
+  created_at: string;
+  membership_id: string;
+  profile: string;
+  signature: string;
+  subsInfo: string;
+  mail: string;
+}
+
+export function api_profile_read(user_id: string) {
+  return get_json('/api/profile_read', { data: { user_id } }) as Promise<IProfile>;
+}
+//
+// api/profile_write
+//
+export interface ArgProfile {
+  user_id: string;
+  disp_name?: string;
+  membership_id?: string;
+  profile?: string;
+  signature?: string;
+  subsInfo?: string;
+}
+
+export function api_profile_write(a: ArgProfile) {
+  return get_json('/api/profile_write', { method: 'post', data: a }) as Promise<IResult>;
+}
+
 //
 // api/post
 //
@@ -90,15 +128,11 @@ interface IPostResult {
   article_id: string;
 }
 
-export function api_post(arg: IPostArg): Promise<IPostResult> {
+export function api_post(arg: IPostArg) {
   return get_json('/api/post', { method: 'post', data: arg }) as Promise<IPostResult>;
 }
 
-interface IResult {
-  result: 'ok' | 'ng';
-}
-
-export function api_attachment(fd: FormData): Promise<IResult> {
+export function api_attachment(fd: FormData) {
   return get_json('/api/attachment', {
     type: 'post',
     data: fd,
@@ -109,25 +143,28 @@ export function api_attachment(fd: FormData): Promise<IResult> {
 //
 // api/login
 //
+export interface IUser {
+  id: string;
+  name: string;
+  membership_id: string;
+  signature: string;
+  subsInfo: string;
+};
+
 export interface ILogin {
   login: number;
-}
-export interface ISession {
-  login: number;
-  name: string,
-  user_id: string,
-  membership_id: number
+  user: IUser;
 }
 
-export function api_login(mail: string, pwd: string): Promise<ILogin> {
+export function api_login(mail: string, pwd: string) {
   return get_json('/api/login', { method: 'post', data: { email: mail, pwd } }) as Promise<ILogin>;
 }
 
-export function api_logout(): Promise<ILogin> {
+export function api_logout() {
   return get_json('/api/login') as Promise<ILogin>;
 }
 
-export function api_session(): Promise<ILogin> {
+export function api_session() {
   return get_json('/api/session') as Promise<ILogin>;
 }
 
@@ -165,7 +202,7 @@ export interface TArticle {
 //
 // admin/api/title
 //
-export function admin_api_title(user_id: string): Promise<TArticle[]> {
+export function admin_api_title(user_id: string) {
   return get_json('/admin/api/title', { data: { user_id } }) as Promise<TArticle[]>;
 }
 

@@ -8,11 +8,10 @@ import { Btn, BtnDropdown } from "./toolbar";
 import { GeometryManager } from "./gemotry_manager";
 import { contextMenu, closeContextMenu } from "./context_menu";
 import { i18n } from "i18next";
-import { div, select, option, label, selected } from "./tag";
 import { UserAdmin } from "./userAdmin";
 import { NewsgroupAdmin } from "./newsgroupAdmin";
 import { UserInfo } from "./userInfo";
-import { api_newsgroup, api_sesion, ISession } from "./dbif";
+import { api_newsgroup } from "./dbif";
 
 export default class NnsBbs {
   public topBar = new TopBar(this);
@@ -352,6 +351,25 @@ export default class NnsBbs {
         this.set_i18n_text();
       }
     });
+  }
+
+
+  onLogin() {
+    if (this.user.user) {
+      this.ng_pane.loadSubsInfo(this.user.user.subsInfo);
+      this.redisplay();
+      this.topBar.set_login_menu(this.user.user.name);
+    } else {
+      throw new Error('unexpected situation');
+    }
+  }
+
+  beforeLogout() {
+    this.ng_pane.saveSubsInfo();
+  }
+
+  onLogout() {
+    this.topBar.set_logout_menu();
   }
 }
 
