@@ -301,4 +301,52 @@ sub attachment($self) {
     $self->render( text => $@, status => '400' ) if $@;
 }
 
+sub subsInfo($self) {
+    my $user_id = $self->param('user_id');
+    my $write   = $self->param('write');
+    eval {
+        die "user_id required\n" unless $user_id;
+        my $db = NnsBbs::Db::new($self);
+        my ( $level, $moderator, $admin, $user_id2 ) =
+          access_level( $self, $db );
+        die "no permission\n" if ( $user_id ne $user_id2 ) && !$moderator;
+        if ($write) {
+            my $list = from_json($write);
+            my $cnt  = 0;
+            for my $d (@$list) {
+                my $nid       = $d->{'newsgroup_id'};
+                my $subscribe = $d->{'subscribe'};
+                my $done      = $d->{'done'};
+                my $update    = $d->{'update'};
+                die "newsgroup_id,subscribe,done must be exists in data\n"
+                  if ( !defined($nid)
+                    || !defined($subscribe)
+                    || !defined($done) );
+                print Dumper $d;
+                if ($update) {
+                    my $sql = "update subsInfo set subscribe=?,done=?";
+                    $sql .= " where user_id=? and newsgroup_id=?";
+                    $db->execute( $sql, $subscribe, $done, $user_id, $nid );
+                }
+                else {
+                    my $sql = "insert into subsInfo";
+                    $sql .= "(user_id,newsgroup_id,subscribe,done)";
+                    $sql .= "values(?,?,?,?)";
+                    $db->execute( $sql, $user_id, $nid, $subscribe, $done );
+                }
+                $cnt++;
+            }
+            $db->commit;
+            $self->render( json => { result => 'ok', count => $cnt } );
+        }
+        else {
+            my $sql = "select newsgroup_id,subscribe,done,1 as 'update'";
+            $sql .= " from subsInfo where user_id=?";
+            my $hh = $db->select_hh( $sql, 'newsgroup_id', $user_id );
+            $self->render( json => $hh );
+        }
+    };
+    $self->render( text => $@, status => '400' ) if $@;
+}
+
 1;

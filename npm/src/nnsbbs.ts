@@ -51,7 +51,13 @@ export default class NnsBbs {
         this.ng_pane.bShowAll = false;
         this.redisplay();
       }
+    })).add_btn(new Btn({
+      icon: 'save',
+      action: () => {
+        this.ng_pane.saveSubsInfo();
+      }
     }));
+
 
     // Buttons in title pane
     this.titles_pane.toolbar.add_btn(new Btn({
@@ -354,11 +360,11 @@ export default class NnsBbs {
   }
 
 
-  onLogin() {
+  async onLogin() {
     if (this.user.user) {
-      this.ng_pane.loadSubsInfo(this.user.user.subsInfo);
+      await this.ng_pane.loadSubsInfo();
+      this.topBar.set_login_menu(this.user.user.disp_name);
       this.redisplay();
-      this.topBar.set_login_menu(this.user.user.name);
     } else {
       throw new Error('unexpected situation');
     }
@@ -370,6 +376,8 @@ export default class NnsBbs {
 
   onLogout() {
     this.topBar.set_logout_menu();
+    this.ng_pane.clearSubsInfo();
+    this.redisplay();
   }
 }
 

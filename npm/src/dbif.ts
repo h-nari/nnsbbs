@@ -88,7 +88,6 @@ export interface IProfile {
   membership_id: string;
   profile: string;
   signature: string;
-  subsInfo: string;
   mail: string;
 }
 
@@ -104,7 +103,6 @@ export interface ArgProfile {
   membership_id?: string;
   profile?: string;
   signature?: string;
-  subsInfo?: string;
 }
 
 export function api_profile_write(a: ArgProfile) {
@@ -145,10 +143,9 @@ export function api_attachment(fd: FormData) {
 //
 export interface IUser {
   id: string;
-  name: string;
+  disp_name: string;
   membership_id: string;
   signature: string;
-  subsInfo: string;
 };
 
 export interface ILogin {
@@ -156,18 +153,43 @@ export interface ILogin {
   user: IUser;
 }
 
+export interface ILogout {
+  login: number;
+}
+
 export function api_login(mail: string, pwd: string) {
   return get_json('/api/login', { method: 'post', data: { email: mail, pwd } }) as Promise<ILogin>;
 }
 
 export function api_logout() {
-  return get_json('/api/login') as Promise<ILogin>;
+  return get_json('/api/logout') as Promise<ILogout>;
 }
 
 export function api_session() {
   return get_json('/api/session') as Promise<ILogin>;
 }
+//
+// api/subsInfo
+//
+export interface IResultCount extends IResult {
+  count: number;
+}
+export interface ISubsElem {
+  newsgroup_id: string;
+  subscribe: number;
+  done: string;
+  update: number;
+}
 
+export interface ISubsHash {
+  [key: string]: ISubsElem;
+}
+export function api_subsInfo_read(user_id: string) {
+  return get_json('/api/subsInfo', { data: { user_id } }) as Promise<ISubsHash>;
+}
+export function api_subsInfo_write(user_id: string, data: ISubsElem[]) {
+  return get_json('/api/subsInfo', { method: 'post', data: { user_id, write: JSON.stringify(data) } }) as Promise<IResultCount>;
+}
 
 //
 //  admin/api/user

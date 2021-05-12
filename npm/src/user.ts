@@ -201,7 +201,7 @@ export class User {
     }
 
     let c = tag('form', { class: 'post-article' },
-      form_input('post-name', '表示名', { value: this.user.name }),
+      form_input('post-name', '表示名', { value: this.user.disp_name }),
       form_input('post-title', '表題', { value: title }),
       form_post_textarea('post-content', '本文', a, { value: content, rows: 10 }),
       div({ class: 'attachment-area' }));

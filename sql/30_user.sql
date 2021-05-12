@@ -16,7 +16,6 @@ create table user (
   bBanned       boolean       default false,
   banned_at     datetime,  
   banned_reason text          default "",
-  subsInfo      text          default "",     -- Subscription and read information
   profile       text          default "",      
   signature     text          default ""
 );

@@ -28,7 +28,9 @@ export class TopBar {
     return new Promise((resolve, reject) => {
       api_session().then(d => {
         if (d.login) {
-          this.set_login_menu(d.user.name);
+          this.parent.user.user = d.user;
+          this.parent.onLogin();
+          // this.set_login_menu(d.user.disp_name);
           resolve(true);
         }
         else {

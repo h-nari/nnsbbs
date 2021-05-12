@@ -33,6 +33,7 @@ sub startup ($self) {
     $r->any('/api/profile_read')->to('api#profile_read');
     $r->post('/api/profile_write')->to('api#profile_write');
     $r->post('/api/post')->to('api#post_article');
+    $r->any('/api/subsInfo')->to('api#subsInfo');
     $r->any('/api/attachment')->to('api#attachment');
     $r->get('/admin/user')->to('admin#user_list');
     $r->get('/admin/user/#id')->to('admin#user');

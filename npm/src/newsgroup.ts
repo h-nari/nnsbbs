@@ -2,7 +2,7 @@ import { div, button, span, input, tag, a } from "./tag";
 import { ToolbarPane } from './pane';
 import { ReadSet } from "./readSet";
 import NnsBbs from "./nnsbbs";
-import { TNewsgroup, api_session, api_profile_read, api_profile_write } from "./dbif";
+import { TNewsgroup, api_session, api_profile_read, api_profile_write, api_subsInfo_read, ISubsHash, ISubsElem, api_subsInfo_write } from "./dbif";
 const moment = require('moment');
 
 export interface INewsGroup {
@@ -14,6 +14,7 @@ export interface INewsGroup {
 export interface ISubsInfo {
   subscribe: boolean;
   read: ReadSet;
+  update: boolean | undefined;
 };
 // Json expression of ISubsInfo
 export interface ISubsJson {
@@ -22,24 +23,25 @@ export interface ISubsJson {
 };
 
 export class NewsGroupsPane extends ToolbarPane {
-  public subsInfo: { [name: string]: ISubsInfo } | null = null;
-  public bShowAll: boolean = false;
-
+  public bShowAll: boolean = true;
   private id_lg: string;      // list-group id
   private newsgroups: INewsGroup[] = [];
   private clickCb: ((newsgroup: INewsGroup) => void) | null = null;
   public showAllNewsgroupCb: (() => void) | null = null;
-  private savedSubsString: string = "";
   private cur_newsgroup: INewsGroup | null = null;
+  public subsInfo: { [name: string]: ISubsInfo } = {};
+  private savedSubsString: { [newsgroup_id: string]: string } = {};
 
   constructor(id: string, parent: NnsBbs) {
     super(id, parent);
     this.id_lg = id + "_lg";
     this.toolbar.title = 'NewsGroup';
 
-    setInterval(() => {
-      this.saveSubsInfo();
-    }, 5000);
+    if (false) {
+      setInterval(() => {
+        this.saveSubsInfo();
+      }, 5000);
+    }
   }
 
   setNewsgroups(data: TNewsgroup[]) {
@@ -50,10 +52,10 @@ export class NewsGroupsPane extends ToolbarPane {
   setSubsInfoIntoNewsgroup() {
     if (this.subsInfo && this.newsgroups.length > 0) {
       for (let ng of this.newsgroups) {
-        ng.subsInfo = this.subsInfo[ng.n.name];
+        ng.subsInfo = this.subsInfo[ng.n.id];
         if (!ng.subsInfo) {
-          ng.subsInfo = { subscribe: false, read: new ReadSet() };
-          this.subsInfo[ng.n.name] = ng.subsInfo;
+          ng.subsInfo = { subscribe: false, read: new ReadSet(), update: false };
+          this.subsInfo[ng.n.id] = ng.subsInfo;
         }
       }
     }
@@ -179,44 +181,55 @@ export class NewsGroupsPane extends ToolbarPane {
     return null;
   }
 
+  clearSubsInfo() {
+    this.subsInfo = {};
+    this.savedSubsString = {};
+    for (let ng of this.newsgroups)
+      ng.subsInfo = null;
+  }
+
   // Load subscription information
-  async loadSubsInfo(json_data: string | null = null) {
-    if (!json_data) {
-      let s = await api_session();
-      if (s.login)
-        json_data = s.user.subsInfo;
-      else
-        json_data = localStorage.getItem('nnsbbsSubsInfo');
+  async loadSubsInfo() {
+    let h: ISubsHash = {};
+    if (this.parent.user.user)
+      h = await api_subsInfo_read(this.parent.user.user.id);
+    this.clearSubsInfo();
+    for (let newsgroup_id in h) {
+      let v = h[newsgroup_id];
+      let s = this.subsInfo[newsgroup_id] = {
+        subscribe: v.subscribe != 0,
+        read: new ReadSet(v.done),
+        update: v.update ? v.update != 0 : false
+      };
+      this.savedSubsString[newsgroup_id] = JSON.stringify(s);
     }
-    if (json_data) {
-      let data = JSON.parse(json_data) as { [n: string]: ISubsJson };
-      let subsInfo: { [key: string]: ISubsInfo } = {};
-      for (let k in data)
-        subsInfo[k] = { subscribe: data[k].subscribe, read: new ReadSet(data[k].read) };
-      this.subsInfo = subsInfo;
-      this.savedSubsString = json_data;
-      this.setSubsInfoIntoNewsgroup();
-    }
+    this.setSubsInfoIntoNewsgroup();
   }
   // Save your subscription information
-  //TODO DBへセーブ
+
   async saveSubsInfo(bForced: boolean = false) {
-    let subsJson: { [key: string]: ISubsJson } = {};
-    for (let ng in this.subsInfo) {
-      let s = this.subsInfo[ng];
-      subsJson[ng] = {
-        subscribe: s.subscribe,
-        read: s.read.toString()
-      };
-    }
-    let str = JSON.stringify(subsJson, null, 2);
-    if (bForced || str != this.savedSubsString) {
-      let s = await api_session();
-      if (s.login) 
-        api_profile_write({ user_id: s.user.id, subsInfo: str });
-       else 
-        localStorage.setItem('nnsbbsSubsInfo', str);
-      this.savedSubsString = str;
+    let user = this.parent.user.user;
+    console.log('saveSubsInfo');
+    if (!user) return;
+    for (let nid in this.subsInfo) {
+      let si = this.subsInfo[nid];
+      let jsonStr = JSON.stringify(si);
+      let savedStr = this.savedSubsString[nid];
+      let saveData: ISubsElem[] = [];
+      if (jsonStr != savedStr || bForced) {
+        this.savedSubsString[nid] = jsonStr;
+        saveData.push({
+          newsgroup_id: nid,
+          subscribe: si.subscribe ? 1 : 0,
+          done: si.read.toString(),
+          update: si.update ? 1 : 0
+        });
+        si.update = true;
+      }
+      if (saveData.length > 0) {
+        console.log('saveData:', saveData);
+        await api_subsInfo_write(user.id, saveData)
+      }
     }
   }
 
