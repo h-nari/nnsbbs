@@ -129,8 +129,11 @@ export class NewsGroupsPane extends ToolbarPane {
         if (!newsgroup)
           throw new Error('newsgroup ' + name + ' not found');
         let subscribe = $(target).is(':checked');
-        if (newsgroup.subsInfo)
-          newsgroup.subsInfo.subscribe = subscribe;
+        if (!newsgroup.subsInfo)
+          newsgroup.subsInfo = { subscribe: true, read: new ReadSet(), update: false };
+        newsgroup.subsInfo.subscribe = subscribe;
+        this.saveSubsInfo();
+
         if (subscribe)
           $(parent).addClass('subscribe');
         else
@@ -246,18 +249,20 @@ export class NewsGroupsPane extends ToolbarPane {
   read_all(newsgroup: string, last: number = 0) {
     let d = this.name2newsgroup(newsgroup);
     if (!d) throw new Error(`newsgroup:${newsgroup} は存在しません`);
-    let si = this.getSubsInfo(newsgroup)
-    if (si) {
-      si.read.clear();
-      si.read.add_range(1, d.n.max_id - last);
-    }
+    if (!d.subsInfo)
+      d.subsInfo = { subscribe: false, read: new ReadSet(), update: false };
+    d.subsInfo.read.clear();
+    d.subsInfo.read.add_range(1, d.n.max_id - last);
+    this.saveSubsInfo();
   }
 
   unread_all(newsgroup: string) {
     let d = this.name2newsgroup(newsgroup);
     if (!d) throw new Error(`newsgroup:${newsgroup} は存在しません`);
-    let si = this.getSubsInfo(newsgroup)
-    if (si) si.read.clear();
+    if (!d.subsInfo)
+      d.subsInfo = { subscribe: false, read: new ReadSet(), update: false };
+    d.subsInfo.read.clear();
+    this.saveSubsInfo();
   }
 
   scrollToNextSubscribedNewsgroup(bFromTop: boolean = false): boolean {

@@ -12,6 +12,7 @@ import { UserAdmin } from "./userAdmin";
 import { NewsgroupAdmin } from "./newsgroupAdmin";
 import { UserInfo } from "./userInfo";
 import { api_newsgroup } from "./dbif";
+import { ReadSet } from "./readSet";
 
 export default class NnsBbs {
   public topBar = new TopBar(this);
@@ -50,11 +51,6 @@ export default class NnsBbs {
         // $('#newsgroup_lg').addClass('hide-not-subscribed');
         this.ng_pane.bShowAll = false;
         this.redisplay();
-      }
-    })).add_btn(new Btn({
-      icon: 'save',
-      action: () => {
-        this.ng_pane.saveSubsInfo();
       }
     }));
 
@@ -223,7 +219,11 @@ export default class NnsBbs {
 
     $(document).on('contextmenu', '.title-contextmenu', e => {
       let article_id = parseInt($(e.currentTarget).attr('article_id') || "0");
-      let si = this.titles_pane.newsgroup?.subsInfo;
+      let newsgroup = this.titles_pane.newsgroup;
+      if (!newsgroup) return;
+      if (!newsgroup.subsInfo)
+        newsgroup.subsInfo = { subscribe: false, read: new ReadSet(), update: false };
+      let si = newsgroup.subsInfo;
       contextMenu(e, {
         title: this.i18next.t('article') + article_id,
         width: 300,
@@ -231,19 +231,17 @@ export default class NnsBbs {
           btn1: {
             text: 'mark-article-as-read',
             action: ev => {
-              if (si) {
-                si.read.add_range(article_id);
-                this.redisplay();
-              }
+              si.read.add_range(article_id);
+              this.ng_pane.saveSubsInfo();
+              this.redisplay();
             }
           },
           btn2: {
             text: 'mark-article-as-unread',
             action: ev => {
-              if (si) {
-                si.read.sub_range(article_id);
-                this.redisplay();
-              }
+              si.read.sub_range(article_id);
+              this.ng_pane.saveSubsInfo();
+              this.redisplay();
             }
           }
         }
@@ -308,8 +306,10 @@ export default class NnsBbs {
     // let subsInfo = this.ng_pane.getSubsInfo(this.cur_newsgroup);
     if (this.titles_pane.newsgroup) {
       let subsInfo = this.titles_pane.newsgroup.subsInfo;
-      if (subsInfo)
-        subsInfo.read.add_range(article_id);                 // make article read
+      if (!subsInfo)
+        subsInfo = this.titles_pane.newsgroup.subsInfo = { subscribe: false, read: new ReadSet(), update: false };
+      subsInfo.read.add_range(article_id);                 // make article read
+      this.ng_pane.saveSubsInfo();
     }
     this.redisplay();
 
