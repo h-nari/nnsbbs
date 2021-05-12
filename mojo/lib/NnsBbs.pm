@@ -4,12 +4,19 @@ use Data::Dumper;
 
 # This method will run once at server start
 sub startup ($self) {
-
     my $config = $self->plugin('NotYAMLConfig');
     $self->secrets( $config->{secrets} );
     $self->_load_config();
 
     $self->plugin('ClientIP');
+    $self->plugin(
+        'I18N',
+        {
+            namespace        => 'NnsBbs::I18N',
+            no_header_detect => 1,
+            default          => 'jp'
+        }
+    );
 
     # Router
     my $r = $self->routes;

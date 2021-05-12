@@ -17,7 +17,7 @@ sub user_list ($self) {
         $s .= "ua.redisplay(true);\n";
         $s .= " });\n";
         $s .= "</script>\n";
-        $self->stash( script_part => $s, page_title => 'ユーザ管理' );
+        $self->stash( script_part => $s, page_title => $self->l('user.management'));
         $self->render( template => 'admin/show' );
     }
     else {
@@ -38,7 +38,10 @@ sub user ($self) {
         $s .= "ui.redisplay(true);\n";
         $s .= " });\n";
         $s .= "</script>\n";
-        $self->stash( script_part => $s, page_title => 'ユーザ情報' );
+        $self->stash(
+            script_part => $s,
+            page_title  => $self->l('user.infomation')
+        );
         $self->render( template => 'admin/show' );
     }
     else {
@@ -60,7 +63,7 @@ sub newsgroup($self) {
         $s .= "</script>\n";
         $self->stash(
             script_part => $s,
-            page_title  => 'ニュースグループ管理'
+            page_title  => $self->l('newsgroup.management')
         );
         $self->render( template => 'admin/show' );
     }
@@ -76,7 +79,7 @@ sub api_newsgroup($self) {
     my $db     = NnsBbs::Db::new($self);
     my ( $level, $moderator ) = access_level( $self, $db );
 
-    unless($moderator) {
+    unless ($moderator) {
         $self->render( text => 'Access Forbidden', status => '403' );
     }
 
@@ -162,7 +165,7 @@ sub api_user($self) {
     my $db     = NnsBbs::Db::new($self);
     my ( $level, $moderator ) = access_level( $self, $db );
 
-    unless($moderator) {
+    unless ($moderator) {
         $self->render( text => 'Access Forbidden', status => '403' );
     }
 
@@ -247,8 +250,8 @@ sub api_title($self) {
     my $data    = "";
     my $db      = NnsBbs::Db::new($self);
     my ( $level, $moderator ) = access_level( $self, $db );
-    
-    unless($moderator) {
+
+    unless ($moderator) {
         $self->render( text => 'Access Forbidden', status => '403' );
     }
 

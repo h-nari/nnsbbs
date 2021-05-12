@@ -13,6 +13,9 @@ sub bbs ($self) {
     my $newsgroup  = $self->param('newsgroup') || "";
     my $article_id = $self->param('article_id') || "";
 
+    # $self->languages('jp');
+    printf STDERR "*\n*** %s ***\n*\n", $self->l('hello');
+
     my $s = "<script>\n";
     $s .= "\$(()=>{\n";
     $s .= sprintf( '  nnsbbs.top_page("%s","%s");', $newsgroup, $article_id )

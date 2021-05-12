@@ -122,20 +122,18 @@ sub mail_auth($self) {
     $sql .= " or email=?";
     $db->execute( $sql, $email );
 
-    my $id = String::Random->new->randregex('[A-Za-z0-9]{12}');
+    my $id = random_id(12);
     $sql = "insert into mail_auth(id,email) values (?,?)";
     $db->execute( $sql, $id, $email );
     $db->commit;
 
     my $url = $self->url_for("/mail_auth/$id")->to_abs;
-    my $c   = "メールアドレスの認証を完了させるために\n";
-    $c .= "次のURLをアクセスして下さい。\n\n";
+    my $c   = $self->l('access.mail_auth.link');
     $c .= "   $url\n";
     $c .= "\n";
-    $c .= "このメールに心当たりがない場合は\n";
-    $c .= "無視して下さい。";
+    $c .= $self->l('ignore.if.no.idea');
 
-    NnsBbs::Mail::send( $email, "NnsBbsメール認証", $c );
+    NnsBbs::Mail::send( $email, $self->l('email.title'), $c );
 
     $self->render( json => { result => 1 } );
 }

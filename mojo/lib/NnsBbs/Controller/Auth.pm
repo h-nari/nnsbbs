@@ -4,6 +4,7 @@ use NnsBbs::Db;
 use Data::Dumper;
 use String::Random;
 use Digest::SHA1 qw(sha1_hex);
+use NnsBbs::Util qw(random_id);
 
 sub mail($self) {
     my $id = $self->param('id');
@@ -26,13 +27,12 @@ sub mail($self) {
         $self->stash(
             script_part => '',
             id          => $id,
-            title       => "メール認証に成功しました",
-            msg =>
-              "下記に入力し、ユーザ登録を完了させて下さい",
-            email     => '',
-            disp_name => '',
-            pwd1      => '',
-            pwd2      => ''
+            title       => $self->l('Email.verification.successful'),
+            msg         => $self->l('fill.in.form'),
+            email       => '',
+            disp_name   => '',
+            pwd1        => '',
+            pwd2        => ''
         );
         $self->render( template => 'auth/register' );
     }
@@ -57,36 +57,30 @@ sub register($self) {
     my $sql = "select email from mail_auth where id=?";
     my ($db_email) = $db->select_ra( $sql, $id );
     if ( !$db_email ) {
-        push( @errors, "idが正しくありません" );
+        push( @errors, $self->l('id.is.not.correct') );
     }
     elsif ( $db_email ne $email ) {
-        push( @errors,
-            "メールアドレスが認証に使用したものと違います"
-        );
+        push( @errors, $self->l('email.is.not.same') );
     }
     else {
         $sql = "select count(*) from user where mail=?";
         my ($cnt) = $db->select_ra( $sql, $email );
         if ( $cnt > 0 ) {
-            push( @errors,
-"メールアドレスが既に使用されています(内部エラー)"
-            );
+            push( @errors, $self->l('email.is.already.used') );
         }
     }
 
     if ( !$disp_name ) {
-        push( @errors, "表示名が入力されていません" );
+        push( @errors, $self->l('disp_name.is.blank') );
     }
     if ( !$pwd1 ) {
-        push( @errors, "パスワードが入力されていません" );
+        push( @errors, $self->l('password.is.blank') );
     }
     elsif ( length($pwd1) < 8 ) {
-        push( @errors,
-                "パスワードが短すぎます。"
-              . "8文字以上にしてください" );
+        push( @errors, $self->l('too.short.password') );
     }
     elsif ( $pwd1 ne $pwd2 ) {
-        push( @errors, "確認用パスワードが一致しません" );
+        push( @errors, $self->l('password.is.not.same') );
     }
 
     if ( @errors > 0 ) {
@@ -99,7 +93,7 @@ sub register($self) {
         $self->stash(
             script_part => '',
             id          => $id,
-            title       => "登録情報にエラーがあります",
+            title       => $self->l('error.in.registration'),
             msg         => $msg,
             email       => $email,
             disp_name   => $disp_name,
@@ -111,7 +105,7 @@ sub register($self) {
     else {
         my $user_id;
         while (1) {
-            $user_id = String::Random->new->randregex('[A-Za-z0-9]{12}');
+            $user_id = random_id(12);
             $sql     = "select count(*) from user where id=?";
             my ($c) = $db->select_ra( $sql, $user_id );
             last if ( $c == 0 );
@@ -147,7 +141,7 @@ sub api_login {
             $db->execute( "update user set logined_at=now() where id=?",
                 $rh->{'id'} );
             $db->commit;
-            &new_session( $self, $db, $rh->{'id'});
+            &new_session( $self, $db, $rh->{'id'} );
             $self->render(
                 json => {
                     login => 1,
