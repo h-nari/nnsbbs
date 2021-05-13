@@ -56,7 +56,6 @@ sub user ($self) {
 sub newsgroup($self) {
     my $db = NnsBbs::Db::new($self);
 
-    print STDERR "*** ", $self->l('foo'), " ***\n";
     my ( $level, $moderator ) = access_level( $self, $db );
     if ($moderator) {
         my $s = "<script>\n";

@@ -1,5 +1,5 @@
-package NnsBbs::I18N::jp;
-use Mojo::Base 'Locale::Maketext';
+package NnsBbs::I18N::en;
+use Mojo::Base 'NnsBbs::I18N';
 use utf8;
 
 our %Lexicon = (

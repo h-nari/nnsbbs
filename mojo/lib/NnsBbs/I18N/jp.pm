@@ -1,9 +1,8 @@
 package NnsBbs::I18N::jp;
-use Mojo::Base 'Locale::Maketext';
+use Mojo::Base 'NnsBbs::I18N';
 use utf8;
 
 our %Lexicon = (
-    'foo'                           => ' ☆☆ ',
     'Email.verification.successful' => 'メール認証に成功しました',
     'fill.in.form' =>
       '下記に入力し、ユーザ登録を完了させて下さい',
@@ -24,7 +23,7 @@ our %Lexicon = (
     'access.mail_auth.link' =>
       "メールアドレスの認証を完了させるために\n"
       . "次のURLをアクセスして下さい。\n\n",
-    'ignore.if.no.idea' => "このメールに心当たりがない場合は\n";
+    'ignore.if.no.idea' => "このメールに心当たりがない場合は\n",
     "無視して下さい。",
     "email.title" => "NnsBbsメール認証"
 );
