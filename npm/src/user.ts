@@ -5,6 +5,7 @@ import { escape_html, get_json } from './util';
 import { createHash } from 'sha1-uint8array';
 import NnsBbs from './nnsbbs';
 import { Attachment } from './attachemnt';
+import i18next from 'i18next';
 
 
 export class User {
@@ -17,47 +18,56 @@ export class User {
   }
 
   login() {
+    let i18next = this.parent.i18next;
     return new Promise((resolve, reject) => {
       $.confirm({
-        title: 'Login',
+        title: i18next.t('login'),
         type: 'blue',
         columnClass: 'large',
         content: div({ class: 'login' },
           tag('form',
             div({ class: 'form-group row' },
-              label({ for: 'email', class: 'col-sm-3 col-form-label' }, 'Email'),
+              label({ for: 'email', class: 'col-sm-3 col-form-label' }, i18next.t('email') as string),
               div({ class: 'col-sm-6' }, input({ type: 'text', class: 'form-control', id: 'email', placeholder: 'email@example.com' }))),
             div({ class: 'form-group row' },
-              label({ for: 'inputPassword', class: 'col-sm-3 col-form-label' }, 'Password'),
+              label({ for: 'inputPassword', class: 'col-sm-3 col-form-label' }, i18next.t('password') as string),
               div({ class: 'col-sm-6' }, input({ type: 'password', class: 'form-control', id: 'inputPassword', placeholder: 'Password' })))),
           div({ class: 'login-links' },
-            a({ href: '#' }, 'forget Password'),
-            a({ href: '#' }, 'User registration'),
-            a({ href: '#' }, 'merits of user registration')
+            a({ href: '#' }, i18next.t('forget-password') as string),
+            a({ href: '#' }, i18next.t('user-registration') as string)
           )),
         buttons: {
           login: {
-            text: 'Login',
-            action: async () => {
+            text: i18next.t('login'),
+            action: () => {
               let email = $('#email').val() as string;
               let password = $('#inputPassword').val() as string;
+              if (!email) {
+                $.alert(i18next.t('input-email'));
+                return false;
+              }
+              if (!password) {
+                $.alert(i18next.t('no-password'));
+                return false;
+              }
               let sha = createHash('sha1');
               sha.update(password);
               let pwd = sha.digest('hex');
-              let data = await api_login(email, pwd);
-              if (!data.login) {
-                $.alert(this.parent.i18next.t('login-failed'));
-                this.user = null;
-                resolve(false);
-              } else {
-                this.user = data.user;
-                this.parent.onLogin();
-                resolve(true);
-              }
+              api_login(email, pwd).then(data => {
+                if (!data.login) {
+                  $.alert(this.parent.i18next.t('login-failed'));
+                  this.user = null;
+                  resolve(false);
+                } else {
+                  this.user = data.user;
+                  this.parent.onLogin();
+                  resolve(true);
+                }
+              });
             }
           },
           cancel: {
-            text: 'Cancel',
+            text: i18next.t('cancel'),
             action: () => { resolve(false); }
           }
         }
@@ -66,12 +76,13 @@ export class User {
   }
 
   logout() {
+    let i18next = this.parent.i18next;
     $.confirm({
-      title: 'Logout',
-      content: 'Are you sure you want to log out?',
+      title: i18next.t('logout'),
+      content: i18next.t('log-out?'),
       buttons: {
         logout: {
-          text: 'Logout',
+          text: i18next.t('logout'),
           action: () => {
             this.parent.beforeLogout();
             api_logout().then(() => {
@@ -80,7 +91,7 @@ export class User {
           }
         },
         cancel: {
-          text: 'Cancel',
+          text: i18next.t('cancel'),
           action: () => { }
         }
       }
@@ -88,17 +99,16 @@ export class User {
   }
 
   user_registration() {
+    let i18next = this.parent.i18next;
     $.confirm({
-      title: 'User registration',
+      title: i18next.t('user-registration'),
       type: 'green',
       columnClass: 'large',
       content: div({ class: 'user-registration' },
-        div({ class: 'explain' },
-          'Please enter your email address for authentication.',
-          '  A URL for authentication will be sent to the address you entered.'),
+        div({ class: 'explain' }, i18next.t('enter-email-for-authentication') as string),
         tag('form',
           div({ class: 'form-group row' },
-            label({ for: 'email', class: 'col-sm-3 col-form-label' }, 'Email'),
+            label({ for: 'email', class: 'col-sm-3 col-form-label' }, i18next.t('email') as string),
             div({ class: 'col-sm-6' },
               input({ type: 'text', class: 'form-control', id: 'email', placeholder: 'email@example.com' }))))),
       buttons: {
@@ -107,10 +117,10 @@ export class User {
           action: () => {
             let email: string = $('#email').val() as string;
             if (!email) {
-              $.alert('Please enter your email address');
+              $.alert(i18next.t('input-email'));
               return false;
             } else if (!email.match(/[\w.]+@(\w+\.)+\w+/)) {
-              $.alert('The email address format is incorrect.');
+              $.alert(i18next.t('bad-format-email'));
               return false;
             } else {
               get_json('/api/mail_auth', { data: { email } }).then((d: any) => {
@@ -118,8 +128,7 @@ export class User {
                   $.alert('failed:' + d.mes);
                   return false;
                 } else {
-                  $.alert(div('An authentication URL has been sent to the email address you entered.') +
-                    div('Please open the email and open the URL for authentication with your browser.'));
+                  $.alert(i18next.t('sent-url'));
                 }
               }).catch(e => {
                 $.alert(e);
@@ -136,6 +145,7 @@ export class User {
   }
 
   async profile_dlg() {
+    const i18next = this.parent.i18next;
     if (!this.user) {
       if (!await this.login()) return;
     }
@@ -145,12 +155,12 @@ export class User {
     let d = await api_profile_read(this.user.id);
     let c = tag('form', { class: 'edit-profile' },
       form_input('p-user-id', 'User ID', { value: this.user.id, readonly: null }),
-      form_input('p-email', 'Email', { help: '登録に使用したメールアドレス', value: d.mail, readonly: null }),
-      form_input('p-name', '表示名', { help: 'ユーザ名として表示されます', value: d.disp_name }),
-      form_membership('p-membership', '党員資格', '党員資格を選択して下さい', d.membership_id, this.membership),
-      form_profile_textarea('p-profile', 'プロファイル',
+      form_input('p-email', 'Email', { help: i18next.t('mail-used-to-register'), value: d.mail, readonly: null }),
+      form_input('p-name', i18next.t('disp-name'), { help: i18next.t('displayed-as-username'), value: d.disp_name }),
+      form_membership('p-membership', i18next.t('membership'), i18next.t('select-your-membership'), d.membership_id, this.membership),
+      form_profile_textarea('p-profile', i18next.t('profile'),
         {
-          help: '自己紹介を記入して下さい。ここに書かれた内容は公開されますので注意して下さい。',
+          help: i18next.t('fill-in-your-self-introduction'),
           value: d.profile, rows: 10
         })
     );
@@ -161,7 +171,7 @@ export class User {
       content: c,
       buttons: {
         ok: {
-          text: '書込み',
+          text: i18next.t('write'),
           action: () => {
             if (!this.user) return;
             let user_id = this.user.id;
@@ -179,7 +189,7 @@ export class User {
           }
         },
         close: {
-          text: '閉じる',
+          text: i18next.t('close'),
           action: () => { }
         }
       }
@@ -187,6 +197,7 @@ export class User {
   }
 
   async post_article_dlg(n: INewsGroup, a: (IArticle | null) = null) {
+    const i18next = this.parent.i18next;
     var attachment_list: Attachment[] = [];
     if (!this.user) {
       if (!await this.login()) return;
@@ -201,12 +212,12 @@ export class User {
     }
 
     let c = tag('form', { class: 'post-article' },
-      form_input('post-name', '表示名', { value: this.user.disp_name }),
-      form_input('post-title', '表題', { value: title }),
-      form_post_textarea('post-content', '本文', a, { value: content, rows: 10 }),
+      form_input('post-name', i18next.t('disp-name'), { value: this.user.disp_name }),
+      form_input('post-title', i18next.t('subject'), { value: title }),
+      form_post_textarea('post-content', i18next.t('body'), a, { value: content, rows: 10 }),
       div({ class: 'attachment-area' }));
     $.confirm({
-      title: '記事投稿',
+      title: i18next.t('post-article'),
       columnClass: 'large',
       type: 'orange',
       content: c,
@@ -249,7 +260,6 @@ export class User {
       },
       onOpen: () => {
         this.parent.set_i18n_text();
-        // $('.post-article [title]').tooltip();
         $('.btn-quote').on('click', () => {
           if (a) quote_article('post-content', n, a);
         });
@@ -261,15 +271,12 @@ export class User {
             attachment_list.forEach(a => {
               a.bind();
               a.onDelete = () => {
-                console.log('before delete:', attachment_list);
                 attachment_list = attachment_list.filter(b => b != a);
-                console.log('after delete:', attachment_list);
                 redisplay_func();
               }
             });
           };
           this.attachment_dlg().then(list => {
-            console.log('list:', list);
             attachment_list.push(...list);
             redisplay_func();
           });
@@ -301,9 +308,10 @@ export class User {
   }
 
   attachment_dlg(): Promise<Attachment[]> {
+    let i18next = this.parent.i18next;
     return new Promise((resolve, reject) => {
       $.confirm({
-        title: '添付ファイル/画像の指定',
+        title: i18next.t('specify-attachments-images'),
         type: 'blue',
         columnClass: 'medium',
         content: tag('form',
@@ -311,7 +319,7 @@ export class User {
             method: 'POST', action: window.nnsbbs_baseURL + 'api/attachment',
             enctype: 'multipart/form-data', id: 'upload-form'
           },
-          input({ type: 'file', name: 'upload', id: 'upload-file', multiple: null, placeholder: 'ファイルを選択して下さい' })
+          input({ type: 'file', name: 'upload', id: 'upload-file', multiple: null, placeholder: i18next.t('select-files') as string })
         ),
         buttons: {
           add: {
@@ -413,7 +421,7 @@ function form_membership(id: string, label_str: string, help_str: string, value:
     label({ class: 'col-sm-2' }, label_str),
     div({ class: 'col-sm-9' },
       select({ id }, c),
-      tag('small', { class: 'form-text text-muted' }, '党員資格を選択してください'))
+      tag('small', { class: 'form-text text-muted' }, help_str))
   );
 }
 

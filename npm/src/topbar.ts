@@ -43,29 +43,31 @@ export class TopBar {
   }
 
   set_login_menu(username: string) {
+    let i18next = this.parent.i18next;
     let m = this.menu_login;
     m.name = escape_html(username) + icon('caret-down-fill', 'right-icon')
     $('#' + m.id).html(m.name);
     m.clear();
-    m.add(new Menu('Logout', () => {
+    m.add(new Menu(i18next.t('logout'), () => {
       this.parent.user.logout();
     }));
-    m.add(new Menu('Profile', () => {
+    m.add(new Menu(i18next.t('Profile'), () => {
       this.parent.user.profile_dlg();
     }));
-    m.add(new Menu('user-manager', '/admin/user'));
-    m.add(new Menu('newsgroup-manager', '/admin/newsgroup'));
+    m.add(new Menu(i18next.t('user-manager'), '/admin/user'));
+    m.add(new Menu(i18next.t('newsgroup-manager'), '/admin/newsgroup'));
   }
 
   set_logout_menu() {
+    let i18next = this.parent.i18next;
     let m = this.menu_login;
-    m.name = 'Login' + icon('caret-down-fill', 'right-icon')
+    m.name = i18next.t('login') + icon('caret-down-fill', 'right-icon ml-1')
     $('#' + m.id).html(m.name);
     m.clear();
-    this.menu_login.add(new Menu('Login', () => {
+    this.menu_login.add(new Menu(i18next.t('login'), () => {
       this.parent.user.login();
     }));
-    this.menu_login.add(new Menu('User Registration', () => {
+    this.menu_login.add(new Menu(i18next.t('User Registration'), () => {
       this.parent.user.user_registration();
     }));
   }

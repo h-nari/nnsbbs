@@ -320,7 +320,6 @@ sub subsInfo($self) {
                   if ( !defined($nid)
                     || !defined($subscribe)
                     || !defined($done) );
-                print Dumper $d;
                 if ($update) {
                     my $sql = "update subsInfo set subscribe=?,done=?";
                     $sql .= " where user_id=? and newsgroup_id=?";

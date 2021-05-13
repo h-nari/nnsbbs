@@ -208,11 +208,10 @@ export class NewsGroupsPane extends ToolbarPane {
     }
     this.setSubsInfoIntoNewsgroup();
   }
+  
   // Save your subscription information
-
   async saveSubsInfo(bForced: boolean = false) {
     let user = this.parent.user.user;
-    console.log('saveSubsInfo');
     if (!user) return;
     for (let nid in this.subsInfo) {
       let si = this.subsInfo[nid];
@@ -248,7 +247,7 @@ export class NewsGroupsPane extends ToolbarPane {
 
   read_all(newsgroup: string, last: number = 0) {
     let d = this.name2newsgroup(newsgroup);
-    if (!d) throw new Error(`newsgroup:${newsgroup} は存在しません`);
+    if (!d) throw new Error(`newsgroup:${newsgroup} is not exists`);
     if (!d.subsInfo)
       d.subsInfo = { subscribe: false, read: new ReadSet(), update: false };
     d.subsInfo.read.clear();
@@ -258,7 +257,7 @@ export class NewsGroupsPane extends ToolbarPane {
 
   unread_all(newsgroup: string) {
     let d = this.name2newsgroup(newsgroup);
-    if (!d) throw new Error(`newsgroup:${newsgroup} は存在しません`);
+    if (!d) throw new Error(`newsgroup:${newsgroup} is not exists`);
     if (!d.subsInfo)
       d.subsInfo = { subscribe: false, read: new ReadSet(), update: false };
     d.subsInfo.read.clear();

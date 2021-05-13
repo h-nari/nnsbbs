@@ -24,11 +24,12 @@ export class UserAdmin {
   }
 
   inner_html(): string {
+    let i18next = this.parent.i18next;
     let c = '';
     for (let u of this.userList) {
       let menu = new Menu(icon('three-dots'));
       this.menuList.push(menu);
-      menu.add(new Menu('Change User Setting', () => {
+      menu.add(new Menu(i18next.t('change-user-setting'), () => {
         this.change_user_dlg(u);
       }));
       let membership = '';
@@ -125,9 +126,9 @@ export class UserAdmin {
   }
 
   async change_user_dlg(u: IUserAdmin) {
-
+    let i18next = this.parent.i18next;
     $.confirm({
-      title: 'Change User Setting',
+      title: i18next.t('change-user-setting'),
       type: 'orange',
       columnClass: 'medium',
       content: tag('form', { class: 'change-user-dlg overflow-hidden' },

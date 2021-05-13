@@ -39,6 +39,10 @@ export const en = {
     'last-post': 'Last post',
     'membership': 'Membership',
     'attach-file': 'Attach file',
-    'delete-this-attachment': 'Delete this attachment'
+    'delete-this-attachment': 'Delete this attachment',
+    'enter-email-for-authentication': 'Please enter your email address for authentication.A URL for authentication will be sent to the address you entered.',
+    'input-email': 'Please enter your email address',
+    'sent-url': 'An authentication URL has been sent to the email address you entered. Please open the email and open the URL for authentication with your browser.',
+    'bad-format-email':'The email address format is incorrect.'
   }
 };
