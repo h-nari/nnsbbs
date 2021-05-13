@@ -377,6 +377,8 @@ export default class NnsBbs {
   onLogout() {
     this.topBar.set_logout_menu();
     this.ng_pane.clearSubsInfo();
+    if (window.location.pathname.startsWith('/admin')) 
+      window.location.pathname = '/';
     this.redisplay();
   }
 }
