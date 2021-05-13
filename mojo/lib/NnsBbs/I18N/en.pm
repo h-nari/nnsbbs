@@ -28,3 +28,6 @@ our %Lexicon = (
       . "Please ignore it.",
     "email.title" => "NnsBbs Email Authentication"
 );
+
+1;
+

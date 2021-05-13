@@ -17,7 +17,10 @@ sub user_list ($self) {
         $s .= "ua.redisplay(true);\n";
         $s .= " });\n";
         $s .= "</script>\n";
-        $self->stash( script_part => $s, page_title => $self->l('user.management'));
+        $self->stash(
+            script_part => $s,
+            page_title  => $self->l('user.management')
+        );
         $self->render( template => 'admin/show' );
     }
     else {
@@ -52,6 +55,8 @@ sub user ($self) {
 
 sub newsgroup($self) {
     my $db = NnsBbs::Db::new($self);
+
+    print STDERR "*** ", $self->l('foo'), " ***\n";
     my ( $level, $moderator ) = access_level( $self, $db );
     if ($moderator) {
         my $s = "<script>\n";

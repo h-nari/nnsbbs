@@ -35,6 +35,7 @@ var css = {
     entry: {
         style: path.join(__dirname, 'scss', 'app.scss')
     },
+    devtool: "source-map",
     output: {
         path: path.resolve(__dirname, '../mojo/public/'),
         filename: 'app.css'
@@ -51,6 +52,7 @@ var css = {
                         loader: "css-loader",
                         options: {
                             sourceMap: true,
+                            minimize: true,
                             importLoaders: 2
                         }
                     },

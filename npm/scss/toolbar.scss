@@ -21,6 +21,9 @@
       flex-grow: 0;
     }
   }
+  button.menu.btn {
+    background-color: lightgray;
+  }
 }
 
 .toolbar.closed + div {

@@ -1,3 +1,4 @@
+import { Menu } from "./menu";
 import { div, span, tag, label, input, button, ul, li, a } from "./tag";
 
 type IToggleCB = (bOpen: boolean) => void;
@@ -7,7 +8,7 @@ export class ToolBar {
   private id: string;
   private id_chk: string;                    // The id of the open/close switching icon
   public title: string;
-  private btns: Btn[] = [];
+  private btns: (Btn | Menu)[] = [];
   private open_icon_name = 'bi-caret-down-fill';
   private close_icon_name = 'bi-caret-right-fill';
   private bOpen: boolean = true;
@@ -40,6 +41,11 @@ export class ToolBar {
 
   add_btn(btn: Btn): ToolBar {
     this.btns.unshift(btn);        // First add
+    return this;
+  }
+
+  add_menu(menu: Menu) {
+    this.btns.unshift(menu);
     return this;
   }
 

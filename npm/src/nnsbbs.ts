@@ -13,6 +13,8 @@ import { NewsgroupAdmin } from "./newsgroupAdmin";
 import { UserInfo } from "./userInfo";
 import { api_newsgroup } from "./dbif";
 import { ReadSet } from "./readSet";
+import { Menu } from "./menu";
+import { icon } from "./tag";
 
 export default class NnsBbs {
   public topBar = new TopBar(this);
@@ -152,6 +154,10 @@ export default class NnsBbs {
           this.user.post_article_dlg(this.titles_pane.newsgroup, this.article_pane.article);
       }
     }));
+
+    let action_menu = new Menu(icon('person-plus'));
+
+    this.article_pane.toolbar.add_menu(action_menu);
 
     // this.ng_pane.loadSubsInfo();
   }
@@ -377,7 +383,7 @@ export default class NnsBbs {
   onLogout() {
     this.topBar.set_logout_menu();
     this.ng_pane.clearSubsInfo();
-    if (window.location.pathname.startsWith('/admin')) 
+    if (window.location.pathname.startsWith('/admin'))
       window.location.pathname = '/';
     this.redisplay();
   }

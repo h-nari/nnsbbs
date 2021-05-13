@@ -8,6 +8,8 @@ help:
 
 run:
 	morbo script/nns_bbs
+run-debug:
+	MOJO_I18N_DEBUG=1 morbo script/nns_bbs
 
 fj:
 	NNSBBS_DB=fj morbo script/nns_bbs

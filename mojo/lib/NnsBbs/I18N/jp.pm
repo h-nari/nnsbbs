@@ -3,6 +3,7 @@ use Mojo::Base 'Locale::Maketext';
 use utf8;
 
 our %Lexicon = (
+    'foo'                           => ' ☆☆ ',
     'Email.verification.successful' => 'メール認証に成功しました',
     'fill.in.form' =>
       '下記に入力し、ユーザ登録を完了させて下さい',
@@ -27,3 +28,6 @@ our %Lexicon = (
     "無視して下さい。",
     "email.title" => "NnsBbsメール認証"
 );
+
+1;
+
