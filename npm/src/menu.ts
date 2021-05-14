@@ -1,37 +1,47 @@
-import { div, button } from './tag';
+import { div, button, icon } from './tag';
 
 var sn = 0;
 
+type MenuAction = (e: JQuery.ClickEvent, arg: any) => void;
+
+interface MenuOption {
+  icon?: string,
+  icon_class?: string,
+  name?: string,
+  explain?: string,
+  action?: MenuAction,
+  link?: string,
+  arg?: any
+};
+
 export class Menu {
   public id: string;
-  public name: string;
+  public opt: MenuOption;
   public subMenu: Menu[] = [];
-  public link: string = '';
-  public action: ((e: JQuery.ClickEvent, arg: any) => void) | null = null;
-  public arg: any;
 
-  constructor(name: string, action: string | ((e: JQuery.ClickEvent, arg: any) => void) | null = null, arg: any = null) {
+  constructor(opt: MenuOption) {
     this.id = 'menu-' + sn++;
-    this.name = name;
-    this.arg = arg;
-    if (typeof (action) == 'string')
-      this.link = action;
-    else
-      this.action = action;
+    this.opt = opt;
   }
 
   html(): string {
-    return button({ class: 'menu btn', id: this.id }, this.name);
+    let opt = this.opt;
+    let c = '';
+
+    if (opt.name) c += opt.name;
+    if (opt.icon) c += icon(opt.icon, opt.icon_class);
+
+    return button({ class: 'menu btn', id: this.id, 'title-i18n': opt.explain }, c);
   }
 
   bind() {
     $(`#${this.id}`).on('click', e => {
       $('.menu-back').remove();
-      if (this.link != '') {
-        document.location.href = this.link;
+      if (this.opt.link) {
+        document.location.href = this.opt.link;
       }
-      else if (this.action)
-        this.action(e, this.arg);
+      else if (this.opt.action)
+        this.opt.action(e, this.opt.arg);
       else if (this.subMenu.length > 0) {
         let s = this.subMenu.map(m => m.html()).join('');
         let sub_id = this.id + '-sub';

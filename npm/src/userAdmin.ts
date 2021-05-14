@@ -27,10 +27,11 @@ export class UserAdmin {
     let i18next = this.parent.i18next;
     let c = '';
     for (let u of this.userList) {
-      let menu = new Menu(icon('three-dots'));
+      let menu = new Menu({ icon: 'three-dots' });
       this.menuList.push(menu);
-      menu.add(new Menu(i18next.t('change-user-setting'), () => {
-        this.change_user_dlg(u);
+      menu.add(new Menu({
+        name: i18next.t('change-user-setting'),
+        action: () => { this.change_user_dlg(u); }
       }));
       let membership = '';
       if (u.moderator)

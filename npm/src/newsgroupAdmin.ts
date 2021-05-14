@@ -26,7 +26,7 @@ export class NewsgroupAdmin {
 
   constructor(parent: NnsBbs) {
     this.parent = parent;
-    this.menu = new Menu(icon('three-dots'));
+    this.menu = new Menu({ icon: 'three-dots' });
   }
 
   html(): string {
@@ -48,37 +48,48 @@ export class NewsgroupAdmin {
   bind() {
     let i18next = this.parent.i18next;
     this.menu.clear();
-    this.menu.add(new Menu(i18next.t('collapse-all-hierarchies'), e => {
-      this.root.map(n => { n.fold = true; });
-      this.root.fold = false;
-      this.redisplay();
-    }));
-    this.menu.add(new Menu(i18next.t('expand-all-hierarchies'), e => {
-      this.root.map(n => { n.fold = false; });
-      this.redisplay();
-    }));
-    this.menu.add(new Menu(i18next.t('create-a-new-newsgroup'), e => {
-      this.new_newsgroups_dlg();
-    }));
-    this.menu.add(new Menu(i18next.t('change-the-order-of-the-top-level-newsgroups'), e => {
-      reorderChildDlg(e, this.root);
-    }));
-    this.menu.add(new Menu(i18next.t('delete-marked-newsgroups-that-can-be-deleted'), e => {
-      $.confirm({
-        title: i18next.t('confirm'),
-        content: i18next.t('are-you-sure-you-want-to-delete-it?'),
-        buttons: {
-          Yes: async () => {
-            let result = { cnt: 0, list: [] };
-            let n = await this.deleteMarkedNewsgroup(this.root, result);
-            this.redisplay(true);
-            $.alert(i18next.t('deleted-n-newsgroups', { n: result.cnt }) +
-              result.list.map(s => div(s)).join('\n')
-            );
-          },
-          No: () => { }
-        }
-      });
+    this.menu.add(new Menu({
+      name: i18next.t('collapse-all-hierarchies'),
+      action: e => {
+        this.root.map(n => { n.fold = true; });
+        this.root.fold = false;
+        this.redisplay();
+      }
+    })).add(new Menu({
+      name: i18next.t('expand-all-hierarchies'),
+      action: e => {
+        this.root.map(n => { n.fold = false; });
+        this.redisplay();
+      }
+    })).add(new Menu({
+      name: i18next.t('create-a-new-newsgroup'),
+      action: e => {
+        this.new_newsgroups_dlg();
+      }
+    })).add(new Menu({
+      name: i18next.t('change-the-order-of-the-top-level-newsgroups'),
+      action: e => {
+        reorderChildDlg(e, this.root);
+      }
+    })).add(new Menu({
+      name: i18next.t('delete-marked-newsgroups-that-can-be-deleted'),
+      action: e => {
+        $.confirm({
+          title: i18next.t('confirm'),
+          content: i18next.t('are-you-sure-you-want-to-delete-it?'),
+          buttons: {
+            Yes: async () => {
+              let result = { cnt: 0, list: [] };
+              let n = await this.deleteMarkedNewsgroup(this.root, result);
+              this.redisplay(true);
+              $.alert(i18next.t('deleted-n-newsgroups', { n: result.cnt }) +
+                result.list.map(s => div(s)).join('\n')
+              );
+            },
+            No: () => { }
+          }
+        });
+      }
     }));
     this.menu.bind();
     this.root.bind();
@@ -442,7 +453,7 @@ class NewsgroupTree {
     this.newsgroupAdmin = admin;
     this.name = name;
     this.path = path;
-    this.menu = new Menu(icon('three-dots'));
+    this.menu = new Menu({ icon: 'three-dots' });
   }
 
   map(func: (n: NewsgroupTree) => void) {
@@ -522,45 +533,68 @@ class NewsgroupTree {
   makeMenu() {
     let i18next = this.newsgroupAdmin.parent.i18next;
     this.menu.clear();
-    this.menu.add(new Menu(i18next.t('create-subordinate-newsgroups'), e => {
-      this.newsgroupAdmin.new_newsgroups_dlg(this);
+    this.menu.add(new Menu({
+      name: i18next.t('create-subordinate-newsgroups'),
+      action: e => {
+        this.newsgroupAdmin.new_newsgroups_dlg(this);
+      }
     }));
     if (this.bDeleted) {
-      this.menu.add(new Menu(i18next.t('remove-delete-flag'), e => {
-        console.log('call undelete');
-        this.undelete();
+      this.menu.add(new Menu({
+        name: i18next.t('remove-delete-flag'),
+        action: e => {
+          console.log('call undelete');
+          this.undelete();
+        }
       }));
       if (this.depth > 0) {
-        this.menu.add(new Menu(i18next.t('remove-delete-flag-of-lower-levels'), e => {
-          console.log('call undelete');
-          this.undelete('tree');
+        this.menu.add(new Menu({
+          name: i18next.t('remove-delete-flag-of-lower-levels'),
+          action: e => {
+            console.log('call undelete');
+            this.undelete('tree');
+          }
         }));
       }
     } else {
-      this.menu.add(new Menu(i18next.t('delete'), e => {
-        this.delete_newsgroup_dlg();
+      this.menu.add(new Menu({
+        name: i18next.t('delete'),
+        action: e => {
+          this.delete_newsgroup_dlg();
+        }
       }));
     }
-    this.menu.add(new Menu(i18next.t('rename'), e => {
-      this.rename_dlg();
+    this.menu.add(new Menu({
+      name: i18next.t('rename'),
+      action: e => {
+        this.rename_dlg();
+      }
     }));
     if (this.children.length > 1)
-      this.menu.add(new Menu(i18next.t('reordering'), reorderChildDlg, this));
+      this.menu.add(new Menu({ name: i18next.t('reordering'), action: reorderChildDlg, arg: this }));
     if (this.depth > 0) {
-      this.menu.add(new Menu(i18next.t('fold-all'), e => {
-        this.map(n => { n.fold = true; });
-        this.newsgroupAdmin.redisplay();
-      }));
-      this.menu.add(new Menu(i18next.t('unfold-all'), e => {
-        this.map(n => { n.fold = false; });
-        this.newsgroupAdmin.redisplay();
+      this.menu.add(new Menu({
+        name: i18next.t('fold-all'),
+        action: e => {
+          this.map(n => { n.fold = true; });
+          this.newsgroupAdmin.redisplay();
+        }
+      })).add(new Menu({
+        name: i18next.t('unfold-all'),
+        action: e => {
+          this.map(n => { n.fold = false; });
+          this.newsgroupAdmin.redisplay();
+        }
       }));
     }
     if (this.depth > 1) {
-      this.menu.add(new Menu(i18next.t('unfold-to-one-layer-down'), e => {
-        this.map(n => { n.fold = true; });
-        this.fold = false;
-        this.newsgroupAdmin.redisplay();
+      this.menu.add(new Menu({
+        name: i18next.t('unfold-to-one-layer-down'),
+        action: e => {
+          this.map(n => { n.fold = true; });
+          this.fold = false;
+          this.newsgroupAdmin.redisplay();
+        }
       }));
     }
     for (let c of this.children)

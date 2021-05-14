@@ -108,6 +108,7 @@ export const jp = {
     'newsgroup': 'ニュースグループ',
     'access-control': '権限設定',
     'newsgroup-description': 'ニュースグループの説明',
-    'post':'投稿する'
+    'post':'投稿する',
+    'add-response':'反応を返す'
   }
 };

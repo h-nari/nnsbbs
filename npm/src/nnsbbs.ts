@@ -155,7 +155,10 @@ export default class NnsBbs {
       }
     }));
 
-    let action_menu = new Menu(icon('person-plus'));
+    let action_menu = new Menu({
+      icon: 'person-plus',
+      explain: 'add-response',
+    });
 
     this.article_pane.toolbar.add_menu(action_menu);
 

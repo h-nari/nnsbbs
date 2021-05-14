@@ -43,6 +43,12 @@ export const en = {
     'enter-email-for-authentication': 'Please enter your email address for authentication.A URL for authentication will be sent to the address you entered.',
     'input-email': 'Please enter your email address',
     'sent-url': 'An authentication URL has been sent to the email address you entered. Please open the email and open the URL for authentication with your browser.',
-    'bad-format-email':'The email address format is incorrect.'
+    'bad-format-email': 'The email address format is incorrect.',
+    'no-password': 'password not filled',
+    'newsgroup': 'Newsgroup',
+    'access-control': 'Access control',
+    'newsgroup-description': 'Newsgroup description',
+    'post': 'post',
+    'add-response': 'add response'
   }
 };
