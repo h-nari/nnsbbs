@@ -42,6 +42,8 @@ sub startup ($self) {
     $r->post('/api/post')->to('api#post_article');
     $r->any('/api/subsInfo')->to('api#subsInfo');
     $r->any('/api/attachment')->to('api#attachment');
+    $r->any('/api/reaction')->to('api#reaction');
+    $r->any('/api/reaction_type')->to('api#reaction_type');
     $r->get('/admin/user')->to('admin#user_list');
     $r->get('/admin/user/#id')->to('admin#user');
     $r->get('/admin/newsgroup')->to('admin#newsgroup');

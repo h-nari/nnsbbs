@@ -9,7 +9,7 @@ create table attached_file (
   user_id         varchar(255)    not null,
   deleted         boolean         default false,
   delete_reason   text            default "",
-  data longblob,
+  data            longblob,
   created_at      datetime        default now()
 );
 

@@ -62,3 +62,8 @@ export function size_str(size: number): string {
     str = size + ' bytes';
   return str;
 }
+
+export function nullstr(s: string | undefined | null): string {
+  if (s) return s;
+  else return '';
+}

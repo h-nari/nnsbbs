@@ -49,6 +49,9 @@ export const en = {
     'access-control': 'Access control',
     'newsgroup-description': 'Newsgroup description',
     'post': 'post',
-    'add-response': 'add response'
+    'add-response': 'add response',
+    'good':'good',
+    'i-dont-think-so':'I do\'nt think so',
+    'i-dont-understand':'I do\'nt understand'
   }
 };

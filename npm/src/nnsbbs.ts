@@ -11,10 +11,9 @@ import { i18n } from "i18next";
 import { UserAdmin } from "./userAdmin";
 import { NewsgroupAdmin } from "./newsgroupAdmin";
 import { UserInfo } from "./userInfo";
-import { api_newsgroup } from "./dbif";
+import { api_newsgroup, api_reaction_type, api_reaction_user, api_reaction_write, IReactionType } from "./dbif";
 import { ReadSet } from "./readSet";
 import { Menu } from "./menu";
-import { icon } from "./tag";
 
 export default class NnsBbs {
   public topBar = new TopBar(this);
@@ -29,6 +28,7 @@ export default class NnsBbs {
   private article_pane = new ArticlePane('article', this);
   private cur_newsgroup: string = "";
   private cur_newsgroup_id: number = 0;
+  public reaction_type: IReactionType | null = null;
 
   constructor(i18next: i18n) {
     this.i18next = i18next;
@@ -38,7 +38,7 @@ export default class NnsBbs {
     this.article_pane.expansion_ratio = 4;
 
     // buttons in newsgroup pane
-    this.ng_pane.toolbar.add_btn(new Btn({
+    this.ng_pane.toolbar.add_menu(new Menu({
       icon: 'check-all',
       explain: 'show-all-newsgroups',
       action: () => {
@@ -46,7 +46,7 @@ export default class NnsBbs {
         this.ng_pane.bShowAll = true;
         this.redisplay();
       }
-    })).add_btn(new Btn({
+    })).add_menu(new Menu({
       icon: 'check',
       explain: 'only-subscribed-newsgroups',
       action: () => {
@@ -58,7 +58,7 @@ export default class NnsBbs {
 
 
     // Buttons in title pane
-    this.titles_pane.toolbar.add_btn(new Btn({
+    this.titles_pane.toolbar.add_menu(new Menu({
       icon: 'x-square',
       explain: 'close-titles-and-article-pane',
       action: () => {
@@ -84,7 +84,7 @@ export default class NnsBbs {
           }
         },
       ]
-    })).add_btn(new Btn({
+    })).add_menu(new Menu({
       icon: 'align-bottom',
       explain: 'goto-end',
       action: () => {
@@ -95,14 +95,14 @@ export default class NnsBbs {
         if (h1 && h2)
           div1.scrollTop = h2 - h1 + 10;
       }
-    })).add_btn(new Btn({
+    })).add_menu(new Menu({
       icon: 'align-top',
       explain: 'goto-begin',
       action: () => {
         let div = $('#' + this.titles_pane.id + ' .titles')[0];
         div.scrollTop = 0;
       }
-    })).add_btn(new Btn({
+    })).add_menu(new Menu({
       icon: 'chevron-bar-down',
       explain: 'next-unread-article',
       action: () => {
@@ -112,7 +112,7 @@ export default class NnsBbs {
         if (!a.bClosed && t.newsgroup && t.cur_article_id)
           this.select_article(t.newsgroup.n.id, t.cur_article_id);
       }
-    })).add_btn(new Btn({
+    })).add_menu(new Menu({
       icon: 'chevron-bar-up',
       explain: 'previous-unread-article',
       action: () => {
@@ -122,7 +122,7 @@ export default class NnsBbs {
         if (!a.bClosed && t.newsgroup && t.cur_article_id)
           this.select_article(t.newsgroup.n.id, t.cur_article_id);
       }
-    })).add_btn(new Btn({
+    })).add_menu(new Menu({
       icon: 'chat-square-text-fill',
       explain: 'post-new-article',
       action: () => {
@@ -131,7 +131,7 @@ export default class NnsBbs {
       }
     }));
 
-    this.article_pane.toolbar.add_btn(new Btn({
+    this.article_pane.toolbar.add_menu(new Menu({
       icon: 'x-square',
       explain: 'close-article',
       action: () => {
@@ -140,13 +140,13 @@ export default class NnsBbs {
         document.title = `nnsbbs/${this.cur_newsgroup}`;
       }
     }))
-    this.article_pane.toolbar.add_btn(new Btn({
+    this.article_pane.toolbar.add_menu(new Menu({
       icon: 'card-heading',
       explain: 'toggle-article-header',
       action: () => {
         this.article_pane.toggle_header()
       }
-    })).add_btn(new Btn({
+    })).add_menu(new Menu({
       icon: 'reply-fill',
       explain: 'reply-to-article',
       action: () => {
@@ -155,14 +155,43 @@ export default class NnsBbs {
       }
     }));
 
-    let action_menu = new Menu({
+    var reaction_menu = new Menu({
       icon: 'person-plus',
       explain: 'add-response',
+      action: async (e) => {
+        if (!this.user.user) {
+          $.alert({
+            title: 'login-needed',
+            type: 'red',
+            content: 'login-needed-to-add-reaction'
+          })
+        } else {
+          reaction_menu.clear();
+          let article = this.article_pane.article;
+          if (article && this.user.user) {
+            let a = await api_reaction_user(this.cur_newsgroup_id, article.article_id, article.rev, this.user.user.id);
+            if (this.reaction_type) {
+              for (let k in this.reaction_type) {
+                let ra = this.reaction_type[k];
+                reaction_menu.add(new Menu({
+                  with_check: true,
+                  checked: ra.id == a.type_id,
+                  icon: ra.icon,
+                  icon_class: 'response',
+                  html_i18n: ra.name,
+                  action: () => {
+                    console.log('reaction clicked');
+                    this.add_reaction(ra.id);
+                  }
+                }));
+              }
+            }
+            reaction_menu.expand(e);
+          }
+        }
+      }
     });
-
-    this.article_pane.toolbar.add_menu(action_menu);
-
-    // this.ng_pane.loadSubsInfo();
+    this.article_pane.toolbar.add_menu(reaction_menu);
   }
 
   html(): string {
@@ -261,6 +290,7 @@ export default class NnsBbs {
   // Called from the built-in script of topPage
   // Read and display a list of newsgroups
   async top_page(newsgroup: string = '', article_id: string = '') {
+    this.reaction_type = (await api_reaction_type()).data;
     let data = await api_newsgroup();
     this.ng_pane.setNewsgroups(data);
     await this.ng_pane.loadSubsInfo();
@@ -389,6 +419,20 @@ export default class NnsBbs {
     if (window.location.pathname.startsWith('/admin'))
       window.location.pathname = '/';
     this.redisplay();
+  }
+
+  async add_reaction(type_id: number) {
+    console.log('add_reaction:', type_id);
+    let article = this.article_pane.article;
+    if (article && this.user.user) {
+      let n_id = this.cur_newsgroup_id;
+      let a_id = article.article_id;
+      let rev = article.rev;
+      let u_id = this.user.user.id;
+
+      await api_reaction_write(n_id, a_id, rev, u_id, type_id);
+      this.redisplay();
+    }
   }
 }
 

@@ -46,8 +46,8 @@ export class TopBar {
     let i18next = this.parent.i18next;
     let m = this.menu_login;
     m.opt.name = escape_html(username)
-    m.opt.icon = 'caret-down-fill';
-    m.opt.icon_class = 'right-icon';
+    m.opt.right_icon = 'caret-down-fill';
+    m.opt.right_icon_class = 'right-icon';
     $('#' + m.id).html(m.html());
     m.clear();
     m.add(new Menu({
@@ -66,8 +66,8 @@ export class TopBar {
     let i18next = this.parent.i18next;
     let m = this.menu_login;
     m.opt.name = i18next.t('login');
-    m.opt.icon = 'caret-down-fill';
-    m.opt.icon_class = 'right-icon ml-1';
+    m.opt.right_icon = 'caret-down-fill';
+    m.opt.right_icon_class = 'right-icon ml-1';
     $('#' + m.id).html(m.html());
     m.clear();
     this.menu_login.add(new Menu({

@@ -17,3 +17,4 @@ i18next.init({
   debug: true,
   resources: { en, jp }
 });
+

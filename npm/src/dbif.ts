@@ -192,6 +192,46 @@ export function api_subsInfo_write(user_id: string, data: ISubsElem[]) {
 }
 
 //
+// api/reaction
+//
+
+export interface IReactionType {
+  [key: string]: {
+    id: number;
+    name: string;
+    icon: string;
+  }
+}
+export interface IReactionTypeResult {
+  result: 'ok' | 'ng';
+  data: IReactionType;
+}
+export function api_reaction_type() {
+  return get_json('/api/reaction_type') as Promise<IReactionTypeResult>;
+}
+export function api_reaction_write(newsgroup_id: number, article_id: string, rev: number, user_id: string, type_id: number) {
+  return get_json('/api/reaction', { method: 'post', data: { newsgroup_id, article_id, rev, user_id, type_id } }) as Promise<IResult>;
+}
+export interface IReactionUser {
+  result: 'ok' | 'ng';
+  type_id: number;
+}
+export function api_reaction_user(newsgroup_id: number, article_id: string, rev: number, user_id: string) {
+  return get_json('/api/reaction', { method: 'post', data: { newsgroup_id, article_id, rev, user_id } }) as Promise<IReactionUser>;
+}
+export interface IReaction {
+  type_id: number;
+  user_id: string;
+  disp_name: string;
+}
+export interface IReactionResult {
+  result: 'ok' | 'ng';
+  data: IReaction[];
+}
+export function api_reaction(newsgroup_id: number, article_id: number, rev: number) {
+  return get_json('/api/reaction', { method: 'post', data: { newsgroup_id, article_id, rev } }) as Promise<IReactionUser>;
+}
+//
 //  admin/api/user
 //
 export interface IUserAdmin {

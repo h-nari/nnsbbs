@@ -346,4 +346,61 @@ sub subsInfo($self) {
     $self->render( text => $@, status => '400' ) if $@;
 }
 
+sub reaction($self) {
+    my $user_id = $self->param('user_id');
+    my $n_id    = $self->param('newsgroup_id');
+    my $a_id    = $self->param('article_id');
+    my $rev     = $self->param('rev');
+    my $type_id = $self->param('type_id');
+    my $sql;
+    my $db = NnsBbs::Db::new($self);
+    eval {
+        if ($type_id) {
+            die "user_id,newsgroup_id,article_id,rev are required\n"
+              if ( !defined($user_id)
+                || !defined($n_id)
+                || !defined($a_id)
+                || !defined($rev) );
+            $sql = "delete from reaction";
+            $sql .= " where newsgroup_id=? and article_id=?";
+            $sql .= " and rev=? and user_id=?";
+            $db->execute( $sql, $n_id, $a_id, $rev, $user_id );
+            $sql = "insert into reaction(newsgroup_id,article_id,rev";
+            $sql .= ",user_id,type_id)";
+            $sql .= "values(?,?,?,?,?)";
+            $db->execute( $sql, $n_id, $a_id, $rev, $user_id, $type_id );
+            $db->commit;
+            $self->render( json => { result => 'ok' } );
+        }
+        elsif ($user_id) {
+            $sql = "select type_id from reaction";
+            $sql .= " where newsgroup_id=? and article_id=?";
+            $sql .= " and rev=? and user_id=?";
+            my ($type_id) =
+              $db->select_ra( $sql, $n_id, $a_id, $rev, $user_id );
+            $self->render( json => { result => 'ok', type_id => $type_id } );
+        }
+        else {
+            $sql = "select type_id,user_id,disp_name";
+            $sql .= " from reaction as r,user as u";
+            $sql .= " where r.user_id=u.id";
+            $sql .= " and newsgroup_id=? and article_id=? and rev=?";
+            $sql .= " order by r.created_at";
+            my ($type_id) = $db->select_ah( $sql, $n_id, $a_id, $rev, );
+            $self->render( json => { result => 'ok', data => $type_id } );
+        }
+    };
+    $self->render( text => $@, status => '400' ) if $@;
+}
+
+sub reaction_type($self) {
+    eval {
+        my $db = NnsBbs::Db::new($self);
+        my $d =
+          $db->select_hh( 'select id,name,icon from reaction_type', 'id' );
+        $self->render( json => { result => 'ok', data => $d } );
+    };
+    $self->render( text => $@, status => '400' ) if $@;
+}
+
 1;

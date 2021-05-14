@@ -109,6 +109,9 @@ export const jp = {
     'access-control': '権限設定',
     'newsgroup-description': 'ニュースグループの説明',
     'post':'投稿する',
-    'add-response':'反応を返す'
+    'add-response':'反応を返す',
+    'good':'いいね',
+    'i-dont-think-so':'私はそうは思わない',
+    'i-dont-understand':'言っていることが理解できない'
   }
 };
