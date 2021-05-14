@@ -107,6 +107,7 @@ export const jp = {
     'no-password': 'パスワードが入力されていません',
     'newsgroup': 'ニュースグループ',
     'access-control': '権限設定',
-    'newsgroup-description': 'ニュースグループの説明'
+    'newsgroup-description': 'ニュースグループの説明',
+    'post':'投稿する'
   }
 };

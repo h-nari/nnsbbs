@@ -52,7 +52,6 @@ var css = {
                         loader: "css-loader",
                         options: {
                             sourceMap: true,
-                            minimize: true,
                             importLoaders: 2
                         }
                     },
