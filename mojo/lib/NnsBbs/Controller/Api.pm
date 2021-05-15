@@ -37,7 +37,7 @@ sub titles($self) {
             $newsgroup_id );
         die "no read permission.\n"
           if ( ( !defined($rpl) || $rpl > $level ) && !$moderator );
-        my $sql = "select id as article_id ,title,reply_to";
+        my $sql = "select id as article_id ,rev,title,reply_to";
         $sql .= ",created_at as date,user_id,disp_name";
         $sql .= " from article";
         $sql .= " where newsgroup_id = ?";
@@ -54,6 +54,34 @@ sub titles($self) {
         }
         $sql .= " order by id";
         my $data = $db->select_ah( $sql, @params );
+
+        $sql = "select article_id,a.rev as rev,count(*) as count,type_id";
+        $sql .= " from article as a,reaction as r";
+        $sql .= " where a.newsgroup_id=r.newsgroup_id";
+        $sql .= " and a.id=r.article_id and a.rev=r.rev";
+        $sql .= " and a.newsgroup_id = ? and not bDeleted";
+        $sql .= " group by a.id,a.rev,type_id";
+        @params = ($newsgroup_id);
+        if ($from) {
+            $sql .= " and id >= ?";
+            push @params, $from;
+        }
+        if ($to) {
+            $sql .= "and id <= ?";
+            push @params, $to;
+        }
+        my $ah  = $db->select_ah( $sql, @params );
+        my $arh = {};
+        for my $ra (@$ah) {
+            my $a_id = $ra->{article_id};
+            my $rev  = $ra->{rev};
+            $arh->{ $a_id, $rev } = {} unless $arh->{ $a_id, $rev };
+            $arh->{ $a_id, $rev }->{ $ra->{type_id} } = $ra->{count};
+        }
+        for my $t (@$data) {
+            $t->{reaction} = $arh->{ $t->{article_id}, $t->{rev} }
+              if $arh->{ $t->{article_id}, $t->{rev} };
+        }
         $self->render( json => $data );
     };
     $self->render( text => $@, status => '400' ) if $@;
@@ -365,10 +393,12 @@ sub reaction($self) {
             $sql .= " where newsgroup_id=? and article_id=?";
             $sql .= " and rev=? and user_id=?";
             $db->execute( $sql, $n_id, $a_id, $rev, $user_id );
-            $sql = "insert into reaction(newsgroup_id,article_id,rev";
-            $sql .= ",user_id,type_id)";
-            $sql .= "values(?,?,?,?,?)";
-            $db->execute( $sql, $n_id, $a_id, $rev, $user_id, $type_id );
+            if ( $type_id >= 0 ) {
+                $sql = "insert into reaction(newsgroup_id,article_id,rev";
+                $sql .= ",user_id,type_id)";
+                $sql .= "values(?,?,?,?,?)";
+                $db->execute( $sql, $n_id, $a_id, $rev, $user_id, $type_id );
+            }
             $db->commit;
             $self->render( json => { result => 'ok' } );
         }

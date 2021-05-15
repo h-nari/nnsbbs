@@ -69,9 +69,17 @@
       }
 
       .article-title {
+        overflow: hidden;
         flex-grow: 10;
+        flex-shrink: 10;
         font-weight: bold;
         position: relative;
+      }
+
+      .reaction {
+        .icon {
+          color: green;
+        }
       }
     }
     button.read {

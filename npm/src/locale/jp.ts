@@ -112,6 +112,7 @@ export const jp = {
     'add-response':'反応を返す',
     'good':'いいね',
     'i-dont-think-so':'私はそうは思わない',
-    'i-dont-understand':'言っていることが理解できない'
+    'i-dont-understand':'言っていることが理解できない',
+    'no-reaction': '反応しない'
   }
 };

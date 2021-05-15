@@ -179,12 +179,16 @@ export default class NnsBbs {
                   icon: ra.icon,
                   icon_class: 'response',
                   html_i18n: ra.name,
-                  action: () => {
-                    console.log('reaction clicked');
-                    this.add_reaction(ra.id);
-                  }
+                  action: () => { this.add_reaction(ra.id); }
                 }));
               }
+              reaction_menu.add(new Menu({
+                with_check: true,
+                checked: !a.type_id,
+                icon: 'x',
+                html_i18n: 'no-reaction',
+                action: () => { this.add_reaction(-1); }
+              }));
             }
             reaction_menu.expand(e);
           }

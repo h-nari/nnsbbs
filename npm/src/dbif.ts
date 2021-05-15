@@ -31,6 +31,25 @@ export interface TNewsgroup {
 export function api_newsgroup() {
   return get_json('/api/newsgroup') as Promise<TNewsgroup[]>;
 }
+//
+// api/titles
+//
+export interface ITitle {
+  article_id: number;
+  date: string;
+  user_id: string;
+  disp_name: string;
+  reply_to: number;
+  title: string;
+  children?: ITitle[];
+  reaction: {
+    [type_id: string]: number;
+  }
+};
+export function api_titles(newsgroup_id: number, from: number, to: number) {
+  return get_json('/api/titles', { data: { newsgroup_id, from, to } }) as Promise<ITitle[]>;
+}
+
 
 //
 //  api/article

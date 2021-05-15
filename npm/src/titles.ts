@@ -1,20 +1,13 @@
 import { get_json, escape_html } from "./util";
-import { div, button, span } from "./tag";
+import { div, button, span, icon } from "./tag";
 import { ToolBar } from "./toolbar";
 import { ToolbarPane } from "./pane";
 import { ReadSet } from "./readSet";
 import { INewsGroup, ISubsInfo } from "./newsgroup";
 import NnsBbs from "./nnsbbs";
+import { api_titles, ITitle } from "./dbif";
 
-export interface ITitle {
-  article_id: number;
-  date: string;
-  user_id: string;
-  disp_name: string;
-  reply_to: number;
-  title: string;
-  children?: ITitle[];
-};
+
 
 export class TitlesPane extends ToolbarPane {
   private titles: ITitle[] = [];
@@ -45,11 +38,12 @@ export class TitlesPane extends ToolbarPane {
   }
 
   async load(newsgroup: INewsGroup, from: number, to: number) {
-    let data = await get_json('/api/titles', { data: { newsgroup_id: newsgroup.n.id, from, to } });
+    // let data = await get_json('/api/titles', { data: { newsgroup_id: newsgroup.n.id, from, to } });
+    let data = await api_titles(newsgroup.n.id, from, to);
     this.loaded_titles.clear().add_range(from, to);
     this.titles = [];
     this.threads = [];
-    for (let d of data as ITitle[]) {
+    for (let d of data) {
       let id = d.article_id;
       this.titles[id] = d;
       let parent = this.titles[d.reply_to];
@@ -152,12 +146,21 @@ export class TitlesPane extends ToolbarPane {
     if (this.cur_article_id == d.article_id)
       c.push('active');
     if (c.length > 0) opt['class'] = c.join(' ');
+    let reactions = '';
+    let reaction_type = this.parent.reaction_type;
+    if (d.reaction && reaction_type) {
+      for (let t of Object.keys(d.reaction).sort()) {
+        let r = reaction_type[t];
+        reactions += div({ class: 'reaction ' + r.name, 'title-i18n': r.name }, icon(r.icon, 'icon') + d.reaction[t]);
+      }
+    }
     let s = button(opt,
       div({ class: 'article-id' }, String(d.article_id)),
       div({ class: 'article-from', title: d.disp_name, user_id: d.user_id }, escape_html(d.disp_name)),
       div({ class: 'article-time' }, d.date),
       div({ class: 'article-rule' }, rule),
-      div({ class: 'article-title' }, escape_html(d.title))
+      div({ class: 'article-title' }, escape_html(d.title)),
+      reactions
     );
     return s;
   }

@@ -24,7 +24,10 @@
   }
   > button.active {
     background-color: #007bff;
-    color: white;
+    color: white ; 
+    .icon {
+      color: white !important; 
+    }
   }
 }
 
