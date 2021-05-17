@@ -23,9 +23,9 @@ our %Lexicon = (
     'access.mail_auth.link' =>
       "メールアドレスの認証を完了させるために\n"
       . "次のURLをアクセスして下さい。\n\n",
-    'ignore.if.no.idea' => "このメールに心当たりがない場合は\n",
-    "無視して下さい。",
-    "email.title" => "NnsBbsメール認証"
+    'ignore.if.no.idea' => "このメールに心当たりがない場合は\n無視して下さい。",
+    "email.title" => "NnsBbsメール認証",
+    "report.manager" => "通報管理"
 );
 
 1;

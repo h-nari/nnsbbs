@@ -177,7 +177,7 @@ sub profile_read {
         my $db  = NnsBbs::Db::new($self);
         my $sql = "select disp_name,created_at";
         $sql .= ",membership_id,profile";
-        $sql .= ",signature,subsInfo,mail";
+        $sql .= ",signature,mail";
         $sql .= "  from user where id=?";
         my $ra = $db->select_rh( $sql, $user_id );
         $self->render( json => $ra ? $ra : {} );
@@ -191,16 +191,14 @@ sub profile_write {
     my $profile       = $self->param('profile');
     my $membership_id = $self->param('membership_id');
     my $signature     = $self->param('signature');
-    my $subsInfo      = $self->param('subsInfo');
 
     eval {
         die "user_id is required\n" unless ($user_id);
-        die "name,profile,membership_id,signature of subsInfo is required\n"
+        die "name,profile,membership_id,signature is required\n"
           if ( !$disp_name
             && !$profile
             && !$membership_id
-            && !$signature
-            && !$subsInfo );
+            && !$signature);
         my $db = NnsBbs::Db::new($self);
         my ( $level, $moderator, $admin, $user_id2 ) =
           access_level( $self, $db );
@@ -214,9 +212,6 @@ sub profile_write {
         $db->execute( $sql, $membership_id, $user_id ) if $membership_id;
         $sql = "update user set signature? where id=?";
         $db->execute( $sql, $signature, $user_id ) if $signature;
-        $sql = "update user set subsInfo=? where id=?";
-        $db->execute( $sql, $subsInfo, $user_id ) if $subsInfo;
-
         $db->commit;
         $self->render( json => { result => 'ok' } );
     };

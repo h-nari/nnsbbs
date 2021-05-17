@@ -276,4 +276,135 @@ sub api_title($self) {
     }
 }
 
+sub report ($self) {
+    my $db = NnsBbs::Db::new($self);
+    my ( $level, $moderator ) = access_level( $self, $db );
+    if ($moderator) {
+        my $id = $self->param('id');
+        my $s  = "<script>\n";
+        $s .= "\$(()=>{\n";
+        $s .= "  var rm = window.nnsbbs.reportManager;\n";
+        $s .= "  \$('#main').html(rm.html());\n";
+        $s .= "  rm.bind();\n";
+        $s .= "  rm.open();\n";
+        $s .= "});\n";
+        $s .= "</script>\n";
+        $self->stash(
+            script_part => $s,
+            page_title  => $self->l('report.manager')
+        );
+        $self->render( template => 'admin/show' );
+    }
+    else {
+        $self->render( text => 'Access Forbidden', status => '403' );
+    }
+}
+
+sub api_report($self) {
+    my $update = $self->param('update');
+    my $db     = NnsBbs::Db::new($self);
+    my ( $level, $moderator ) = access_level( $self, $db );
+
+    unless ($moderator) {
+        $self->render( text => 'Access Forbidden', status => '403' );
+    }
+
+    if ($update) {
+        my $list = from_json($update);
+        my $cnt  = 0;
+        for my $n (@$list) {
+            eval { $cnt += update_report( $db, $n ); };
+            if ($@) {
+                $self->render( text => $@, status => '400' );
+                return;
+            }
+        }
+        $db->commit;
+        $self->render( json => { result => 'ok', executed_update => $cnt } );
+    }
+    else {
+        my $limit  = $self->param('limit');
+        my $offset = $self->param('offset');
+        my $search = $self->param('search');
+        my $count  = $self->param('count');
+        my $order  = $self->param('order');
+        my $id     = $self->param('id');
+        my $sql    = "select";
+        my @param  = ();
+
+        if ($count) {
+            $sql .= " count(*) as count";
+        }
+        else {
+            $sql .= " r.id as id,type_id,treatment_id";
+            $sql .= ",t.name as type,m.name as treatment";
+            $sql .= ",n.name as newsgroup,a.id as article_id";
+            $sql .= ",title,disp_name,r.rev as rev";
+            $sql .= ",a.created_at as posted";
+            $sql .= ",notifier,detail,treatment_detail";
+            $sql .= ",r.created_at as created_at,response_at";
+        }
+        $sql .= " from report as r";
+        $sql .= ",newsgroup as n";
+        $sql .= ",article as a";
+        $sql .= ",report_type as t";
+        $sql .= ",report_treatment as m";
+        $sql .= " where r.newsgroup_id=n.id";
+        $sql .= " and r.newsgroup_id=a.newsgroup_id";
+        $sql .= " and r.article_id=a.id";
+        $sql .= " and r.rev=a.rev";
+        $sql .= " and r.type_id=t.id";
+        $sql .= " and r.treatment_id=m.id";
+
+        if ($id) {
+            $sql .= " and id=?";
+            push( @param, $id );
+        }
+        elsif ($search) {
+            my $pat = '%' . $search . '%';
+            $sql .= " and detail like ? or treatment_detail like ? ";
+            push( @param, $pat, $pat );
+        }
+
+        if ($order) {
+            $sql .= " order by $order";
+        }
+        else {
+            $sql .= " order by r.created_at";
+        }
+        if ($limit) {
+            $sql .= " limit ?";
+            push( @param, $limit );
+            if ($offset) {
+                $sql .= " offset ?";
+                push( @param, $offset );
+            }
+        }
+        # print STDERR "*** SQL:$sql\n\n";
+
+        my $data;
+        if ($count) {
+            $data = $db->select_rh( $sql, @param );
+        }
+        elsif ($id) {
+            $data = $db->select_rh( $sql, @param );
+        }
+        else {
+            $data = $db->select_ah( $sql, @param );
+        }
+        $self->render( json => $data );
+    }
+}
+
+sub update_report ( $db, $n ) {
+    my $cnt = 0;
+    die "id not specified in newsgroup write\n" unless ( $n->{'id'} );
+    my $id = $n->{'id'};
+    while ( my ( $key, $value ) = each(%$n) ) {
+        my $sql = "update report set $key=? where id=?";
+        $db->execute( $sql, $value, $id ) if $key ne 'id';
+        $cnt++;
+    }
+    return $cnt;
+}
 1;

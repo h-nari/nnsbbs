@@ -58,8 +58,11 @@ export class TopBar {
       name: i18next.t('Profile'),
       action: () => { this.parent.user.profile_dlg(); }
     }));
-    m.add(new Menu({ name: i18next.t('user-manager'), link: '/admin/user' }));
-    m.add(new Menu({ name: i18next.t('newsgroup-manager'), link: '/admin/newsgroup' }));
+    if (this.parent.user.user?.moderator) {
+      m.add(new Menu({ name: i18next.t('user-manager'), link: '/admin/user' }));
+      m.add(new Menu({ name: i18next.t('newsgroup-manager'), link: '/admin/newsgroup' }));
+      m.add(new Menu({ name: i18next.t('report-manager'), link: '/admin/report' }));
+    }
   }
 
   set_logout_menu() {

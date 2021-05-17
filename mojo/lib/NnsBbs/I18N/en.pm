@@ -26,7 +26,8 @@ our %Lexicon = (
       . "Please access the following URL. \n\n",
     'ignore.if.no.idea' => "If you do not recognize this email, please \n"
       . "Please ignore it.",
-    "email.title" => "NnsBbs Email Authentication"
+    "email.title" => "NnsBbs Email Authentication",
+    "report.manager" => "Report manager"
 );
 
 1;

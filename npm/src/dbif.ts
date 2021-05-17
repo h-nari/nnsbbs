@@ -36,6 +36,7 @@ export function api_newsgroup() {
 //
 export interface ITitle {
   article_id: number;
+  rev: number;
   date: string;
   user_id: string;
   disp_name: string;
@@ -74,9 +75,9 @@ export interface IAttachment {
   size: number;
 };
 
-export function api_article(newsgroup_id: number, article_id: number) {
+export function api_article(newsgroup_id: number, article_id: number, rev: number) {
   return get_json('/api/article',
-    { data: { newsgroup_id, article_id } }) as Promise<IArticle>;
+    { data: { newsgroup_id, article_id, rev } }) as Promise<IArticle>;
 }
 
 //
@@ -165,6 +166,7 @@ export interface IUser {
   disp_name: string;
   membership_id: string;
   signature: string;
+  moderator: number;
 };
 
 export interface ILogin {
@@ -255,7 +257,7 @@ export function api_reaction(newsgroup_id: number, article_id: number, rev: numb
 // api/report_treatment
 //
 export interface IId {
-  [key: number]: { id: number, name:string}
+  [key: number]: { id: number, name: string }
 }
 export function api_report_type() {
   return get_json('/api/report_type') as Promise<IId>;
@@ -316,4 +318,35 @@ export interface TArticle {
 export function admin_api_title(user_id: string) {
   return get_json('/admin/api/title', { data: { user_id } }) as Promise<TArticle[]>;
 }
-
+//
+// admin/api/report
+//
+export interface IReportAdmin {
+  id: number;
+  type_id: number;
+  type: string;
+  treatment_id: number;
+  treatment: string;
+  newsgroup: string;
+  article_id: number;
+  title: string;
+  rev: number;
+  disp_name: string;
+  posted_at: string;
+  notifier: string | null;
+  detail: string;
+  treatment_detail: string;
+  created_at: string;
+  response_at: string;
+}
+export interface ArgReportRead {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  count?: true;
+  order?: string;
+  id?: number;
+}
+export function admin_api_report_read(d: ArgReportRead = {}) {
+  return get_json('/admin/api/report', { data: d }) as Promise<IReportAdmin[]>;
+}

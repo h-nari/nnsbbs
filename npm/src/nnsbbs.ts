@@ -15,6 +15,7 @@ import { api_newsgroup, api_reaction_type, api_reaction_user, api_reaction_write
 import { ReadSet } from "./readSet";
 import { Menu } from "./menu";
 import { div, label, option, select, span, tag } from "./tag";
+import { ReportManaget } from "./reportManager";
 
 export default class NnsBbs {
   public topBar = new TopBar(this);
@@ -22,6 +23,7 @@ export default class NnsBbs {
   public userAdmin = new UserAdmin(this);
   public userInfo = new UserInfo(this);
   public newsgroupAdmin = new NewsgroupAdmin(this);
+  public reportManager = new ReportManaget(this);
   public gm = new GeometryManager('main');
   public i18next: i18n;
   private ng_pane = new NewsGroupsPane('newsgroup', this);
@@ -300,7 +302,7 @@ export default class NnsBbs {
 
   // Called from the built-in script of topPage
   // Read and display a list of newsgroups
-  async top_page(newsgroup: string = '', article_id: string = '') {
+  async top_page(newsgroup: string = '', article_id: string = '', rev: string = '') {
     this.reaction_type = (await api_reaction_type()).data;
     let data = await api_newsgroup();
     this.ng_pane.setNewsgroups(data);
@@ -317,7 +319,8 @@ export default class NnsBbs {
         this.article_pane.close();
       } else {
         let id = parseInt(article_id);
-        this.select_article(this.cur_newsgroup_id, id);
+        let r = parseInt(rev);
+        this.select_article(this.cur_newsgroup_id, id, r);
       }
     }
     this.redisplay();
@@ -349,11 +352,11 @@ export default class NnsBbs {
     this.cur_newsgroup_id = newsgroup.n.id;
   }
 
-  async select_article(newsgroup_id: number, article_id: number) {
-    await this.article_pane.open(newsgroup_id, article_id);
-    this.titles_pane.select_article(article_id);
-    this.article_pane.show();                            // Remove no-display
-    // let subsInfo = this.ng_pane.getSubsInfo(this.cur_newsgroup);
+  async select_article(newsgroup_id: number, article_id: number, rev: number = 0) {
+    await this.article_pane.open(newsgroup_id, article_id, rev);
+    this.titles_pane.select_article(article_id, rev);
+    this.article_pane.show();                   
+
     if (this.titles_pane.newsgroup) {
       let subsInfo = this.titles_pane.newsgroup.subsInfo;
       if (!subsInfo)

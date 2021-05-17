@@ -1,0 +1,35 @@
+#report-manager {
+  table.report {
+    width: 100%;
+    overflow: hidden;
+    table-layout: fixed;
+    tr {
+      width: 100%;
+      border-bottom: solid 1px black;
+      td {
+        padding: 5px;
+        white-space: pre;
+        overflow: hidden;
+        border-left: dotted 1px lightgray;
+      }
+      .id {
+        text-align: right;
+        width: 3ch;
+      }
+      .created_at {
+        width: 18ch;
+      }
+      .type,
+      .treatment,
+      .notifier {
+        width: 10%;
+      }
+      .article {
+        width: 15%;
+      }
+      .article-title {
+        color: red;
+      }
+    }
+  }
+}

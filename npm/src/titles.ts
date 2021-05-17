@@ -138,7 +138,7 @@ export class TitlesPane extends ToolbarPane {
   }
 
   title_html(d: ITitle, rule: string = '') {
-    let opt = { article_id: d.article_id };
+    let opt = { article_id: d.article_id, rev: d.rev };
     let c: string[] = ['title-contextmenu'];
     let si = this.newsgroup?.subsInfo;
     if (si && si.read.includes(d.article_id))
@@ -171,7 +171,8 @@ export class TitlesPane extends ToolbarPane {
     $(`#${this.id_lg} >button`).on('click', ev => {
       let target = ev.currentTarget;
       let article_id: number = target.attributes['article_id'].value;
-      this.select_article(article_id);
+      let rev = target.attributes['rev'].value as number;
+      this.select_article(article_id, rev);
       if (this.newsgroup && this.clickCb) {
         this.clickCb(this.newsgroup.n.id, article_id);
       }
@@ -195,11 +196,11 @@ export class TitlesPane extends ToolbarPane {
     });
   }
 
-  async select_article(id: number) {
+  async select_article(id: number, rev: number) {
     const scroller = `#${this.id} .titles`;
     const scrollee = scroller + ' >div';
     const line = scrollee + ` >button[article_id=${id}]`;
-
+    // TODO: revにも対応させる
     if ($(line).length == 0 && this.newsgroup) {
       console.log('load titles');
       await this.load(this.newsgroup, Math.max(1, id - 50), Math.min(id + 50, this.newsgroup.n.max_id))
@@ -269,7 +270,8 @@ export class TitlesPane extends ToolbarPane {
 
     if (cur && cur.tagName == 'BUTTON') {
       let id = cur.attributes['article_id'].value;
-      this.select_article(id);
+      let rev = cur.attributes['rev'].value;
+      this.select_article(id, rev);
       return true;
     } else {
       return false;
@@ -292,7 +294,8 @@ export class TitlesPane extends ToolbarPane {
 
     if (cur && cur.tagName == 'BUTTON') {
       let id = cur.attributes['article_id'].value;
-      this.select_article(id);
+      let rev = cur.attributes['rev'].value;
+      this.select_article(id, rev);
       return true;
     } else {
       return false;

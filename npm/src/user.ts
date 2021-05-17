@@ -54,6 +54,7 @@ export class User {
               sha.update(password);
               let pwd = sha.digest('hex');
               api_login(email, pwd).then(data => {
+                console.log('data:', data);
                 if (!data.login) {
                   $.alert(this.parent.i18next.t('login-failed'));
                   this.user = null;

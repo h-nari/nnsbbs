@@ -1,7 +1,7 @@
 import { api_membership, IMembership, IUserAdmin, membership_select } from "./dbif";
 import { Menu } from "./menu";
 import NnsBbs from "./nnsbbs";
-import { div, table, tr, td, th, button, span, input, label, select, option, selected, a, icon, tag } from "./tag";
+import { div, table, tr, td, button, span, input, label, select, option, selected, a, tag } from "./tag";
 import { get_json } from "./util";
 
 export class UserAdmin {

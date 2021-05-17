@@ -12,13 +12,12 @@ sub bbs ($self) {
     my $db         = NnsBbs::Db::new($self);
     my $newsgroup  = $self->param('newsgroup') || "";
     my $article_id = $self->param('article_id') || "";
-
-    # $self->languages('jp');
-    printf STDERR "*\n*** %s ***\n*\n", $self->l('hello');
+    my $rev        = $self->param('rev') || "";
 
     my $s = "<script>\n";
     $s .= "\$(()=>{\n";
-    $s .= sprintf( '  nnsbbs.top_page("%s","%s");', $newsgroup, $article_id )
+    $s .= sprintf( '  nnsbbs.top_page("%s","%s","%s");',
+        $newsgroup, $article_id, $rev )
       . "\n";
     $s .= "});\n";
     $s .= "</script>\n";

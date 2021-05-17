@@ -131,7 +131,19 @@ export const jp = {
     'i-have-reported-the-post-to-the-administrator': '投稿を管理者に通報しました',
     'login-needed': 'ログインが必要です',
     'login-needed-to-add-reaction': '反応するにはログインが必要です',
-    'report-detail-is-blank':'通報の詳細が空欄です',
-    'error':'エラー'
+    'report-detail-is-blank': '通報の詳細が空欄です',
+    'error': 'エラー',
+    'report-manager': '通報管理',
+    'id': 'ID',
+    'reported-at': '通報時間',
+    'notifier': '通報者',
+    'type': '種類',
+    'treatment': '処置',
+    'article-title': '記事標題',
+    'not-yet': '未処置',
+    'ignore': '無視',
+    'partial-correction-of-the-article': '記事部分修正',
+    'prohibit-the-display-of-articles': '記事表示禁止',
+    'report-to-the-police': 'その筋に通報'
   }
 };
