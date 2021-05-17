@@ -1,4 +1,5 @@
 @import "common.scss";
+@import "nnsbbs.scss";
 @import "newsgroup.scss";
 @import "titles.scss";
 @import "article.scss";
@@ -22,30 +23,28 @@ BODY.wait button {
   cursor: wait !important;
 }
 
-#main {
-  > div {
-    width: 100%;
-    margin: 0px;
-    padding: 2px;
-    border: solid lightgray 1px;
-  }
-  > div.gutter {
-    height: 10px;
-    border: none;
-    background-color: lightgray;
-    cursor: row-resize;
-  }
-  > div#newsgroup {
-    height: 200px;
-  }
-  > div#titles {
-    height: 200px;
-  }
-  > div#article {
-    height: 500px;
-  }
-}
 
-.response.icon {
-  color:yellow;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

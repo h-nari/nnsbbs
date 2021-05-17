@@ -44,12 +44,16 @@ sub startup ($self) {
     $r->any('/api/attachment')->to('api#attachment');
     $r->any('/api/reaction')->to('api#reaction');
     $r->any('/api/reaction_type')->to('api#reaction_type');
+    $r->any('/api/report')->to('api#report');
+    $r->any('/api/report_type')->to('api#report_type');
+    $r->any('/api/report_treatment')->to('api#report_treatment');
     $r->get('/admin/user')->to('admin#user_list');
     $r->get('/admin/user/#id')->to('admin#user');
     $r->get('/admin/newsgroup')->to('admin#newsgroup');
     $r->any('/admin/api/newsgroup')->to('admin#api_newsgroup');
     $r->any('/admin/api/user')->to('admin#api_user');
     $r->any('/admin/api/title')->to('admin#api_title');
+    $r->any('/admin/api/report')->to('admin#report');
 }
 
 sub _load_config {

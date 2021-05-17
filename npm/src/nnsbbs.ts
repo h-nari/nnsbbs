@@ -11,9 +11,10 @@ import { i18n } from "i18next";
 import { UserAdmin } from "./userAdmin";
 import { NewsgroupAdmin } from "./newsgroupAdmin";
 import { UserInfo } from "./userInfo";
-import { api_newsgroup, api_reaction_type, api_reaction_user, api_reaction_write, IReactionType } from "./dbif";
+import { api_newsgroup, api_reaction_type, api_reaction_user, api_reaction_write, api_report, api_report_type, IReactionType, IReport } from "./dbif";
 import { ReadSet } from "./readSet";
 import { Menu } from "./menu";
+import { div, label, option, select, span, tag } from "./tag";
 
 export default class NnsBbs {
   public topBar = new TopBar(this);
@@ -161,9 +162,9 @@ export default class NnsBbs {
       action: async (e) => {
         if (!this.user.user) {
           $.alert({
-            title: 'login-needed',
+            title: this.i18next.t('login-needed'),
             type: 'red',
-            content: 'login-needed-to-add-reaction'
+            content: this.i18next.t('login-needed-to-add-reaction')
           })
         } else {
           reaction_menu.clear();
@@ -196,6 +197,12 @@ export default class NnsBbs {
       }
     });
     this.article_pane.toolbar.add_menu(reaction_menu);
+
+    this.article_pane.toolbar.add_menu(new Menu({
+      icon: 'exclamation-diamond', explain: 'report', action: () => {
+        this.report_dlg();
+      }
+    }));
   }
 
   html(): string {
@@ -381,6 +388,11 @@ export default class NnsBbs {
 
   set_i18n_text() {
     let i18next = this.i18next;
+    $('[i18n]').each(function () {
+      let key = $(this).attr('i18n') || "no-key";
+      let val = i18next.t(key);
+      $(this).text(val);
+    });
     $('[html-i18n]').each(function () {
       let key = $(this).attr('html-i18n') || "no-key";
       let val = i18next.t(key);
@@ -426,7 +438,6 @@ export default class NnsBbs {
   }
 
   async add_reaction(type_id: number) {
-    console.log('add_reaction:', type_id);
     let article = this.article_pane.article;
     if (article && this.user.user) {
       let n_id = this.cur_newsgroup_id;
@@ -437,6 +448,63 @@ export default class NnsBbs {
       await api_reaction_write(n_id, a_id, rev, u_id, type_id);
       this.redisplay();
     }
+  }
+
+  async report_dlg() {
+    let c = '';
+    let r = await api_report_type();
+    for (let v of Object.values(r).reverse())
+      c += option({ value: v.id, i18n: v.name }, v.name);
+
+    let a = this.article_pane.article;
+    if (!a) return;
+
+    let article = this.cur_newsgroup + '/' + a.article_id;
+    if (a.rev > 0) article += '#' + a.rev;
+    article = '[' + article + '] ' + a.title;
+
+    $.confirm({
+      title: this.i18next.t('report-post-to-administrator'),
+      type: 'red',
+      columnClass: 'large',
+      content: div({ class: 'report-dlg' },
+        div(label({ i18n: 'article-to-be-reported' }), div({ class: 'article' }, article)),
+        div(label({ i18n: 'type-of-violation' }), select({ class: 'type' }, c)),
+        div(label({ i18n: 'report-detail' })),
+        tag('textarea', { class: 'detail' })),
+      onOpen: () => { this.set_i18n_text(); },
+      buttons: {
+        post: {
+          text: this.i18next.t('report'),
+          action: () => {
+            let detail = $('.report-dlg .detail').val() as string;
+            if (detail == '') {
+              $.alert({
+                title: this.i18next.t('error'),
+                content: this.i18next.t('report-detail-is-blank')
+              });
+              return false;
+            }
+            if (!a) return;
+            let report: IReport = {
+              type_id: $('.report-dlg .type').val() as number,
+              newsgroup_id: this.cur_newsgroup_id,
+              article_id: a.article_id,
+              rev: a.rev,
+              notifier: this.user.user ? this.user.user.id : undefined,
+              detail
+            };
+            api_report(report).then(() => {
+              $.alert(this.i18next.t('i-have-reported-the-post-to-the-administrator'));
+            });
+          }
+        },
+        cancel: {
+          text: this.i18next.t('cancel'),
+          action: () => { }
+        }
+      }
+    });
   }
 }
 

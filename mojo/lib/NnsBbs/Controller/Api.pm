@@ -433,4 +433,60 @@ sub reaction_type($self) {
     $self->render( text => $@, status => '400' ) if $@;
 }
 
+#
+# Report inappropriate posts.
+#
+sub report($self) {
+    eval {
+        my $db = NnsBbs::Db::new($self);
+        my $sql;
+        my $insert = $self->param('insert');
+        my $update = $self->param('update');
+        if ($insert) {
+            my $d = from_json($insert);
+            $sql = "insert into report";
+            $sql .= "(type_id,newsgroup_id,article_id,rev";
+            $sql .= ",notifier,detail,treatment_detail)";
+            $sql .= "values(?,?,?,?,?,?,?);";
+            my @param = ();
+
+            for my $k (qw/type_id newsgroup_id article_id rev/) {
+                my $dd = $d->{$k};
+                die "$k not set\n" unless defined($dd);
+                push( @param, $dd );
+            }
+            for my $k (qw/notifier detail treatment_detail/) {
+                
+                push( @param, $d->{$k} || '' );
+            }
+            $db->execute( $sql, @param );
+            $db->commit;
+            $self->render( json => { result => 'ok' } );
+        }
+        else {
+            die "insert data is required\n";
+        }
+    };
+    $self->render( text => $@, status => '400' ) if $@;
+}
+
+sub report_type($self) {
+    eval {
+        my $db = NnsBbs::Db::new($self);
+        my $d = $db->select_hh( "select * from report_type order by id", 'id' );
+        $self->render( json => $d );
+    };
+    $self->render( text => $@, status => '400' ) if $@;
+}
+
+sub report_treatment($self) {
+    eval {
+        my $db = NnsBbs::Db::new($self);
+        my $d =
+          $db->select_hh( "select * from report_treatment order by id", 'id' );
+        $self->render( json => $d );
+    };
+    $self->render( text => $@, status => '400' ) if $@;
+}
+
 1;

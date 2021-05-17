@@ -251,6 +251,36 @@ export function api_reaction(newsgroup_id: number, article_id: number, rev: numb
   return get_json('/api/reaction', { method: 'post', data: { newsgroup_id, article_id, rev } }) as Promise<IReactionUser>;
 }
 //
+// api/report_type
+// api/report_treatment
+//
+export interface IId {
+  [key: number]: { id: number, name:string}
+}
+export function api_report_type() {
+  return get_json('/api/report_type') as Promise<IId>;
+}
+export function api_report_treatment() {
+  return get_json('/api/report_treatment') as Promise<IId>;
+}
+//
+// api/report
+//
+export interface IReport {
+  type_id: number,
+  treadment_id?: number,
+  newsgroup_id: number,
+  article_id: string,
+  rev: number,
+  notifier?: string,
+  detail?: string,
+  treatment_detail?: string
+}
+export function api_report(d: IReport) {
+  return get_json('/api/report', { method: 'post', data: { insert: JSON.stringify(d) } }) as Promise<IResult>;
+}
+
+//
 //  admin/api/user
 //
 export interface IUserAdmin {

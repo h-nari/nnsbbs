@@ -25,7 +25,7 @@ export class Menu {
   public opt: MenuOption;
   public subMenu: Menu[] = [];
 
-  constructor(opt: MenuOption) {
+  constructor(opt: MenuOption = {}) {
     this.id = 'menu-' + sn++;
     this.opt = opt;
   }

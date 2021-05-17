@@ -7,7 +7,7 @@ import { api_session } from './dbif';
 export class TopBar {
   private id = "TopBar";
   public parent: NnsBbs;
-  public menu_login = new Menu({ icon: 'caret-down-fill', icon_class: 'right-icon' });
+  public menu_login = new Menu();
 
   constructor(parent: NnsBbs) {
     this.parent = parent;
