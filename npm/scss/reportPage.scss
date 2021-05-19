@@ -1,0 +1,93 @@
+#main {
+  #report-page {
+    border: none;
+    .report-page {
+      > div {
+        margin: 10px;
+        border: 2px solid darkgray;
+        padding: 2px;
+      }
+      .line {
+        width: 100%;
+        display: flex;
+        > div {
+          flex-basis: 0;
+          flex-shrink: 1;
+          flex-grow: 2;
+          min-width: 0;
+          display: inline-block;
+          margin: 2px;
+          padding: 5px;
+          border: solid 1px lightgray;
+          white-space: nowrap;
+          overflow: hidden;
+          .title {
+            display: inline-block;
+            font-weight: bold;
+          }
+          .value {
+            margin-left: 5px;
+            display: inline-block;
+            // vertical-align: top;
+          }
+        }
+        > div.id {
+          flex-grow: 1;
+        }
+      }
+      .report-part {
+        .detail {
+          .title {
+            font-weight: bold;
+            margin-left: 5px;
+            margin-top: 5px;
+          }
+          .value {
+            border: 1px solid lightgray;
+            height: 200px;
+            overflow: auto;
+            padding: 5px;
+            white-space: pre;
+          }
+        }
+      }
+      .treatment-part {
+        .detail {
+          .title {
+            font-weight: bold;
+            margin-left: 5px;
+            margin-top: 5px;
+          }
+          .value {
+            border: 1px solid lightgray;
+            height: 200px;
+            overflow: auto;
+            padding: 5px;
+            white-space: pre;
+          }
+        }
+      }
+    }
+  }
+}
+
+.treat-input {
+  > div {
+    margin: 20px 0px;
+  }
+  .line {
+    display: flex;
+    > div {
+      display: inline-block;
+    }
+  }
+  .title {
+    font-weight: bold;
+  }
+  .treatment-detail {
+    textarea {
+      width: 100%;
+      height: 200px;
+    }
+  }
+}

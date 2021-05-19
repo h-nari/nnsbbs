@@ -16,6 +16,8 @@ import { ReadSet } from "./readSet";
 import { Menu } from "./menu";
 import { div, label, option, select, span, tag } from "./tag";
 import { ReportManaget } from "./reportManager";
+import { ReportPage } from "./reportPage";
+
 
 export default class NnsBbs {
   public topBar = new TopBar(this);
@@ -24,6 +26,7 @@ export default class NnsBbs {
   public userInfo = new UserInfo(this);
   public newsgroupAdmin = new NewsgroupAdmin(this);
   public reportManager = new ReportManaget(this);
+  public reportPage = new ReportPage(this);
   public gm = new GeometryManager('main');
   public i18next: i18n;
   private ng_pane = new NewsGroupsPane('newsgroup', this);

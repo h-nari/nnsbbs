@@ -29,10 +29,11 @@ insert into report_type(id,name) values
 
 insert into report_treatment(id,name) values
 (0, 'not-yet'),
-(1, 'ignore'),
-(2, 'partial-correction-of-the-article'),
-(3, 'prohibit-the-display-of-articles'),
-(4, 'report-to-the-police');
+(1, 'under-consideration'),
+(2, 'ignore'),
+(3, 'partial-correction-of-the-article'),
+(4, 'prohibit-the-display-of-articles'),
+(5, 'report-to-the-police');
 
 create table report (
   id                  int auto_increment primary key,
@@ -42,10 +43,12 @@ create table report (
   article_id          int                not null,      -- article to be reported
   rev                 int                not null,      -- article to be reported
   notifier            varchar(255) ,                    -- notifier of this report
+  want_response       boolean            default false, -- notifier want response
   detail              text               default "",
   treatment_detail    text               default "",
+  treated_by          varchar(255),                     -- who treat this report
+  treated_at          datetime ,
   created_at          datetime           default now(),
-  response_at         datetime ,
   foreign key(type_id)      references report_type(id),
   foreign key(treatment_id) references report_treatment(id)
 );

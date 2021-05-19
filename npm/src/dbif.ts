@@ -276,7 +276,6 @@ export interface IReport {
   rev: number,
   notifier?: string,
   detail?: string,
-  treatment_detail?: string
 }
 export function api_report(d: IReport) {
   return get_json('/api/report', { method: 'post', data: { insert: JSON.stringify(d) } }) as Promise<IResult>;
@@ -337,7 +336,7 @@ export interface IReportAdmin {
   detail: string;
   treatment_detail: string;
   created_at: string;
-  response_at: string;
+  treated_at: string;
 }
 export interface ArgReportRead {
   limit?: number;
@@ -347,6 +346,27 @@ export interface ArgReportRead {
   order?: string;
   id?: number;
 }
-export function admin_api_report_read(d: ArgReportRead = {}) {
+export function admin_api_report_list(d: ArgReportRead = {}) {
   return get_json('/admin/api/report', { data: d }) as Promise<IReportAdmin[]>;
+}
+export function admin_api_report_read(id: number) {
+  return get_json('/admin/api/report', { data: { id } }) as Promise<IReportAdmin>;
+}
+export interface ArgReportUpdate {
+  id: number;
+  type_id?: number;
+  treatment_id?: number;
+  newsgroup_id?: number;
+  article_id?: number;
+  rev?: number;
+  notifier?: string;
+  want_response?: number;
+  detail?: string;
+  treatment_detail?: string;
+  treated_by?: string;
+  treated_at?: string;
+  created_at?: string;
+}
+export function admin_api_report_update(arg: ArgReportUpdate) {
+  return get_json('/admin/api/report', { method: 'post', data: { update: JSON.stringify(arg) } }) as Promise<IResult>;
 }

@@ -283,10 +283,18 @@ sub report ($self) {
         my $id = $self->param('id');
         my $s  = "<script>\n";
         $s .= "\$(()=>{\n";
-        $s .= "  var rm = window.nnsbbs.reportManager;\n";
-        $s .= "  \$('#main').html(rm.html());\n";
-        $s .= "  rm.bind();\n";
-        $s .= "  rm.open();\n";
+        if ( defined($id) ) {
+            $s .= "  var rp = window.nnsbbs.reportPage;\n";
+            $s .= "  \$('#main').html(rp.html());\n";
+            $s .= "  rp.bind();\n";
+            $s .= "  rp.open($id);\n";
+        }
+        else {
+            $s .= "  var rm = window.nnsbbs.reportManager;\n";
+            $s .= "  \$('#main').html(rm.html());\n";
+            $s .= "  rm.bind();\n";
+            $s .= "  rm.open();\n";
+        }
         $s .= "});\n";
         $s .= "</script>\n";
         $self->stash(
@@ -310,14 +318,12 @@ sub api_report($self) {
     }
 
     if ($update) {
-        my $list = from_json($update);
-        my $cnt  = 0;
-        for my $n (@$list) {
-            eval { $cnt += update_report( $db, $n ); };
-            if ($@) {
-                $self->render( text => $@, status => '400' );
-                return;
-            }
+        my $n   = from_json($update);
+        my $cnt = 0;
+        eval { $cnt += update_report( $db, $n ); };
+        if ($@) {
+            $self->render( text => $@, status => '400' );
+            return;
         }
         $db->commit;
         $self->render( json => { result => 'ok', executed_update => $cnt } );
@@ -340,9 +346,9 @@ sub api_report($self) {
             $sql .= ",t.name as type,m.name as treatment";
             $sql .= ",n.name as newsgroup,a.id as article_id";
             $sql .= ",title,disp_name,r.rev as rev";
-            $sql .= ",a.created_at as posted";
+            $sql .= ",a.created_at as posted_at";
             $sql .= ",notifier,detail,treatment_detail";
-            $sql .= ",r.created_at as created_at,response_at";
+            $sql .= ",r.created_at as created_at,treated_at";
         }
         $sql .= " from report as r";
         $sql .= ",newsgroup as n";
@@ -357,7 +363,7 @@ sub api_report($self) {
         $sql .= " and r.treatment_id=m.id";
 
         if ($id) {
-            $sql .= " and id=?";
+            $sql .= " and r.id=?";
             push( @param, $id );
         }
         elsif ($search) {
@@ -380,7 +386,8 @@ sub api_report($self) {
                 push( @param, $offset );
             }
         }
-        # print STDERR "*** SQL:$sql\n\n";
+
+        print STDERR "*** SQL:$sql\n\n";
 
         my $data;
         if ($count) {
@@ -401,7 +408,7 @@ sub update_report ( $db, $n ) {
     die "id not specified in newsgroup write\n" unless ( $n->{'id'} );
     my $id = $n->{'id'};
     while ( my ( $key, $value ) = each(%$n) ) {
-        my $sql = "update report set $key=? where id=?";
+        my $sql = "update report set $key=?,treated_at=now() where id=?";
         $db->execute( $sql, $value, $id ) if $key ne 'id';
         $cnt++;
     }

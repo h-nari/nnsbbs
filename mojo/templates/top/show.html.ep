@@ -24,14 +24,7 @@ $(window).on('popstate', e => {
     nb.top_page(d[2]);
   else if (d.length == 4)
     nb.top_page(d[2], d[3])
+  else if (d.length == 5)
+    nb.top_page(d[2], d[3], d[4])
 })
-
-$(window).on('keydown', function (e) {
-  var nb = window.nnsbbs;
-  if (e.key == 'j') nb.setLanguage('jp');
-  else if (e.key == 'e') nb.setLanguage('en');
-  else if (e.key == "Enter") {
-    nb.setLanguage(nb.i18next.language == 'en' ? 'jp' : 'en');
-  }
-});
 </script>

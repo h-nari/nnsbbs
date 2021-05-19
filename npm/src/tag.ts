@@ -1,7 +1,7 @@
 interface StrObj {
   [key: string]: string | number | boolean | null | undefined;
 }
-type TagArg = string|number|StrObj|null|undefined;
+type TagArg = string | number | StrObj | null | undefined | object;
 
 export function tag(name: string, ...args: TagArg[]): string {
   let attr: StrObj = {};
@@ -20,7 +20,7 @@ export function tag(name: string, ...args: TagArg[]): string {
     if (attr[k] === undefined)
       continue;
     html += ' ' + k;
-    if (attr[k] !== null) 
+    if (attr[k] !== null)
       html += '="' + attr[k] + '"';
   }
   html += '>';

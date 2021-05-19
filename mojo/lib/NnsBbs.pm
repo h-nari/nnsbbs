@@ -35,6 +35,7 @@ sub startup ($self) {
     $r->get('/admin/user/#id')->to('admin#user');
     $r->get('/admin/newsgroup')->to('admin#newsgroup');
     $r->get('/admin/report')->to('admin#report');
+    $r->get('/admin/report/#id')->to('admin#report');
 
     $r->get('/api/newsgroup')->to('api#newsgroup');
     $r->get('/api/titles')->to('api#titles');

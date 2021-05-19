@@ -144,6 +144,16 @@ export const jp = {
     'ignore': '無視',
     'partial-correction-of-the-article': '記事部分修正',
     'prohibit-the-display-of-articles': '記事表示禁止',
-    'report-to-the-police': 'その筋に通報'
+    'report-to-the-police': 'その筋に通報',
+    'report-no': '通報番号',
+    'report-type': '種類',
+    'report-time': '通報時刻',
+    'article-author': '記事投稿者',
+    'article-posted-at': '投稿時刻',
+    'treatment-at': '処置時刻',
+    'treatment-detail': '処置詳細',
+    'treat-input': '処置入力',
+    'under-consideration': '検討中',
+    'to-report-list': '通報一覧へ'
   }
 };

@@ -1,4 +1,4 @@
-import { admin_api_report_read, IReportAdmin } from "./dbif";
+import { admin_api_report_list, admin_api_report_read, IReportAdmin } from "./dbif";
 import NnsBbs from "./nnsbbs";
 import { a, div, table, td, th, tr } from "./tag"
 
@@ -38,7 +38,7 @@ export class ReportManaget {
       article += ']';
       let href = window.nnsbbs_baseURL + 'bbs/' + r.newsgroup + '/' + r.article_id + '/' + r.rev;
       c += tr(
-        td({ class: 'id' }, r.id),
+        td({ class: 'id' }, a({ href: '/admin/report/' + r.id }, r.id)),
         td({ class: 'created_at' }, r.created_at),
         td({ class: 'notifier', }, r.notifier),
         td({ class: 'type', i18n: r.type }),
@@ -58,8 +58,9 @@ export class ReportManaget {
   bind() {
   }
 
-  async open() {
-    this.reportList = await admin_api_report_read();
+  async open(id: number | undefined) {
+    this.reportList = await admin_api_report_list();
+    console.log('reportList:', this.reportList);
     this.redisplay();
   }
 }

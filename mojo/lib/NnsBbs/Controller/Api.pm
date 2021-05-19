@@ -450,7 +450,7 @@ sub report($self) {
                 die "$k not set\n" unless defined($dd);
                 push( @param, $dd );
             }
-            for my $k (qw/notifier detail treatment_detail/) {
+            for my $k (qw/notifier detail/) {
                 
                 push( @param, $d->{$k} || '' );
             }
