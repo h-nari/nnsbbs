@@ -329,14 +329,16 @@ sub api_report($self) {
         $self->render( json => { result => 'ok', executed_update => $cnt } );
     }
     else {
-        my $limit  = $self->param('limit');
-        my $offset = $self->param('offset');
-        my $search = $self->param('search');
-        my $count  = $self->param('count');
-        my $order  = $self->param('order');
-        my $id     = $self->param('id');
-        my $sql    = "select";
-        my @param  = ();
+        my $limit      = $self->param('limit');
+        my $offset     = $self->param('offset');
+        my $search     = $self->param('search');
+        my $count      = $self->param('count');
+        my $order      = $self->param('order');
+        my $id         = $self->param('id');
+        my $treatments = $self->every_param('treatments[]');
+        my $types      = $self->every_param('types[]');
+        my $sql        = "select";
+        my @param      = ();
 
         if ($count) {
             $sql .= " count(*) as count";
@@ -372,6 +374,19 @@ sub api_report($self) {
             push( @param, $pat, $pat );
         }
 
+        if ($types && @$types > 0) {
+            $sql .= ' and (';
+            $sql .= join( ' or ', map { "r.type_id=?" } @$types );
+            $sql .= ')';
+            push( @param, @$types );
+        }
+        if ($treatments && @$treatments > 0) {
+            $sql .= ' and (';
+            $sql .= join( ' or ', map { "r.treatment_id=?" } @$treatments );
+            $sql .= ')';
+            push( @param, @$treatments );
+        }
+
         if ($order) {
             $sql .= " order by $order";
         }
@@ -387,7 +402,7 @@ sub api_report($self) {
             }
         }
 
-        print STDERR "*** SQL:$sql\n\n";
+        # print STDERR "*** SQL:$sql\n\n";
 
         my $data;
         if ($count) {

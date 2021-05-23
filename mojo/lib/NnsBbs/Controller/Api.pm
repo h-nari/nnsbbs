@@ -441,8 +441,8 @@ sub report($self) {
             my $d = from_json($insert);
             $sql = "insert into report";
             $sql .= "(type_id,newsgroup_id,article_id,rev";
-            $sql .= ",notifier,detail,treatment_detail)";
-            $sql .= "values(?,?,?,?,?,?,?);";
+            $sql .= ",notifier,detail)";
+            $sql .= "values(?,?,?,?,?,?);";
             my @param = ();
 
             for my $k (qw/type_id newsgroup_id article_id rev/) {

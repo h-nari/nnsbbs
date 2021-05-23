@@ -154,6 +154,10 @@ export const jp = {
     'treatment-detail': '処置詳細',
     'treat-input': '処置入力',
     'under-consideration': '検討中',
-    'to-report-list': '通報一覧へ'
+    'to-report-list': '通報一覧へ',
+    'treatment-filer': '処置フィルター',
+    'check-all': '全てチェック',
+    'execute': '実行',
+    'type-filter': '種別フィルター'
   }
 };

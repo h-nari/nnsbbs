@@ -256,8 +256,12 @@ export function api_reaction(newsgroup_id: number, article_id: number, rev: numb
 // api/report_type
 // api/report_treatment
 //
+export interface IIdName {
+  id: number;
+  name: string;
+}
 export interface IId {
-  [key: number]: { id: number, name: string }
+  [key: number]: IIdName;
 }
 export function api_report_type() {
   return get_json('/api/report_type') as Promise<IId>;
@@ -345,6 +349,8 @@ export interface ArgReportRead {
   count?: true;
   order?: string;
   id?: number;
+  types?: number[];
+  treatments?: number[];
 }
 export function admin_api_report_list(d: ArgReportRead = {}) {
   return get_json('/admin/api/report', { data: d }) as Promise<IReportAdmin[]>;

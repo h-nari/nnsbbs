@@ -1,4 +1,17 @@
 #report-manager {
+  .btn-box {
+    margin: 5px; 
+    padding: 5px;
+    background-color: lightgray;
+    border-radius: 4px;
+    button {
+      margin: 2px;
+      border-radius: 5px;
+    }
+    > span {
+      margin: 5px;
+    }
+  }
   table.report {
     width: 100%;
     overflow: hidden;

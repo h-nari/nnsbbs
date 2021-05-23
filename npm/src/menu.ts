@@ -3,7 +3,7 @@ import { nullstr } from './util';
 
 var sn = 0;
 
-type MenuAction = (e: JQuery.ClickEvent, arg: any) => void;
+type MenuAction = (e: JQuery.ClickEvent, menu: Menu) => void;
 
 interface MenuOption {
   icon?: string,
@@ -30,7 +30,7 @@ export class Menu {
     this.opt = opt;
   }
 
-  html(): string {
+  innerHtml(): string {
     let opt = this.opt;
     let c = '';
 
@@ -39,23 +39,30 @@ export class Menu {
     if (opt.name) c += opt.name;
     if (opt.html_i18n) c += span({ 'html-i18n': opt.html_i18n }, opt.html_i18n);
     if (opt.right_icon) c += icon(opt.right_icon, 'right-icon ' + nullstr(opt.right_icon_class));
+    return c;
+  }
 
-    return button({ class: 'menu btn', id: this.id, 'title-i18n': opt.explain }, c);
+  html(): string {
+    return button({ class: 'menu btn', id: this.id, 'title-i18n': this.opt.explain }, this.innerHtml());
   }
 
   bind() {
     $(`#${this.id}`).on('click', e => {
-      $('.menu-back').remove();
+      // $('.menu-back').remove();
       $('.tooltip').remove();
       if (this.opt.link) {
         document.location.href = this.opt.link;
       }
       else if (this.opt.action) {
-        this.opt.action(e, this.opt.arg);
+        this.opt.action(e, this);
       } else if (this.subMenu.length > 0) {
         this.expand(e);
       }
     });
+  }
+
+  redisplay() {
+    $('#' + this.id).html(this.innerHtml())
   }
 
   expand(e: JQuery.ClickEvent) {
@@ -95,6 +102,22 @@ export class Menu {
   clear() {
     this.subMenu = [];
     return this;
+  }
+
+  check_all() {
+    let c0 = 0;
+    let menus = this.subMenu;
+    for (let m of menus) {
+      if (m.opt.with_check) {
+        if (!m.opt.checked) c0++;
+      }
+    }
+    for (let m of menus) {
+      if (m.opt.with_check) {
+        m.opt.checked = c0 > 0;
+        m.redisplay();
+      }
+    }
   }
 }
 
