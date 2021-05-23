@@ -2,12 +2,14 @@ import { a, div, tag, icon, label, select, option, selected } from './tag';
 import { Menu } from './menu';
 import { escape_html, get_json } from './util';
 import NnsBbs from './nnsbbs';
-import { api_session } from './dbif';
+import { admin_api_report_count, admin_api_report_list, api_session } from './dbif';
 
 export class TopBar {
   private id = "TopBar";
   public parent: NnsBbs;
   public menu_login = new Menu();
+  public menu_report_manager: Menu | undefined;
+  public bModerator: boolean = false;
 
   constructor(parent: NnsBbs) {
     this.parent = parent;
@@ -59,10 +61,15 @@ export class TopBar {
       action: () => { this.parent.user.profile_dlg(); }
     }));
     if (this.parent.user.user?.moderator) {
+      this.bModerator = true;
       m.add(new Menu({ name: i18next.t('user-manager'), link: '/admin/user' }));
       m.add(new Menu({ name: i18next.t('newsgroup-manager'), link: '/admin/newsgroup' }));
-      m.add(new Menu({ name: i18next.t('report-manager'), link: '/admin/report' }));
+      this.menu_report_manager = new Menu({ name: i18next.t('report-manager'), link: '/admin/report' });
+      m.add(this.menu_report_manager);
+    } else {
+      this.bModerator = false;
     }
+    this.update_badge();
   }
 
   set_logout_menu() {
@@ -80,5 +87,26 @@ export class TopBar {
       name: i18next.t('User Registration'),
       action: () => { this.parent.user.user_registration(); }
     }));
+    this.bModerator = false;
+    this.update_badge();
+  }
+
+  async update_badge() {
+    let d = await admin_api_report_count({ treatments: [0] });
+    if (this.bModerator && d.count > 0)
+      this.menu_login.opt.badge = String(d.count);
+    else
+      this.menu_login.opt.badge = '';
+    this.menu_login.redisplay();
+
+    let m = this.menu_report_manager;
+    if (m) {
+      if (d.count == 0) {
+        m.opt.badge = '';
+      } else {
+        m.opt.badge = String(d.count);
+      }
+      m.redisplay();
+    }
   }
 }

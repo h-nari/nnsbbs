@@ -141,7 +141,7 @@ export const jp = {
     'treatment': '処置',
     'article-title': '記事標題',
     'not-yet': '未処置',
-    'ignore': '無視',
+    'no-treatment-required': '処置の必要なし',
     'partial-correction-of-the-article': '記事部分修正',
     'prohibit-the-display-of-articles': '記事表示禁止',
     'report-to-the-police': 'その筋に通報',
@@ -158,6 +158,7 @@ export const jp = {
     'treatment-filer': '処置フィルター',
     'check-all': '全てチェック',
     'execute': '実行',
-    'type-filter': '種別フィルター'
+    'type-filter': '種別フィルター',
+    'there-is-no-data-to-display': '表示するデータはありません'
   }
 };

@@ -17,7 +17,8 @@ interface MenuOption {
   link?: string,
   arg?: any
   with_check?: true,
-  checked?: boolean
+  checked?: boolean,
+  badge?: string
 };
 
 export class Menu {
@@ -39,6 +40,7 @@ export class Menu {
     if (opt.name) c += opt.name;
     if (opt.html_i18n) c += span({ 'html-i18n': opt.html_i18n }, opt.html_i18n);
     if (opt.right_icon) c += icon(opt.right_icon, 'right-icon ' + nullstr(opt.right_icon_class));
+    if (opt.badge) c += span({ class: 'badge badge-danger' }, opt.badge);
     return c;
   }
 

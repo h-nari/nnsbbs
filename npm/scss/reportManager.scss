@@ -1,6 +1,6 @@
 #report-manager {
   .btn-box {
-    margin: 5px; 
+    margin: 5px;
     padding: 5px;
     background-color: lightgray;
     border-radius: 4px;
@@ -42,6 +42,9 @@
       }
       .article-title {
         color: red;
+      }
+      td.no-data {
+        text-align: center;
       }
     }
   }

@@ -30,7 +30,7 @@ insert into report_type(id,name) values
 insert into report_treatment(id,name) values
 (0, 'not-yet'),
 (1, 'under-consideration'),
-(2, 'ignore'),
+(2, 'no-treatment-required'),
 (3, 'partial-correction-of-the-article'),
 (4, 'prohibit-the-display-of-articles'),
 (5, 'report-to-the-police');

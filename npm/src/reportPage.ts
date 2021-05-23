@@ -96,6 +96,7 @@ export class ReportPage {
             let treatment_detail = $('.treat-input .treatment-detail textarea').val() as string;
             admin_api_report_update({ id: this.report.id, treatment_id: Number(treatment_id), treatment_detail }).then(() => {
               if (this.report) this.open(this.report.id);
+              this.parent.topBar.update_badge();
             });
 
           }

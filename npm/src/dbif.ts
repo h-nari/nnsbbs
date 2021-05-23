@@ -352,6 +352,13 @@ export interface ArgReportRead {
   types?: number[];
   treatments?: number[];
 }
+export interface ICount {
+  count: number;
+}
+export function admin_api_report_count(d: ArgReportRead = {}) {
+  d.count = true;
+  return get_json('/admin/api/report', { data: d }) as Promise<ICount>;
+}
 export function admin_api_report_list(d: ArgReportRead = {}) {
   return get_json('/admin/api/report', { data: d }) as Promise<IReportAdmin[]>;
 }
