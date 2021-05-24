@@ -1,0 +1,24 @@
+body {
+  background-color: #222 !important;
+  color: white !important;
+}
+
+#main {
+  background-color: black !important;
+}
+
+#TopBar {
+  background-color: #888 !important;
+}
+
+.toolbar {
+  background-color: #888 !important;
+}
+
+button {
+  color: white;
+}
+
+.article-end {
+  color: black;
+}

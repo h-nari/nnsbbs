@@ -60,6 +60,10 @@ export class TopBar {
       name: i18next.t('Profile'),
       action: () => { this.parent.user.profile_dlg(); }
     }));
+    m.add(new Menu({
+      name: i18next.t('setting'),
+      action: () => { this.parent.user.setting_dlg(); }
+    }));
     if (this.parent.user.user?.moderator) {
       this.bModerator = true;
       m.add(new Menu({ name: i18next.t('user-manager'), link: '/admin/user' }));

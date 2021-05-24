@@ -159,6 +159,8 @@ export const jp = {
     'check-all': '全てチェック',
     'execute': '実行',
     'type-filter': '種別フィルター',
-    'there-is-no-data-to-display': '表示するデータはありません'
+    'there-is-no-data-to-display': '表示するデータはありません',
+    'setting': '設定',
+    'theme':'テーマ'
   }
 };

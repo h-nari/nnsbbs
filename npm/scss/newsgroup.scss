@@ -10,8 +10,8 @@
     top: 0px;
 
     button.newsgroup-line {
-      background-color: lightgray;
-      color: black;
+      // background-color: lightgray;
+      // color: black;
       display: flex;
       
       .newsgroup-check {
@@ -39,7 +39,7 @@
       }
     }
     .newsgroup-line.subscribe {
-      background-color: white;
+      // background-color: white;
       .newsgroup-name {
         font-weight: bold;
         margin-right: 20px;

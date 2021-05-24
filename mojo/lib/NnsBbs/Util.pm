@@ -3,7 +3,7 @@ use NnsBbs::Controller::Auth;
 use String::Random;
 
 use Exporter 'import';
-our @EXPORT_OK = qw/access_level random_id/;
+our @EXPORT_OK = qw/access_level get_theme random_id/;
 
 sub access_level {
     my $c  = shift;    # Mojo::Controller
@@ -25,6 +25,18 @@ sub access_level {
 
     return ( $level, $moderator, $admin, $user_id ) if ( defined($level) );
     return ( 0,      0,          0,      0 );
+}
+
+sub get_theme {
+    my $c          = shift;
+    my $db         = NnsBbs::Db::new($c);
+    my $session_id = $c->session('id');
+    return '00-default' unless $session_id;
+    my $sql = "select theme";
+    $sql .= " from user as u,session as s";
+    $sql .= " where u.id=s.user_id and s.id=?";
+    my ($theme) = $db->select_ra( $sql, $session_id ) || '00-default';
+    return $c->url_for( '/theme/theme-' . $theme . '.css' );
 }
 
 sub random_id {

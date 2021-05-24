@@ -1,4 +1,5 @@
 package NnsBbs;
+use NnsBbs::Util qw/get_theme/;
 use Mojo::Base 'Mojolicious', -signatures;
 use Data::Dumper;
 
@@ -15,6 +16,12 @@ sub startup ($self) {
             namespace        => 'NnsBbs::I18N',
             no_header_detect => 1,
             default          => 'jp'
+        }
+    );
+    $self->helper(
+        theme => sub {
+            my $c = shift;
+            return get_theme($c);
         }
     );
 
@@ -42,6 +49,8 @@ sub startup ($self) {
     $r->get('/api/article')->to('api#article');
     $r->get('/api/mail_auth')->to('api#mail_auth');
     $r->get('/api/membership')->to('api#membership');
+    $r->any('/api/theme')->to('api#theme');
+    $r->any('/api/user')->to('api#user');
     $r->any('/api/login')->to('auth#api_login');
     $r->any('/api/logout')->to('auth#api_logout');
     $r->any('/api/session')->to('auth#api_session');

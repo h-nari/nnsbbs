@@ -168,8 +168,9 @@ sub api_user($self) {
     my $update = $self->param('update');
     my $db     = NnsBbs::Db::new($self);
     my ( $level, $moderator ) = access_level( $self, $db );
+    my $id = $self->param('id');
 
-    unless ($moderator) {
+    if ( !$moderator) {
         $self->render( text => 'Access Forbidden', status => '403' );
     }
 
@@ -192,7 +193,6 @@ sub api_user($self) {
         my $search = $self->param('search');
         my $count  = $self->param('count');
         my $order  = $self->param('order');
-        my $id     = $self->param('id');
         my $sql    = "select";
         my @param  = ();
         $sql .= $count ? " count(*) as count" : " *";
@@ -374,13 +374,13 @@ sub api_report($self) {
             push( @param, $pat, $pat );
         }
 
-        if ($types && @$types > 0) {
+        if ( $types && @$types > 0 ) {
             $sql .= ' and (';
             $sql .= join( ' or ', map { "r.type_id=?" } @$types );
             $sql .= ')';
             push( @param, @$types );
         }
-        if ($treatments && @$treatments > 0) {
+        if ( $treatments && @$treatments > 0 ) {
             $sql .= ' and (';
             $sql .= join( ' or ', map { "r.treatment_id=?" } @$treatments );
             $sql .= ')';

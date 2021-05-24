@@ -1,7 +1,7 @@
 package NnsBbs::Controller::Top;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use NnsBbs::Db;
-use NnsBbs::Util qw/access_level/;
+use NnsBbs::Util qw/access_level get_theme/;
 use Data::Dumper;
 
 sub show ($self) {
@@ -9,7 +9,6 @@ sub show ($self) {
 }
 
 sub bbs ($self) {
-    my $db         = NnsBbs::Db::new($self);
     my $newsgroup  = $self->param('newsgroup') || "";
     my $article_id = $self->param('article_id') || "";
     my $rev        = $self->param('rev') || "";

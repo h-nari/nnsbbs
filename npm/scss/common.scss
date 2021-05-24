@@ -9,7 +9,6 @@
 .nb-list-group {
   padding: 2px;
   border: solid darkgray 0px;
-  overflow: hide;
 }
 
 .nb-list-group {
@@ -21,12 +20,13 @@
     padding: 2px;
     white-space: pre;
     overflow: hidden;
+    background-color: transparent;
   }
   > button.active {
     background-color: #007bff;
-    color: white ; 
+    color: white;
     .icon {
-      color: white !important; 
+      color: white !important;
     }
   }
 }

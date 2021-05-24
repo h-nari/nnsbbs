@@ -130,7 +130,7 @@ sub api_login {
     }
     else {
         my $db  = NnsBbs::Db::new($self);
-        my $sql = "select id,disp_name,membership_id,signature,moderator";
+        my $sql = "select id,disp_name,membership_id,signature,moderator,setting,theme";
         $sql .= " from user";
         $sql .= " where mail=? and password=? and not bBanned";
         my $rh = $db->select_rh( $sql, $email, $pwd );
@@ -173,7 +173,7 @@ sub api_session {
         my $db = NnsBbs::Db::new($self);
         &update_session($db);
         my $sql = "select disp_name, u.id as id";
-        $sql .= ",membership_id,signature,moderator";
+        $sql .= ",membership_id,signature,moderator,theme";
         $sql .= " from user as u,session as s";
         $sql .= " where u.id = s.user_id and s.id=?";
         my $rh = $db->select_rh( $sql, $session_id );

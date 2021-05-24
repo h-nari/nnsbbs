@@ -1,0 +1,19 @@
+body.nnsbbs {
+  background-color: darkgray;
+}
+
+#main {
+  background-color: lightgray !important;
+}
+
+#TopBar {
+  background-color: white !important;
+}
+
+.toolbar {
+  background-color: #444 !important;
+}
+
+button {
+  color: black ;
+}

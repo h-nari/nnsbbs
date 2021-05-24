@@ -1,5 +1,5 @@
 import { div, input, button, tag, label, a, span, select, option, selected, icon } from './tag';
-import { api_membership, IMembership, api_post, api_attachment, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout } from './dbif';
+import { api_membership, IMembership, api_post, api_attachment, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update } from './dbif';
 import { INewsGroup } from "./newsgroup";
 import { escape_html, get_json } from './util';
 import { createHash } from 'sha1-uint8array';
@@ -343,6 +343,37 @@ export class User {
           }
         }
       });
+    });
+  }
+
+  async setting_dlg() {
+    let i18next = this.parent.i18next;
+    let theme_list = await api_theme_list();
+    let c = select({ class: 'theme' }, ...theme_list.map(t => option({ value: t, selected: selected(this.user?.theme == t) }, t)))
+
+    $.confirm({
+      title: i18next.t('setting'),
+      type: 'green',
+      columnClass: 'large',
+      content: div({ class: 'user-setting overflow-hidden' },
+        div({ class: 'row' },
+          div({ class: 'col title', i18n: 'theme' }), div({ class: 'col value' }, c))),
+      onOpen: () => { this.parent.set_i18n_text(); },
+      buttons: {
+        write: {
+          text: i18next.t('write'),
+          action: () => {
+            if (!this.user) return;
+            let id = this.user.id;
+            let theme = $('.user-setting .theme').val() as string;
+            api_user_update({ id: this.user.id, theme });
+            location.reload();
+          }
+        },
+        cancel: {
+          text: i18next.t('cancel'),
+        }
+      }
     });
   }
 }

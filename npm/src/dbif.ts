@@ -167,6 +167,8 @@ export interface IUser {
   membership_id: string;
   signature: string;
   moderator: number;
+  setting: string;
+  theme: string;
 };
 
 export interface ILogin {
@@ -283,6 +285,24 @@ export interface IReport {
 }
 export function api_report(d: IReport) {
   return get_json('/api/report', { method: 'post', data: { insert: JSON.stringify(d) } }) as Promise<IResult>;
+}
+//
+// api/theme
+//
+export function api_theme_list() {
+  return get_json('/api/theme') as Promise<string[]>;
+}
+//
+// api/user
+//
+export interface ArgUserUpdate {
+  id: string;
+  setting?: string;
+  theme?: string;
+  signature?: string;
+}
+export function api_user_update(d: ArgUserUpdate) {
+  return get_json('/api/user', { method: 'post', data: { update: JSON.stringify(d) } }) as Promise<IResult>;
 }
 
 //

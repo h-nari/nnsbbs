@@ -198,7 +198,7 @@ sub profile_write {
           if ( !$disp_name
             && !$profile
             && !$membership_id
-            && !$signature);
+            && !$signature );
         my $db = NnsBbs::Db::new($self);
         my ( $level, $moderator, $admin, $user_id2 ) =
           access_level( $self, $db );
@@ -451,7 +451,7 @@ sub report($self) {
                 push( @param, $dd );
             }
             for my $k (qw/notifier detail/) {
-                
+
                 push( @param, $d->{$k} || '' );
             }
             $db->execute( $sql, @param );
@@ -480,6 +480,49 @@ sub report_treatment($self) {
         my $d =
           $db->select_hh( "select * from report_treatment order by id", 'id' );
         $self->render( json => $d );
+    };
+    $self->render( text => $@, status => '400' ) if $@;
+}
+
+sub theme($self) {
+    eval {
+        my $home   = $self->app->home;
+        my @files  = glob "$home/public/theme/theme-*.css";
+        my @files2 = map { m|/theme-(\S+).css$| && $1 } @files;
+        $self->render( json => \@files2 );
+    };
+    $self->render( text => $@, status => '400' ) if $@;
+}
+
+sub user($self) {
+    eval {
+        my $update = $self->param('update');
+        die "parameter update required" unless $update;
+        my $data = from_json($update);
+        my $id   = $data->{'id'};
+        die "paremeter id required" unless $id;
+        my $db = NnsBbs::Db::new($self);
+        my ( $level, $moderator, $admin, $user_id ) =
+          access_level( $self, $db );
+        die "no write permmision" unless $moderator || $id == $user_id;
+
+        my @params = ();
+        my @places = ();
+
+        while ( my ( $key, $value ) = each(%$data) ) {
+            next if $key eq "id";
+            die "undefined key:$key"
+              unless $key =~ /theme|profile|setting|signature/;
+            push( @params, $value );
+            push( @places, "$key=?" );
+        }
+        my $sql = "update user set " . join( ',', @places );
+        $sql .= " where id=?";
+        push( @params, $id );
+        print STDERR "*** SQL:$sql ***\n";
+        $db->execute( $sql, @params );
+        $db->commit;
+        $self->render( json => { result => 'ok' } );
     };
     $self->render( text => $@, status => '400' ) if $@;
 }
