@@ -161,6 +161,7 @@ export const jp = {
     'type-filter': '種別フィルター',
     'there-is-no-data-to-display': '表示するデータはありません',
     'setting': '設定',
-    'theme':'テーマ'
+    'theme':'テーマ',
+    'correct-article':'記事訂正'
   }
 };

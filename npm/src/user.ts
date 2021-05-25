@@ -197,7 +197,7 @@ export class User {
     });
   }
 
-  async post_article_dlg(n: INewsGroup, a: (IArticle | null) = null) {
+  async post_article_dlg(n: INewsGroup, a: (IArticle | null) = null, correctArticle: boolean = false) {
     const i18next = this.parent.i18next;
     var attachment_list: Attachment[] = [];
     if (!this.user) {
@@ -208,9 +208,14 @@ export class User {
     let title = '';
     let content = '';
     if (a) {
-      if (a.title.match(/^Re:/)) title = a.title;
-      else title = 'Re:' + a.title;
+      if (correctArticle) {
+        title = a.title;
+      } else {
+        if (a.title.match(/^Re:/)) title = a.title;
+        else title = 'Re:' + a.title;
+      }
     }
+
 
     let c = tag('form', { class: 'post-article' },
       form_input('post-name', i18next.t('disp-name'), { value: this.user.disp_name }),
@@ -218,7 +223,7 @@ export class User {
       form_post_textarea('post-content', i18next.t('body'), a, { value: content, rows: 10 }),
       div({ class: 'attachment-area' }));
     $.confirm({
-      title: i18next.t('post-article'),
+      title: i18next.t(correctArticle ? 'correct-article' : 'post-article'),
       columnClass: 'large',
       type: 'orange',
       content: c,

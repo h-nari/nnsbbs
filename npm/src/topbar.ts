@@ -96,21 +96,19 @@ export class TopBar {
   }
 
   async update_badge() {
-    let d = await admin_api_report_count({ treatments: [0] });
-    if (this.bModerator && d.count > 0)
-      this.menu_login.opt.badge = String(d.count);
-    else
-      this.menu_login.opt.badge = '';
+    let badge = '';
+    if (this.parent.user.user?.moderator) {
+      let d = await admin_api_report_count({ treatments: [0] });
+      if (this.bModerator && d.count > 0)
+        badge = String(d.count);
+    }
+
+    this.menu_login.opt.badge = badge;
     this.menu_login.redisplay();
 
-    let m = this.menu_report_manager;
-    if (m) {
-      if (d.count == 0) {
-        m.opt.badge = '';
-      } else {
-        m.opt.badge = String(d.count);
-      }
-      m.redisplay();
+    if (this.menu_report_manager) {
+      this.menu_report_manager.opt.badge = badge;
+      this.menu_report_manager.redisplay();
     }
   }
 }

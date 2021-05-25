@@ -146,20 +146,48 @@ export default class NnsBbs {
         document.title = `nnsbbs/${this.cur_newsgroup}`;
       }
     }))
-    this.article_pane.toolbar.add_menu(new Menu({
-      icon: 'card-heading',
-      explain: 'toggle-article-header',
-      action: () => {
-        this.article_pane.toggle_header()
+    let article_menu = new Menu({
+      icon: 'three-dots',
+      action: (e, menu) => {
+        menu.clear();
+        menu.add(new Menu({
+          icon: 'card-heading',
+          html_i18n: 'toggle-article-header',
+          action: () => {
+            this.article_pane.toggle_header()
+          }
+        })).add(new Menu({
+          icon: 'reply-fill',
+          html_i18n: 'reply-to-article',
+          action: () => {
+            if (this.titles_pane.newsgroup && this.article_pane.article)
+              this.user.post_article_dlg(this.titles_pane.newsgroup, this.article_pane.article);
+          }
+        })).add(new Menu({
+          icon: 'exclamation-diamond',
+          html_i18n: 'report', action: () => {
+            this.report_dlg();
+          }
+        }));
+        let newsgroup = this.titles_pane.newsgroup;
+        let article = this.article_pane.article;
+        let user = this.user.user;
+        if (newsgroup && article && user && (article.user_id == user.id || user.moderator)) {
+          menu.add(new Menu({
+            icon: 'pencil-square',
+            html_i18n: 'correct-article',
+            action: () => {
+              if (newsgroup && article)
+                this.user.post_article_dlg(newsgroup, article, true);
+            }
+          }));
+        }
+
+
+        menu.expand(e);
       }
-    })).add_menu(new Menu({
-      icon: 'reply-fill',
-      explain: 'reply-to-article',
-      action: () => {
-        if (this.titles_pane.newsgroup && this.article_pane.article)
-          this.user.post_article_dlg(this.titles_pane.newsgroup, this.article_pane.article);
-      }
-    }));
+    });
+    this.article_pane.toolbar.add_menu(article_menu);
 
     var reaction_menu = new Menu({
       icon: 'person-plus',
@@ -203,11 +231,6 @@ export default class NnsBbs {
     });
     this.article_pane.toolbar.add_menu(reaction_menu);
 
-    this.article_pane.toolbar.add_menu(new Menu({
-      icon: 'exclamation-diamond', explain: 'report', action: () => {
-        this.report_dlg();
-      }
-    }));
   }
 
   html(): string {
@@ -358,7 +381,7 @@ export default class NnsBbs {
   async select_article(newsgroup_id: number, article_id: number, rev: number = 0) {
     await this.article_pane.open(newsgroup_id, article_id, rev);
     this.titles_pane.select_article(article_id, rev);
-    this.article_pane.show();                   
+    this.article_pane.show();
 
     if (this.titles_pane.newsgroup) {
       let subsInfo = this.titles_pane.newsgroup.subsInfo;
