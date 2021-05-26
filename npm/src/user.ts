@@ -1,5 +1,5 @@
 import { div, input, button, tag, label, a, span, select, option, selected, icon } from './tag';
-import { api_membership, IMembership, api_post, api_attachment, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update } from './dbif';
+import { api_membership, IMembership, api_post, api_attachment, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, IPostArg } from './dbif';
 import { INewsGroup } from "./newsgroup";
 import { escape_html, get_json } from './util';
 import { createHash } from 'sha1-uint8array';
@@ -200,6 +200,19 @@ export class User {
   async post_article_dlg(n: INewsGroup, a: (IArticle | null) = null, correctArticle: boolean = false) {
     const i18next = this.parent.i18next;
     var attachment_list: Attachment[] = [];
+    const redisplay_func = () => {
+      let htmls = attachment_list.map(a => a.html());
+      $('.post-article .attachment-area').html(div(...htmls));
+      this.parent.set_i18n_text();
+      attachment_list.forEach(a => {
+        a.bind();
+        a.onDelete = () => {
+          attachment_list = attachment_list.filter(b => b != a);
+          redisplay_func();
+        }
+      });
+    };
+
     if (!this.user) {
       if (!await this.login()) return;
     }
@@ -210,6 +223,9 @@ export class User {
     if (a) {
       if (correctArticle) {
         title = a.title;
+        content = a.content;
+        console.log('a.attachment:', a.attachment);
+        a.attachment.forEach(a => attachment_list.push(new Attachment(a)));
       } else {
         if (a.title.match(/^Re:/)) title = a.title;
         else title = 'Re:' + a.title;
@@ -220,7 +236,7 @@ export class User {
     let c = tag('form', { class: 'post-article' },
       form_input('post-name', i18next.t('disp-name'), { value: this.user.disp_name }),
       form_input('post-title', i18next.t('subject'), { value: title }),
-      form_post_textarea('post-content', i18next.t('body'), a, { value: content, rows: 10 }),
+      form_post_textarea('post-content', i18next.t('body'), a, { value: content, rows: 10 }, correctArticle),
       div({ class: 'attachment-area' }));
     $.confirm({
       title: i18next.t(correctArticle ? 'correct-article' : 'post-article'),
@@ -233,7 +249,7 @@ export class User {
           action: async () => {
             let user_id = this.user?.id || '';
             let newsgroup_id = n.n.id;
-            let reply_to = a ? Number(a.article_id) : 0;
+            let reply_to = a ? a.article_id : '';
             let title = $('#post-title').val() as string;
             let disp_name = $('#post-name').val() as string;
             let content = $('#post-content').val() as string;
@@ -243,15 +259,24 @@ export class User {
 
             content = 'content-type: text/plain\n\n' + content;
 
-            let r = await api_post({ newsgroup_id, user_id, disp_name, title, content, reply_to });
+            let postArg: IPostArg = { newsgroup_id, user_id, disp_name, title, content, reply_to };
+            if (correctArticle && a) {
+              postArg.article_id = a.article_id;
+              postArg.rev = a.rev + 1;
+            }
+            let r = await api_post(postArg);
             if (attachment_list.length > 0) {
               let fd = new FormData();
-              attachment_list.forEach(a => fd.append('file', a.file));
-              fd.append('newsgroup_id', String(newsgroup_id));
+              attachment_list.forEach(a => {
+                if (a.file)
+                  fd.append('file', a.file);
+              });
+              fd.append('newsgroup_id', newsgroup_id);
               fd.append('article_id', r.article_id);
-              let comments = attachment_list.map(a => a.comment);
-              console.log('comments:', comments);
-              fd.append('comments', JSON.stringify(comments));
+              fd.append('rev', String(r.rev));
+              let attach = attachment_list.map(a => a.data());
+              console.log('attach:', attach);
+              fd.append('attach', JSON.stringify(attach));
               let r2 = await api_attachment(fd);
             }
 
@@ -270,23 +295,12 @@ export class User {
           if (a) quote_article('post-content', n, a);
         });
         $('.btn-attach').on('click', () => {
-          const redisplay_func = () => {
-            let htmls = attachment_list.map(a => a.html());
-            $('.post-article .attachment-area').html(div(...htmls));
-            this.parent.set_i18n_text();
-            attachment_list.forEach(a => {
-              a.bind();
-              a.onDelete = () => {
-                attachment_list = attachment_list.filter(b => b != a);
-                redisplay_func();
-              }
-            });
-          };
           this.attachment_dlg().then(list => {
             attachment_list.push(...list);
             redisplay_func();
           });
         });
+        redisplay_func();
       }
     });
   }
@@ -423,14 +437,14 @@ function form_profile_textarea(id: string, label_str: string, opt: IFormGroupOpt
     input_part);
 }
 
-function form_post_textarea(id: string, label_str: string, a: IArticle | null, opt: IFormGroupOpt) {
+function form_post_textarea(id: string, label_str: string, a: IArticle | null, opt: IFormGroupOpt, correct_article: boolean) {
   let input_part: string;
   input_part = tag('textarea', {
     id, rows: opt.rows, readonly: opt.readonly,
     class: 'form-control', placeholder: opt.placeholder
   }, opt.value || '');
   let reply_btn = '';
-  if (a)
+  if (a && !correct_article)
     reply_btn = button({ class: 'btn ml-2 btn-quote', type: 'button', 'title-i18n': 'quote-article' },
       icon('chat-left-quote'));
   let attach_btn = button({ class: 'btn ml-auto btn-attach', type: 'button', 'title-i18n': 'attach-file' },

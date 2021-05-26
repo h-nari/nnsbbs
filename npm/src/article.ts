@@ -92,7 +92,7 @@ export class ArticlePane extends ToolbarPane {
     this.bind();
   }
 
-  async open(newsgroup_id: number, article_id: number, rev: number) {
+  async open(newsgroup_id: string, article_id: string, rev: number) {
     let data = await api_article(newsgroup_id, article_id, rev);
     let c = data.content;
     let i = c.indexOf('\n\n');

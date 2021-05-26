@@ -13,7 +13,7 @@ interface IResult {
 //
 
 export interface TNewsgroup {
-  id: number,
+  id: string,
   name: string,
   comment: string,
   max_id: number,
@@ -35,7 +35,7 @@ export function api_newsgroup() {
 // api/titles
 //
 export interface ITitle {
-  article_id: number;
+  article_id: string;
   rev: number;
   date: string;
   user_id: string;
@@ -47,7 +47,7 @@ export interface ITitle {
     [type_id: string]: number;
   }
 };
-export function api_titles(newsgroup_id: number, from: number, to: number) {
+export function api_titles(newsgroup_id: string, from: number, to: number) {
   return get_json('/api/titles', { data: { newsgroup_id, from, to } }) as Promise<ITitle[]>;
 }
 
@@ -75,7 +75,7 @@ export interface IAttachment {
   size: number;
 };
 
-export function api_article(newsgroup_id: number, article_id: number, rev: number) {
+export function api_article(newsgroup_id: string, article_id: string, rev: number) {
   return get_json('/api/article',
     { data: { newsgroup_id, article_id, rev } }) as Promise<IArticle>;
 }
@@ -132,18 +132,22 @@ export function api_profile_write(a: ArgProfile) {
 //
 // api/post
 //
-interface IPostArg {
-  newsgroup_id: number;
+export interface IPostArg {
+  newsgroup_id: string;
+  article_id?: string;
+  rev?: number;
   user_id: string;
   disp_name: string;
   title: string;
   content: string;
-  reply_to: number;
+  reply_to?: string;
+  reply_rev?: string;
 }
 
 interface IPostResult {
   result: 'ok' | 'ng';
   article_id: string;
+  rev: number;
 }
 
 export function api_post(arg: IPostArg) {
@@ -232,14 +236,14 @@ export interface IReactionTypeResult {
 export function api_reaction_type() {
   return get_json('/api/reaction_type') as Promise<IReactionTypeResult>;
 }
-export function api_reaction_write(newsgroup_id: number, article_id: string, rev: number, user_id: string, type_id: number) {
+export function api_reaction_write(newsgroup_id: string, article_id: string, rev: number, user_id: string, type_id: number) {
   return get_json('/api/reaction', { method: 'post', data: { newsgroup_id, article_id, rev, user_id, type_id } }) as Promise<IResult>;
 }
 export interface IReactionUser {
   result: 'ok' | 'ng';
   type_id: number;
 }
-export function api_reaction_user(newsgroup_id: number, article_id: string, rev: number, user_id: string) {
+export function api_reaction_user(newsgroup_id: string, article_id: string, rev: number, user_id: string) {
   return get_json('/api/reaction', { method: 'post', data: { newsgroup_id, article_id, rev, user_id } }) as Promise<IReactionUser>;
 }
 export interface IReaction {
@@ -277,7 +281,7 @@ export function api_report_treatment() {
 export interface IReport {
   type_id: number,
   treadment_id?: number,
-  newsgroup_id: number,
+  newsgroup_id: string,
   article_id: string,
   rev: number,
   notifier?: string,

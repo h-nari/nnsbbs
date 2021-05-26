@@ -32,8 +32,8 @@ export default class NnsBbs {
   private ng_pane = new NewsGroupsPane('newsgroup', this);
   private titles_pane = new TitlesPane('titles', this);
   private article_pane = new ArticlePane('article', this);
-  private cur_newsgroup: string = "";
-  private cur_newsgroup_id: number = 0;
+  private cur_newsgroup: string = '';
+  private cur_newsgroup_id: string = '';
   public reaction_type: IReactionType | null = null;
 
   constructor(i18next: i18n) {
@@ -344,9 +344,8 @@ export default class NnsBbs {
       if (article_id == "") {
         this.article_pane.close();
       } else {
-        let id = parseInt(article_id);
         let r = parseInt(rev);
-        this.select_article(this.cur_newsgroup_id, id, r);
+        this.select_article(this.cur_newsgroup_id, article_id, r);
       }
     }
     this.redisplay();
@@ -378,7 +377,7 @@ export default class NnsBbs {
     this.cur_newsgroup_id = newsgroup.n.id;
   }
 
-  async select_article(newsgroup_id: number, article_id: number, rev: number = 0) {
+  async select_article(newsgroup_id: string, article_id: string, rev: number = 0) {
     await this.article_pane.open(newsgroup_id, article_id, rev);
     this.titles_pane.select_article(article_id, rev);
     this.article_pane.show();
@@ -387,7 +386,7 @@ export default class NnsBbs {
       let subsInfo = this.titles_pane.newsgroup.subsInfo;
       if (!subsInfo)
         subsInfo = this.titles_pane.newsgroup.subsInfo = { subscribe: false, read: new ReadSet(), update: false };
-      subsInfo.read.add_range(article_id);                 // make article read
+      subsInfo.read.add_range(Number(article_id));                 // make article read
       this.ng_pane.saveSubsInfo();
     }
     this.redisplay();

@@ -11,11 +11,11 @@ import { api_titles, ITitle } from "./dbif";
 
 export class TitlesPane extends ToolbarPane {
   private titles: ITitle[] = [];
-  private threads: ITitle[] | null = null;
-  public newsgroup: INewsGroup | null = null;
-  public cur_article_id: number | null = null;
+  private threads: ITitle[] | undefined;
+  public newsgroup: INewsGroup | undefined;
+  public cur_article_id: string | undefined;
   private bDispTherad: boolean = true;
-  private clickCb: ((newsgroup_id: number, article_id: number) => void) | null = null;
+  private clickCb: ((newsgroup_id: string, article_id: string) => void) | undefined;
   private id_lg: string;
   public loaded_titles: ReadSet = new ReadSet();
 
@@ -55,11 +55,11 @@ export class TitlesPane extends ToolbarPane {
       }
     }
     this.newsgroup = newsgroup;
-    this.cur_article_id = null;
+    this.cur_article_id = undefined;
     this.redisplay(true);    // reset scroll
   }
 
-  setClickCb(cb: (n: number, m: number) => void) {
+  setClickCb(cb: (n: string, m: string) => void) {
     this.clickCb = cb;
   }
 
@@ -141,7 +141,7 @@ export class TitlesPane extends ToolbarPane {
     let opt = { article_id: d.article_id, rev: d.rev };
     let c: string[] = ['title-contextmenu'];
     let si = this.newsgroup?.subsInfo;
-    if (si && si.read.includes(d.article_id))
+    if (si && si.read.includes(Number(d.article_id)))
       c.push('read');
     if (this.cur_article_id == d.article_id)
       c.push('active');
@@ -170,7 +170,7 @@ export class TitlesPane extends ToolbarPane {
     super.bind();
     $(`#${this.id_lg} >button`).on('click', ev => {
       let target = ev.currentTarget;
-      let article_id: number = target.attributes['article_id'].value;
+      let article_id: string = target.attributes['article_id'].value;
       let rev = target.attributes['rev'].value as number;
       this.select_article(article_id, rev);
       if (this.newsgroup && this.clickCb) {
@@ -196,14 +196,15 @@ export class TitlesPane extends ToolbarPane {
     });
   }
 
-  async select_article(id: number, rev: number) {
+  async select_article(id: string, rev: number) {
     const scroller = `#${this.id} .titles`;
     const scrollee = scroller + ' >div';
     const line = scrollee + ` >button[article_id=${id}]`;
     // TODO: revにも対応させる
     if ($(line).length == 0 && this.newsgroup) {
       console.log('load titles');
-      await this.load(this.newsgroup, Math.max(1, id - 50), Math.min(id + 50, this.newsgroup.n.max_id))
+      let id_num = parseInt(id);
+      await this.load(this.newsgroup, Math.max(1, id_num - 50), Math.min(id_num + 50, this.newsgroup.n.max_id))
     }
 
     $(scrollee + ' >button').removeClass('active');

@@ -222,6 +222,8 @@ sub post_article {
     my $self          = shift;
     my $ip            = $self->client_ip;
     my $newsgroup_id  = $self->param('newsgroup_id');
+    my $article_id    = $self->param('article_id');
+    my $rev           = $self->param('rev');
     my $title         = $self->param('title');
     my $user_id       = $self->param('user_id');
     my $disp_name     = $self->param('disp_name');
@@ -236,7 +238,7 @@ sub post_article {
         push( @missing_param, 'user_id' )      unless $user_id;
         push( @missing_param, 'disp_name' )    unless $disp_name;
         push( @missing_param, 'content' )      unless $content;
-
+        my $sql;
         die 'parameter ' . join( ',', @missing_param ) . " are missing\n"
           if ( @missing_param > 0 );
 
@@ -247,23 +249,32 @@ sub post_article {
 
         die "no write permission" if ( !$moderator && $level < $wpl );
 
-        my $sql        = "select max_id from newsgroup where id=? for update";
-        my ($max_id)   = $db->select_ra( $sql, $newsgroup_id );
-        my $article_id = $max_id + 1;
+        unless ($article_id) {
+            $sql = "select max_id from newsgroup where id=? for update";
+            my ($max_id) = $db->select_ra( $sql, $newsgroup_id );
+            $article_id = $max_id + 1;
+            $rev        = 0;
+        }
         $sql = "update newsgroup set max_id=?,posted_at=now() where id=?";
         $db->execute( $sql, $article_id, $newsgroup_id );
 
         $sql = "insert into article";
-        $sql .= "(newsgroup_id,id,title,reply_to,reply_rev,";
+        $sql .= "(newsgroup_id,id,rev,title,reply_to,reply_rev,";
         $sql .= "user_id,disp_name,ip,content)";
-        $sql .= "values(?,?,?,?,?,?,?,?,?)";
+        $sql .= "values(?,?,?,?,?,?,?,?,?,?)";
         $db->execute(
-            $sql,      $newsgroup_id, $article_id, $title,
-            $reply_to, $reply_rev,    $user_id,    $disp_name,
-            $ip,       $content
+            $sql,       $newsgroup_id, $article_id, $rev,
+            $title,     $reply_to,     $reply_rev,  $user_id,
+            $disp_name, $ip,           $content
         );
         $db->commit;
-        $self->render( json => { result => 'ok', article_id => $article_id } );
+        $self->render(
+            json => {
+                result     => 'ok',
+                article_id => $article_id,
+                rev        => $rev
+            }
+        );
     };
     $self->render( text => $@, status => '400' ) if $@;
 }
@@ -278,14 +289,15 @@ sub attachment($self) {
     my $newsgroup_id = $self->param('newsgroup_id');
     my $article_id   = $self->param('article_id');
     my $rev          = $self->param('rev') || 0;
-    my $cmt_json     = $self->param('comments') || '';
+    my $attach_json  = $self->param('attach');
     my $files        = $self->req->every_upload('file');
 
     eval {
         die "no newsgroup_id\n" unless $newsgroup_id;
         die "no article_id\n"   unless $article_id;
-        my $comment = $cmt_json ? from_json($cmt_json) : undef;
-        my $db      = NnsBbs::Db::new($self);
+        die "no attach\n"       unless $attach_json;
+        my $attach = from_json($attach_json);
+        my $db     = NnsBbs::Db::new($self);
         my ( $level, $moderator, $admin, $user_id ) =
           access_level( $self, $db );
         my ($wpl) = $db->select_ra( "select wpl from newsgroup where id=?",
@@ -294,6 +306,7 @@ sub attachment($self) {
 
         my ( $id, $sql );
         my $ord = 0;
+
         for my $file (@$files) {
             while (1) {
                 $id  = random_id(12);
@@ -307,14 +320,25 @@ sub attachment($self) {
             $db->execute( $sql, $id, $file->filename,
                 $file->headers->content_type,
                 $user_id, $file->slurp );
-            my $cmt = "";
-            $cmt = $comment->[$ord] if ($comment);
+            my $j;
+            for ( $j = 0 ; $j < @$attach ; $j++ ) {
+                last unless ( $attach->[$j][1] );
+            }
+            if ( $j < @$attach ) {
+                $attach->[$j][1] = $id;
+            }
+            else {
+                die "no space in attach\n";
+            }
+        }
+        for ( my $i = 0 ; $i < @$attach ; $i++ ) {
+            my ( $comment, $file_id ) = @{$attach->[$i]};
 
             $sql = "insert into attachment";
             $sql .= "(newsgroup_id,article_id,rev,file_id,ord,comment)";
             $sql .= "values(?,?,?,?,?,?)";
-            $db->execute( $sql, $newsgroup_id, $article_id, $rev, $id, $ord++,
-                $cmt );
+            $db->execute( $sql, $newsgroup_id, $article_id, $rev, $file_id, $i,
+                $comment );
         }
         $db->commit;
         $self->render( json => { result => 'ok' } );
