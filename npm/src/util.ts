@@ -67,3 +67,17 @@ export function nullstr(s: string | undefined | null): string {
   if (s) return s;
   else return '';
 }
+
+export function make_rev_id(article_id: string, rev: number): string {
+  if (typeof (rev) != 'number') 
+    throw new Error('rev is not number!');
+  return rev == 0 ? article_id : article_id + '.' + rev;
+}
+
+export function split_rev_id(rev_id: string): { article_id: string, rev: number } {
+  let m = rev_id.match(/^(\d+)\.(\d+)$/);
+  if (m) return { article_id: m[1], rev: parseInt(m[2]) };
+  m = rev_id.match(/^\d+$/);
+  if (m) return { article_id: rev_id, rev: 0 };
+  throw new Error('bad format rev_id:' + rev_id);
+}

@@ -1,9 +1,8 @@
-import { get_json, escape_html } from "./util";
+import { escape_html, make_rev_id, split_rev_id } from "./util";
 import { div, button, span, icon } from "./tag";
-import { ToolBar } from "./toolbar";
 import { ToolbarPane } from "./pane";
 import { ReadSet } from "./readSet";
-import { INewsGroup, ISubsInfo } from "./newsgroup";
+import { INewsGroup } from "./newsgroup";
 import NnsBbs from "./nnsbbs";
 import { api_titles, ITitle } from "./dbif";
 
@@ -14,8 +13,9 @@ export class TitlesPane extends ToolbarPane {
   private titles: ITitle[] = [];
   private threads: ITitle[] | undefined;
   public newsgroup: INewsGroup | undefined;
-  public cur_article_id: string | undefined;
-  public cur_article_rev: number | undefined;
+  // public cur_article_id: string | undefined;
+  // public cur_article_rev: number | undefined;
+  public cur_rev_id: string | undefined;
   private bDispTherad: boolean = true;
   private clickCb: ((newsgroup_id: string, article_id: string) => void) | undefined;
   private id_lg: string;
@@ -41,15 +41,13 @@ export class TitlesPane extends ToolbarPane {
 
   async load(newsgroup: INewsGroup, from: number, to: number) {
     let data = await api_titles(newsgroup.n.id, from, to);
-    console.log('data:', data);
     this.loaded_titles.clear().add_range(from, to);
     this.id2title = {}
     this.titles = [];
     this.threads = [];
     for (let d of data) {
-      let id = d.article_id;
-      if (d.rev > 0) id += '#' + d.rev;
-      this.id2title[id] = d;
+      let rev_id = make_rev_id(d.article_id, d.rev);
+      this.id2title[rev_id] = d;
       this.titles.push(d);
       let parent = this.id2title[d.reply_to];
       if (parent) {
@@ -60,8 +58,7 @@ export class TitlesPane extends ToolbarPane {
       }
     }
     this.newsgroup = newsgroup;
-    this.cur_article_id = undefined;
-    this.cur_article_rev = undefined;
+    this.cur_rev_id = undefined;
     this.redisplay(true);    // reset scroll
   }
 
@@ -144,13 +141,14 @@ export class TitlesPane extends ToolbarPane {
   }
 
   title_html(d: ITitle, rule: string = '') {
-    let opt = { article_id: d.article_id, rev: d.rev };
+    let rev_id = make_rev_id(d.article_id, d.rev);
+    let opt = { rev_id };
     let c: string[] = ['title-contextmenu'];
     let si = this.newsgroup?.subsInfo;
     if (si && si.read.includes(Number(d.article_id)))
       c.push('read');
-    if (this.cur_article_id == d.article_id && this.cur_article_rev == d.rev)
-    c.push('active');
+    if (this.cur_rev_id == rev_id)
+      c.push('active');
     if (c.length > 0) opt['class'] = c.join(' ');
     let reactions = '';
     let reaction_type = this.parent.reaction_type;
@@ -161,7 +159,7 @@ export class TitlesPane extends ToolbarPane {
       }
     }
     let s = button(opt,
-      div({ class: 'article-id' }, d.rev == 0 ? d.article_id : d.article_id + '#' + d.rev),
+      div({ class: 'article-id' }, make_rev_id(d.article_id, d.rev)),
       div({ class: 'article-from', title: d.disp_name, user_id: d.user_id }, escape_html(d.disp_name)),
       div({ class: 'article-time' }, d.date),
       div({ class: 'article-rule' }, rule),
@@ -176,11 +174,10 @@ export class TitlesPane extends ToolbarPane {
     super.bind();
     $(`#${this.id_lg} >button`).on('click', ev => {
       let target = ev.currentTarget;
-      let article_id: string = target.attributes['article_id'].value;
-      let rev = target.attributes['rev'].value as number;
-      this.select_article(article_id, rev);
+      let rev_id: string = target.attributes['rev_id'].value;
+      this.select_article(rev_id);
       if (this.newsgroup && this.clickCb) {
-        this.clickCb(this.newsgroup.n.id, article_id);
+        this.clickCb(this.newsgroup.n.id, rev_id);
       }
     });
     $(`#${this.id} .more-titles button`).on('click', async e => {
@@ -202,21 +199,21 @@ export class TitlesPane extends ToolbarPane {
     });
   }
 
-  async select_article(id: string, rev: number) {
+  async select_article(rev_id: string) {
     const scroller = `#${this.id} .titles`;
     const scrollee = scroller + ' >div';
-    const line = scrollee + ` >button[article_id=${id}]`;
+    const line = scrollee + ` >button[rev_id="${rev_id}"]`;
 
     if ($(line).length == 0 && this.newsgroup) {
       console.log('load titles');
-      let id_num = parseInt(id);
+      let r = split_rev_id(rev_id);
+      let id_num = parseInt(r.article_id);
       await this.load(this.newsgroup, Math.max(1, id_num - 50), Math.min(id_num + 50, this.newsgroup.n.max_id))
     }
 
     $(scrollee + ' >button').removeClass('active');
     $(line).addClass('active');
-    this.cur_article_id = id;
-    this.cur_article_rev = rev;
+    this.cur_rev_id = rev_id;
     let y = $(line).position().top;
     let sy = $(scroller).scrollTop() || 0;
     let sh = $(scroller).height() || 0;
@@ -262,8 +259,8 @@ export class TitlesPane extends ToolbarPane {
 
   scrollToPrevUnread(bFromBottom: boolean = false): boolean {
     let cur: HTMLElement;
-    if (this.cur_article_id && !bFromBottom) {
-      cur = $(`#${this.id} .nb-list-group button[article_id=${this.cur_article_id}]`)[0];
+    if (this.cur_rev_id && !bFromBottom) {
+      cur = $(`#${this.id} .nb-list-group button[rev_id="${this.cur_rev_id}"]`)[0];
       cur = cur.previousSibling as HTMLElement;
     } else {
       let n = $(`#${this.id} .nb-list-group >button`);
@@ -277,9 +274,8 @@ export class TitlesPane extends ToolbarPane {
       cur = cur.previousSibling as HTMLElement;
 
     if (cur && cur.tagName == 'BUTTON') {
-      let id = cur.attributes['article_id'].value;
-      let rev = cur.attributes['rev'].value;
-      this.select_article(id, rev);
+      let rev_id = cur.attributes['rev_id'].value;
+      this.select_article(rev_id);
       return true;
     } else {
       return false;
@@ -288,8 +284,8 @@ export class TitlesPane extends ToolbarPane {
 
   scrollToNextUnread(bFromTop: boolean = false): boolean {
     let cur: HTMLElement;
-    if (this.cur_article_id && !bFromTop) {
-      cur = $(`#${this.id} .nb-list-group button[article_id=${this.cur_article_id}]`)[0];
+    if (this.cur_rev_id && !bFromTop) {
+      cur = $(`#${this.id} .nb-list-group button[rev_id="${this.cur_rev_id}"]`)[0];
       cur = cur.nextElementSibling as HTMLElement;
     } else {
       let n = $(`#${this.id} .nb-list-group >button`);
@@ -301,9 +297,8 @@ export class TitlesPane extends ToolbarPane {
       cur = cur.nextElementSibling as HTMLElement;
 
     if (cur && cur.tagName == 'BUTTON') {
-      let id = cur.attributes['article_id'].value;
-      let rev = cur.attributes['rev'].value;
-      this.select_article(id, rev);
+      let rev_id = cur.attributes['rev_id'].value;
+      this.select_article(rev_id);
       return true;
     } else {
       return false;

@@ -1,4 +1,4 @@
-import { get_json } from "./util";
+import { get_json, make_rev_id, split_rev_id } from "./util";
 import { TopBar } from "./topbar";
 import { NewsGroupsPane, INewsGroup } from "./newsgroup";
 import { TitlesPane } from './titles';
@@ -115,8 +115,8 @@ export default class NnsBbs {
         let t = this.titles_pane;
         let a = this.article_pane;
         t.scrollToNextUnread() || t.scrollToNextUnread(true);   // search from Top
-        if (!a.bClosed && t.newsgroup && t.cur_article_id)
-          this.select_article(t.newsgroup.n.id, t.cur_article_id);
+        if (!a.bClosed && t.newsgroup && t.cur_rev_id)
+          this.select_article(t.newsgroup.n.id, t.cur_rev_id);
       }
     })).add_menu(new Menu({
       icon: 'chevron-bar-up',
@@ -125,8 +125,8 @@ export default class NnsBbs {
         let t = this.titles_pane;
         let a = this.article_pane;
         t.scrollToPrevUnread() || t.scrollToPrevUnread(true);  // search from Botttom
-        if (!a.bClosed && t.newsgroup && t.cur_article_id)
-          this.select_article(t.newsgroup.n.id, t.cur_article_id);
+        if (!a.bClosed && t.newsgroup && t.cur_rev_id)
+          this.select_article(t.newsgroup.n.id, t.cur_rev_id);
       }
     })).add_menu(new Menu({
       icon: 'chat-square-text-fill',
@@ -328,7 +328,7 @@ export default class NnsBbs {
 
   // Called from the built-in script of topPage
   // Read and display a list of newsgroups
-  async top_page(newsgroup: string = '', article_id: string = '', rev: string = '') {
+  async top_page(newsgroup: string = '', rev_id: string = '') {
     this.reaction_type = (await api_reaction_type()).data;
     let data = await api_newsgroup();
     this.ng_pane.setNewsgroups(data);
@@ -341,11 +341,10 @@ export default class NnsBbs {
       this.article_pane.close();
     } else {
       await this.select_newsgroup(newsgroup);
-      if (article_id == "") {
+      if (rev_id == "") {
         this.article_pane.close();
       } else {
-        let r = parseInt(rev);
-        this.select_article(this.cur_newsgroup_id, article_id, r);
+        this.select_article(this.cur_newsgroup_id, rev_id);
       }
     }
     this.redisplay();
@@ -377,22 +376,23 @@ export default class NnsBbs {
     this.cur_newsgroup_id = newsgroup.n.id;
   }
 
-  async select_article(newsgroup_id: string, article_id: string, rev: number = 0) {
-    await this.article_pane.open(newsgroup_id, article_id, rev);
-    this.titles_pane.select_article(article_id, rev);
+  async select_article(newsgroup_id: string, rev_id: string) {
+    await this.article_pane.open(newsgroup_id, rev_id);
+    this.titles_pane.select_article(rev_id);
     this.article_pane.show();
 
     if (this.titles_pane.newsgroup) {
       let subsInfo = this.titles_pane.newsgroup.subsInfo;
       if (!subsInfo)
         subsInfo = this.titles_pane.newsgroup.subsInfo = { subscribe: false, read: new ReadSet(), update: false };
-      subsInfo.read.add_range(Number(article_id));                 // make article read
+      let r = split_rev_id(rev_id);
+      subsInfo.read.add_range(Number(r.article_id));                 // make article read
       this.ng_pane.saveSubsInfo();
     }
     this.redisplay();
 
-    window.history.pushState(null, '', `/bbs/${this.cur_newsgroup}/${article_id}`);
-    document.title = `nnsbbs/bss/${this.cur_newsgroup}/${article_id}`
+    window.history.pushState(null, '', `/bbs/${this.cur_newsgroup}/${rev_id}`);
+    document.title = `nnsbbs/bss/${this.cur_newsgroup}/${rev_id}`
   }
 
   next_article() {
@@ -401,8 +401,8 @@ export default class NnsBbs {
       this.ng_pane.scrollToNextSubscribedNewsgroup();
       t.scrollToNextUnread();
     }
-    if (t.cur_article_id && t.newsgroup)
-      this.select_article(t.newsgroup.n.id, t.cur_article_id);
+    if (t.cur_rev_id && t.newsgroup)
+      this.select_article(t.newsgroup.n.id, t.cur_rev_id);
   }
 
   redisplay() {

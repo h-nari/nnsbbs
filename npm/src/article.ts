@@ -1,4 +1,4 @@
-import { get_json, escape_html, size_str } from "./util";
+import { get_json, escape_html, size_str, split_rev_id } from "./util";
 import { div, button, span, img, tag } from "./tag";
 import { ToolBar } from "./toolbar";
 import { ToolbarPane } from "./pane";
@@ -92,8 +92,8 @@ export class ArticlePane extends ToolbarPane {
     this.bind();
   }
 
-  async open(newsgroup_id: string, article_id: string, rev: number) {
-    let data = await api_article(newsgroup_id, article_id, rev);
+  async open(newsgroup_id: string, rev_id: string) {
+    let data = await api_article(newsgroup_id, rev_id);
     let c = data.content;
     let i = c.indexOf('\n\n');
     if (i >= 0) {
@@ -104,7 +104,7 @@ export class ArticlePane extends ToolbarPane {
     }
     this.article = data;
     this.toolbar.title =
-      span({ class: 'id' }, '[' + article_id + ']') +
+      span({ class: 'id' }, '[' + rev_id + ']') +
       span({ class: 'author' }, escape_html(data.author)) +
       span({ class: 'date' }, data.date) +
       span({ class: 'title' }, escape_html(data.title));

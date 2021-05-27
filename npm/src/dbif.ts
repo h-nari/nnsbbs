@@ -1,5 +1,5 @@
 import { option, select, selected } from "./tag"
-import { get_json } from "./util";
+import { get_json, split_rev_id } from "./util";
 import { ReadSet } from "./readSet";
 
 
@@ -76,9 +76,10 @@ export interface IAttachment {
   size: number;
 };
 
-export function api_article(newsgroup_id: string, article_id: string, rev: number) {
+export function api_article(newsgroup_id: string, rev_id: string) {
+  let r = split_rev_id(rev_id);
   return get_json('/api/article',
-    { data: { newsgroup_id, article_id, rev } }) as Promise<IArticle>;
+    { data: { newsgroup_id, article_id: r.article_id, rev: r.rev } }) as Promise<IArticle>;
 }
 
 //

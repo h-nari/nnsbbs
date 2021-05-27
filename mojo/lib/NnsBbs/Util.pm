@@ -43,5 +43,4 @@ sub random_id {
     my $length = shift || 12;
     return String::Random->new->randregex("[A-Za-z0-9]{$length}");
 }
-
 1;
