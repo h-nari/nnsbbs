@@ -249,13 +249,16 @@ export class User {
           action: async () => {
             let user_id = this.user?.id || '';
             let newsgroup_id = n.n.id;
-            let reply_to = a ? a.article_id : '';
+            let reply_to = '';
             let title = $('#post-title').val() as string;
             let disp_name = $('#post-name').val() as string;
             let content = $('#post-content').val() as string;
             if (title == '') return error_dlg('title-is-blank');
             if (disp_name == '') return error_dlg('name-is-blank');
             if (content == '') return error_dlg('content-is-blank');
+
+            if (a) 
+              reply_to = correctArticle ? a.reply_to : a.article_id;
 
             content = 'content-type: text/plain\n\n' + content;
 

@@ -52,7 +52,7 @@ sub titles($self) {
             $sql .= "and id <= ?";
             push @params, $to;
         }
-        $sql .= " order by id";
+        $sql .= " order by id,rev";
         my $data = $db->select_ah( $sql, @params );
 
         $sql = "select article_id,a.rev as rev,count(*) as count,type_id";
@@ -103,7 +103,7 @@ sub article($self) {
           if ( ( !defined($rpl) || $rpl > $level ) && !$moderator );
 
         my $sql = "select content,created_at as date,disp_name as author";
-        $sql .= ",title,rev,id as article_id,user_id";
+        $sql .= ",title,rev,id as article_id,user_id,reply_to";
         $sql .= " from article";
         $sql .= " where newsgroup_id = ? and id = ? and rev=?";
         $sql .= " order by rev desc limit 1";

@@ -10,10 +10,12 @@ import { api_titles, ITitle } from "./dbif";
 
 
 export class TitlesPane extends ToolbarPane {
+  private id2title: { [key: string]: ITitle } = {};
   private titles: ITitle[] = [];
   private threads: ITitle[] | undefined;
   public newsgroup: INewsGroup | undefined;
   public cur_article_id: string | undefined;
+  public cur_article_rev: number | undefined;
   private bDispTherad: boolean = true;
   private clickCb: ((newsgroup_id: string, article_id: string) => void) | undefined;
   private id_lg: string;
@@ -38,15 +40,18 @@ export class TitlesPane extends ToolbarPane {
   }
 
   async load(newsgroup: INewsGroup, from: number, to: number) {
-    // let data = await get_json('/api/titles', { data: { newsgroup_id: newsgroup.n.id, from, to } });
     let data = await api_titles(newsgroup.n.id, from, to);
+    console.log('data:', data);
     this.loaded_titles.clear().add_range(from, to);
+    this.id2title = {}
     this.titles = [];
     this.threads = [];
     for (let d of data) {
       let id = d.article_id;
-      this.titles[id] = d;
-      let parent = this.titles[d.reply_to];
+      if (d.rev > 0) id += '#' + d.rev;
+      this.id2title[id] = d;
+      this.titles.push(d);
+      let parent = this.id2title[d.reply_to];
       if (parent) {
         if (!parent.children) parent.children = [];
         parent.children.push(d);
@@ -56,6 +61,7 @@ export class TitlesPane extends ToolbarPane {
     }
     this.newsgroup = newsgroup;
     this.cur_article_id = undefined;
+    this.cur_article_rev = undefined;
     this.redisplay(true);    // reset scroll
   }
 
@@ -143,8 +149,8 @@ export class TitlesPane extends ToolbarPane {
     let si = this.newsgroup?.subsInfo;
     if (si && si.read.includes(Number(d.article_id)))
       c.push('read');
-    if (this.cur_article_id == d.article_id)
-      c.push('active');
+    if (this.cur_article_id == d.article_id && this.cur_article_rev == d.rev)
+    c.push('active');
     if (c.length > 0) opt['class'] = c.join(' ');
     let reactions = '';
     let reaction_type = this.parent.reaction_type;
@@ -155,7 +161,7 @@ export class TitlesPane extends ToolbarPane {
       }
     }
     let s = button(opt,
-      div({ class: 'article-id' }, String(d.article_id)),
+      div({ class: 'article-id' }, d.rev == 0 ? d.article_id : d.article_id + '#' + d.rev),
       div({ class: 'article-from', title: d.disp_name, user_id: d.user_id }, escape_html(d.disp_name)),
       div({ class: 'article-time' }, d.date),
       div({ class: 'article-rule' }, rule),
@@ -200,7 +206,7 @@ export class TitlesPane extends ToolbarPane {
     const scroller = `#${this.id} .titles`;
     const scrollee = scroller + ' >div';
     const line = scrollee + ` >button[article_id=${id}]`;
-    // TODO: revにも対応させる
+
     if ($(line).length == 0 && this.newsgroup) {
       console.log('load titles');
       let id_num = parseInt(id);
@@ -210,6 +216,7 @@ export class TitlesPane extends ToolbarPane {
     $(scrollee + ' >button').removeClass('active');
     $(line).addClass('active');
     this.cur_article_id = id;
+    this.cur_article_rev = rev;
     let y = $(line).position().top;
     let sy = $(scroller).scrollTop() || 0;
     let sh = $(scroller).height() || 0;

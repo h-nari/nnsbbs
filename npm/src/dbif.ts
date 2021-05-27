@@ -64,6 +64,7 @@ export interface IArticle {
   title: string;
   article_id: string;
   rev: number;
+  reply_to: string;
   attachment: IAttachment[];
 }
 
