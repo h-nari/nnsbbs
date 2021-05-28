@@ -54,7 +54,6 @@ export class User {
               sha.update(password);
               let pwd = sha.digest('hex');
               api_login(email, pwd).then(data => {
-                console.log('data:', data);
                 if (!data.login) {
                   $.alert(this.parent.i18next.t('login-failed'));
                   this.user = null;
@@ -159,11 +158,15 @@ export class User {
       form_input('p-email', 'Email', { help: i18next.t('mail-used-to-register'), value: d.mail, readonly: null }),
       form_input('p-name', i18next.t('disp-name'), { help: i18next.t('displayed-as-username'), value: d.disp_name }),
       form_membership('p-membership', i18next.t('membership'), i18next.t('select-your-membership'), d.membership_id, this.membership),
-      form_profile_textarea('p-profile', i18next.t('profile'),
+      form_textarea('p-profile', i18next.t('profile'),
         {
           help: i18next.t('fill-in-your-self-introduction'),
-          value: d.profile, rows: 10
-        })
+          value: d.profile, rows: 6
+        }),
+      form_textarea('p-signature', i18next.t('signature'), {
+        help: i18next.t('signature-insert-into-article'),
+        value: d.signature, rows: 3
+      })
     );
     $.confirm({
       title: 'User Profile',
@@ -181,12 +184,15 @@ export class User {
               api_profile_write({ user_id, disp_name }).then(() => {
                 this.parent.topBar.check_login_status();
               });
-            let profile = $('#p-profile').val() as string;
-            if (profile != d.profile)
-              api_profile_write({ user_id, profile });
             let membership_id = $('#p-membership').val() as string;
             if (membership_id != d.membership_id)
               api_profile_write({ user_id, membership_id });
+            let profile = $('#p-profile').val() as string;
+            if (profile != d.profile)
+              api_profile_write({ user_id, profile });
+            let signature = $('#p-signature').val() as string;
+            if (signature != d.signature)
+              api_profile_write({ user_id, signature });
           }
         },
         close: {
@@ -224,12 +230,14 @@ export class User {
       if (correctArticle) {
         title = a.title;
         content = a.content;
-        console.log('a.attachment:', a.attachment);
         a.attachment.forEach(a => attachment_list.push(new Attachment(a)));
       } else {
         if (a.title.match(/^Re:/)) title = a.title;
         else title = 'Re:' + a.title;
+        content = this.user.signature;
       }
+    } else {
+      content = this.user.signature;
     }
 
 
@@ -280,11 +288,9 @@ export class User {
               fd.append('article_id', r.article_id);
               fd.append('rev', String(r.rev));
               let attach = attachment_list.map(a => a.data());
-              console.log('attach:', attach);
               fd.append('attach', JSON.stringify(attach));
               let r2 = await api_attachment(fd);
             }
-
             this.parent.top_page(n.n.name, r.article_id);
 
           }
@@ -306,6 +312,8 @@ export class User {
           });
         });
         redisplay_func();
+        let ta = $('#post-content')[0] as HTMLTextAreaElement;
+        ta.setSelectionRange(0, 0);
       }
     });
   }
@@ -426,7 +434,7 @@ function form_input(id: string, label_str: string, opt: IFormGroupOpt) {
     div({ class: 'form-group col-md-9' }, input_part, help));
 }
 
-function form_profile_textarea(id: string, label_str: string, opt: IFormGroupOpt) {
+function form_textarea(id: string, label_str: string, opt: IFormGroupOpt) {
   let input_part: string;
   input_part = tag('textarea', {
     id, rows: opt.rows, readonly: opt.readonly,
@@ -484,14 +492,15 @@ function form_membership(id: string, label_str: string, help_str: string, value:
 
 function quote_article(id: string, n: INewsGroup, a: IArticle) {
   let c = $('#' + id).val();
-  let qs = 'In article ' + n.n.name + '/' + make_rev_id(a.article_id,a.rev) + '\n';
+  let qs = 'In article ' + n.n.name + '/' + make_rev_id(a.article_id, a.rev) + '\n';
   qs += a.author + ' writes:'
   qs += '\n';
 
   for (let line of a.content.trim().split('\n'))
     qs += '> ' + line + '\n';
 
-  $('#' + id).val(c + '\n' + qs);
+  let ta = $('#' + id)[0] as HTMLTextAreaElement;
+  ta.setRangeText(qs);
 }
 
 function error_dlg(msg: string): false {

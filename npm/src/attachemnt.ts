@@ -43,7 +43,6 @@ export class Attachment {
     });
     $(`#${this.id} input.comment`).on('change', e => {
       this.comment = $(e.currentTarget).val() as string;
-      console.log('comment change:', this.comment);
     });
   }
 

@@ -218,7 +218,6 @@ export class TitlesPane extends ToolbarPane {
     const line = scrollee + ` >div[rev_id="${rev_id}"]`;
 
     if ($(line).length == 0 && this.newsgroup) {
-      console.log('load titles');
       let r = split_rev_id(rev_id);
       let id_num = parseInt(r.article_id);
       await this.load(this.newsgroup, Math.max(1, id_num - 50), Math.min(id_num + 50, this.newsgroup.n.max_id))

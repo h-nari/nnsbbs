@@ -130,7 +130,6 @@ export class NewsgroupAdmin {
     });
 
     $(`#${this.id} .btn-permission`).on('click', e => {
-      console.log('permission dialog');
       if (this.curNode)
         this.permission_dlg();
     });

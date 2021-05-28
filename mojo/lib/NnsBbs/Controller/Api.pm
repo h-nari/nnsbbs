@@ -210,7 +210,7 @@ sub profile_write {
         $db->execute( $sql, $profile, $user_id ) if $profile;
         $sql = "update user set membership_id=? where id=?";
         $db->execute( $sql, $membership_id, $user_id ) if $membership_id;
-        $sql = "update user set signature? where id=?";
+        $sql = "update user set signature=? where id=?";
         $db->execute( $sql, $signature, $user_id ) if $signature;
         $db->commit;
         $self->render( json => { result => 'ok' } );
@@ -254,7 +254,7 @@ sub post_article {
             my ($max_id) = $db->select_ra( $sql, $newsgroup_id );
             $article_id = $max_id + 1;
             $rev        = 0;
-            
+
             $sql = "update newsgroup set max_id=?,posted_at=now() where id=?";
             $db->execute( $sql, $article_id, $newsgroup_id );
         }
@@ -272,7 +272,7 @@ sub post_article {
         $self->render(
             json => {
                 result     => 'ok',
-                article_id => $article_id,
+                article_id => $article_id . "",
                 rev        => $rev
             }
         );

@@ -19,7 +19,6 @@ export class UserInfo {
 
   setUserId(user_id: string) {
     this.user_id = user_id;
-    console.log('user_id:', user_id);
   }
 
   html(): string {

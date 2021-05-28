@@ -82,7 +82,7 @@ export const jp = {
     'newsgroup-manager': 'ニュースグループ管理',
     'User Registration': 'ユーザ登録',
     'email-used-to-register': '登録に使用したメールアドレス',
-    'displayed-as-username': 'ユーザ名として表示されます',
+    'displayed-as-username': 'ユーザ名として表示されます。変更可能',
     'disp-name': '表示名',
     'select-your-membership': '党員資格を選択して下さい',
     'profile': 'プロファイル',
@@ -161,7 +161,10 @@ export const jp = {
     'type-filter': '種別フィルター',
     'there-is-no-data-to-display': '表示するデータはありません',
     'setting': '設定',
-    'theme':'テーマ',
-    'correct-article':'記事訂正'
+    'theme': 'テーマ',
+    'correct-article': '記事訂正',
+    'mail-used-to-register': 'ユーザー登録に使用したメールアドレス',
+    'signature': '署名',
+    'signature-insert-into-article': '記事の最後に挿入される署名'
   }
 };
