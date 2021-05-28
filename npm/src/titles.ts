@@ -83,7 +83,7 @@ export class TitlesPane extends ToolbarPane {
     let s = "";
     if (this.bDispTherad && this.threads) {
       for (let t of this.threads) {
-        s += this.thread_html(t, '');
+        s += this.thread_html(t, ' ',' ');
       }
     } else {
       for (let id in this.titles) {
@@ -96,7 +96,7 @@ export class TitlesPane extends ToolbarPane {
     if (this.newsgroup && !this.loaded_titles.includes(this.newsgroup.n.max_id))
       s += this.more_titles('forward');
     this.set_title();
-    return this.toolbar.html() + div({ class: 'titles' }, div({ id: this.id_lg, class: 'nb-list-group' }, s));
+    return this.toolbar.html() + div({ class: 'titles' }, div({ id: this.id_lg, class: 'title-list' }, s));
   }
 
   more_titles(dir: 'forward' | 'backward'): string {
@@ -171,11 +171,11 @@ export class TitlesPane extends ToolbarPane {
         reactions += div({ class: 'reaction ' + r.name, 'title-i18n': r.name }, icon(r.icon, 'icon') + d.reaction[t]);
       }
     }
-    let s = button(opt,
+    let s = div(opt,
+      div({ class: 'article-rule' }, rule),
       div({ class: 'article-id' }, make_rev_id(d.article_id, d.rev)),
       div({ class: 'article-from', title: d.disp_name, user_id: d.user_id }, escape_html(d.disp_name)),
       div({ class: 'article-time' }, d.date),
-      div({ class: 'article-rule' }, rule),
       div({ class: 'article-title' }, escape_html(d.title)),
       reactions
     );
@@ -185,7 +185,7 @@ export class TitlesPane extends ToolbarPane {
 
   bind() {
     super.bind();
-    $(`#${this.id_lg} >button`).on('click', ev => {
+    $(`#${this.id_lg} >div`).on('click', ev => {
       let target = ev.currentTarget;
       let rev_id: string = target.attributes['rev_id'].value;
       this.select_article(rev_id);
@@ -204,7 +204,7 @@ export class TitlesPane extends ToolbarPane {
         this.parent.redisplay();
       }
     })
-    $(`#${this.id_lg} >button .article-from`).on('click', e => {
+    $(`#${this.id_lg} >div .article-from`).on('click', e => {
       let user_id = e.currentTarget.attributes['user_id'].value;
       this.parent.user.show_profile(user_id);
       e.preventDefault();
@@ -215,7 +215,7 @@ export class TitlesPane extends ToolbarPane {
   async select_article(rev_id: string) {
     const scroller = `#${this.id} .titles`;
     const scrollee = scroller + ' >div';
-    const line = scrollee + ` >button[rev_id="${rev_id}"]`;
+    const line = scrollee + ` >div[rev_id="${rev_id}"]`;
 
     if ($(line).length == 0 && this.newsgroup) {
       console.log('load titles');
@@ -224,7 +224,7 @@ export class TitlesPane extends ToolbarPane {
       await this.load(this.newsgroup, Math.max(1, id_num - 50), Math.min(id_num + 50, this.newsgroup.n.max_id))
     }
 
-    $(scrollee + ' >button').removeClass('active');
+    $(scrollee + ' >div').removeClass('active');
     $(line).addClass('active');
     this.cur_rev_id = rev_id;
     let y = $(line).position().top;
@@ -273,10 +273,10 @@ export class TitlesPane extends ToolbarPane {
   scrollToPrevUnread(bFromBottom: boolean = false): boolean {
     let cur: HTMLElement;
     if (this.cur_rev_id && !bFromBottom) {
-      cur = $(`#${this.id} .nb-list-group button[rev_id="${this.cur_rev_id}"]`)[0];
+      cur = $(`#${this.id} .title-list button[rev_id="${this.cur_rev_id}"]`)[0];
       cur = cur.previousSibling as HTMLElement;
     } else {
-      let n = $(`#${this.id} .nb-list-group >button`);
+      let n = $(`#${this.id} .title-list >div`);
       if (n.length > 0)
         cur = n[n.length - 1];
       else {
@@ -298,10 +298,10 @@ export class TitlesPane extends ToolbarPane {
   scrollToNextUnread(bFromTop: boolean = false): boolean {
     let cur: HTMLElement;
     if (this.cur_rev_id && !bFromTop) {
-      cur = $(`#${this.id} .nb-list-group button[rev_id="${this.cur_rev_id}"]`)[0];
+      cur = $(`#${this.id} .title-list button[rev_id="${this.cur_rev_id}"]`)[0];
       cur = cur.nextElementSibling as HTMLElement;
     } else {
-      let n = $(`#${this.id} .nb-list-group >button`);
+      let n = $(`#${this.id} .title-list >div`);
       if (n.length == 0)
         return false;
       cur = n[0];
