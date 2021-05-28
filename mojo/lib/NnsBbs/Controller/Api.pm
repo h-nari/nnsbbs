@@ -37,7 +37,7 @@ sub titles($self) {
             $newsgroup_id );
         die "no read permission.\n"
           if ( ( !defined($rpl) || $rpl > $level ) && !$moderator );
-        my $sql = "select id as article_id ,rev,title,reply_to";
+        my $sql = "select id as article_id ,rev,title,reply_to,reply_rev";
         $sql .= ",created_at as date,user_id,disp_name";
         $sql .= " from article";
         $sql .= " where newsgroup_id = ?";
@@ -103,7 +103,7 @@ sub article($self) {
           if ( ( !defined($rpl) || $rpl > $level ) && !$moderator );
 
         my $sql = "select content,created_at as date,disp_name as author";
-        $sql .= ",title,rev,id as article_id,user_id,reply_to";
+        $sql .= ",title,rev,id as article_id,user_id,reply_to,reply_rev";
         $sql .= " from article";
         $sql .= " where newsgroup_id = ? and id = ? and rev=?";
         $sql .= " order by rev desc limit 1";
@@ -254,9 +254,10 @@ sub post_article {
             my ($max_id) = $db->select_ra( $sql, $newsgroup_id );
             $article_id = $max_id + 1;
             $rev        = 0;
+            
+            $sql = "update newsgroup set max_id=?,posted_at=now() where id=?";
+            $db->execute( $sql, $article_id, $newsgroup_id );
         }
-        $sql = "update newsgroup set max_id=?,posted_at=now() where id=?";
-        $db->execute( $sql, $article_id, $newsgroup_id );
 
         $sql = "insert into article";
         $sql .= "(newsgroup_id,id,rev,title,reply_to,reply_rev,";
@@ -332,7 +333,7 @@ sub attachment($self) {
             }
         }
         for ( my $i = 0 ; $i < @$attach ; $i++ ) {
-            my ( $comment, $file_id ) = @{$attach->[$i]};
+            my ( $comment, $file_id ) = @{ $attach->[$i] };
 
             $sql = "insert into attachment";
             $sql .= "(newsgroup_id,article_id,rev,file_id,ord,comment)";

@@ -49,7 +49,16 @@ export class TitlesPane extends ToolbarPane {
       let rev_id = make_rev_id(d.article_id, d.rev);
       this.id2title[rev_id] = d;
       this.titles.push(d);
-      let parent = this.id2title[d.reply_to];
+      if (d.rev > 0) {
+        let rev0_id = make_rev_id(d.article_id, d.rev - 1);
+        let rev0 = this.id2title[rev0_id];
+        if (rev0) {
+          rev0.revised = d;
+          continue;
+        }
+      }
+      let reply_rev_id = make_rev_id(d.reply_to, d.reply_rev);
+      let parent = this.id2title[reply_rev_id];
       if (parent) {
         if (!parent.children) parent.children = [];
         parent.children.push(d);
@@ -129,18 +138,22 @@ export class TitlesPane extends ToolbarPane {
   }
 
   thread_html(t: ITitle, rule1: string = '', rule2: string = '') {
+    if (t.revised && (!t.children || t.children.length == 0))
+      return this.thread_html(t.revised, rule1, rule2);
     let s = this.title_html(t, rule1);
     if (t.children) {
       for (let i = 0; i < t.children.length; i++) {
-        let r1 = rule2 + (i < t.children.length - 1 ? '┣' : '┗');
-        let r2 = rule2 + (i < t.children.length - 1 ? '┃' : '  ');
+        let r1 = rule2 + (i < t.children.length - 1 || t.revised ? '┣' : '┗');
+        let r2 = rule2 + (i < t.children.length - 1 || t.revised ? '┃' : '  ');
         s += this.thread_html(t.children[i], r1, r2);
       }
     }
+    if (t.revised) 
+      s += this.thread_html(t.revised, rule2 + '┗', rule2 + '  ');
     return s;
   }
 
-  title_html(d: ITitle, rule: string = '') {
+  title_html(d: ITitle, rule: string = ''): string {
     let rev_id = make_rev_id(d.article_id, d.rev);
     let opt = { rev_id };
     let c: string[] = ['title-contextmenu'];

@@ -40,8 +40,10 @@ export interface ITitle {
   date: string;
   user_id: string;
   disp_name: string;
-  reply_to: number;
+  reply_to: string;
+  reply_rev: number;
   title: string;
+  revised?: ITitle;
   children?: ITitle[];
   reaction: {
     [type_id: string]: number;
@@ -65,6 +67,7 @@ export interface IArticle {
   article_id: string;
   rev: number;
   reply_to: string;
+  reply_rev: number;
   attachment: IAttachment[];
 }
 
@@ -143,7 +146,7 @@ export interface IPostArg {
   title: string;
   content: string;
   reply_to?: string;
-  reply_rev?: string;
+  reply_rev?: number;
 }
 
 interface IPostResult {

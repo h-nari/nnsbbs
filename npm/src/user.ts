@@ -1,7 +1,7 @@
 import { div, input, button, tag, label, a, span, select, option, selected, icon } from './tag';
 import { api_membership, IMembership, api_post, api_attachment, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, IPostArg } from './dbif';
 import { INewsGroup } from "./newsgroup";
-import { escape_html, get_json } from './util';
+import { escape_html, get_json, make_rev_id } from './util';
 import { createHash } from 'sha1-uint8array';
 import NnsBbs from './nnsbbs';
 import { Attachment } from './attachemnt';
@@ -249,7 +249,7 @@ export class User {
           action: async () => {
             let user_id = this.user?.id || '';
             let newsgroup_id = n.n.id;
-            let reply_to = '';
+            let reply_to = '', reply_rev = 0;
             let title = $('#post-title').val() as string;
             let disp_name = $('#post-name').val() as string;
             let content = $('#post-content').val() as string;
@@ -257,12 +257,14 @@ export class User {
             if (disp_name == '') return error_dlg('name-is-blank');
             if (content == '') return error_dlg('content-is-blank');
 
-            if (a) 
+            if (a) {
               reply_to = correctArticle ? a.reply_to : a.article_id;
+              reply_rev = correctArticle ? a.reply_rev : a.rev;
+            }
 
             content = 'content-type: text/plain\n\n' + content;
 
-            let postArg: IPostArg = { newsgroup_id, user_id, disp_name, title, content, reply_to };
+            let postArg: IPostArg = { newsgroup_id, user_id, disp_name, title, content, reply_to, reply_rev };
             if (correctArticle && a) {
               postArg.article_id = a.article_id;
               postArg.rev = a.rev + 1;
@@ -482,7 +484,7 @@ function form_membership(id: string, label_str: string, help_str: string, value:
 
 function quote_article(id: string, n: INewsGroup, a: IArticle) {
   let c = $('#' + id).val();
-  let qs = 'In article ' + n.n.name + '/' + a.article_id + '\n';
+  let qs = 'In article ' + n.n.name + '/' + make_rev_id(a.article_id,a.rev) + '\n';
   qs += a.author + ' writes:'
   qs += '\n';
 
