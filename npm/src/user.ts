@@ -360,8 +360,18 @@ export class User {
             action: () => {
               let list: Attachment[] = []
               if ($('#upload-file').val()) {
-                for (let f of $('#upload-file').prop("files")) {
-                  list.push(new Attachment(f));
+                for (let f of $('#upload-file').prop("files") as File[]) {
+                  if (f.size > 100 * 1024 * 1024) {
+                    let i18next = this.parent.i18next;
+                    $.alert({
+                      title: i18next.t('error'),
+                      content: i18next.t('too-big-file-bigger-than-100m')
+                    })
+                    resolve([]);
+                    return;
+                  } else {
+                    list.push(new Attachment(f));
+                  }
                 }
               }
               resolve(list);

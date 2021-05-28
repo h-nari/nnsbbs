@@ -309,6 +309,9 @@ sub attachment($self) {
         my $ord = 0;
 
         for my $file (@$files) {
+            die $file->filename . " is too big\n"
+              if ( length( $file->slurp ) > 100 * 1024 * 1024 );
+
             while (1) {
                 $id  = random_id(12);
                 $sql = "select count(*) from attached_file where id=?";

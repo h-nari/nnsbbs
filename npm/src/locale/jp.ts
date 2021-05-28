@@ -165,6 +165,7 @@ export const jp = {
     'correct-article': '記事訂正',
     'mail-used-to-register': 'ユーザー登録に使用したメールアドレス',
     'signature': '署名',
-    'signature-insert-into-article': '記事の最後に挿入される署名'
+    'signature-insert-into-article': '記事の最後に挿入される署名',
+    'too-big-file-bigger-than-100m':'添付可能なファイルサイズの上限は100Mbyteです'
   }
 };
