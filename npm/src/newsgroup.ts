@@ -26,9 +26,9 @@ export class NewsGroupsPane extends ToolbarPane {
   public bShowAll: boolean = true;
   private id_lg: string;      // list-group id
   private newsgroups: INewsGroup[] = [];
-  private clickCb: ((newsgroup: INewsGroup) => void) | null = null;
+  public clickCb: ((newsgroup: INewsGroup) => void) | null = null;
   public showAllNewsgroupCb: (() => void) | null = null;
-  private cur_newsgroup: INewsGroup | null = null;
+  public cur_newsgroup: INewsGroup | null = null;
   public subsInfo: { [name: string]: ISubsInfo } = {};
   private savedSubsString: { [newsgroup_id: string]: string } = {};
 
@@ -89,7 +89,8 @@ export class NewsGroupsPane extends ToolbarPane {
         c += span({ class: 'posted-at' }, this.t('last-post'), ': ', m.format('YYYY/MM/DD HH:mm:ss'));
         let opt2 = { class: 'newsgroup-line', 'newsgroup-name': d.n.name, 'newsgroup-id': d.n.id };
         if (this.cur_newsgroup && this.cur_newsgroup.n.name == d.n.name)
-          opt2.class += " active"
+          opt2.class += " active";
+        if (unread == 0) opt2.class += " read";
         if (si?.subscribe) opt2.class += " subscribe";
         s += button(opt2, c);
       }
@@ -208,7 +209,7 @@ export class NewsGroupsPane extends ToolbarPane {
     }
     this.setSubsInfoIntoNewsgroup();
   }
-  
+
   // Save your subscription information
   async saveSubsInfo(bForced: boolean = false) {
     let user = this.parent.user.user;
@@ -274,9 +275,8 @@ export class NewsGroupsPane extends ToolbarPane {
       if (n.length > 0) cur = n[0]
       else return false;
     }
-    while (cur && !cur.classList.contains('subscribe'))
+    while (cur && (!$(cur).hasClass('subscribe') || $(cur).hasClass('read')))
       cur = cur.nextSibling as HTMLElement;
-
     if (cur) {
       let name = cur.attributes['newsgroup-name'].value;
       let ng = this.name2newsgroup(name);
@@ -286,5 +286,20 @@ export class NewsGroupsPane extends ToolbarPane {
       }
     }
     return false;
+  }
+
+  update_subsInfo(newsgroup: INewsGroup) {
+    let n = newsgroup.n;
+    let si = newsgroup.subsInfo;
+    if (si) {
+      let unread = n.max_id - si.read.count();
+      let c = '(' + span({ class: 'unread', 'title-i18n': 'unread-articles' }, unread,) +
+        '/' + span({ class: 'max-id', 'title-i18n': 'total-articles' }, n.max_id) + ')';
+      $(`#${this.id} [newsgroup-id="${n.id}"] .newsgroup-status`).html(c);
+
+      let line = `#${this.id} [newsgroup-id="${n.id}"].newsgroup-line`;
+      if (unread) $(line).removeClass('read');
+      else $(line).addClass('read');
+    }
   }
 }

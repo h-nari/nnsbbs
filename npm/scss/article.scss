@@ -30,7 +30,9 @@
 
   .article {
     height: calc(100% - 30px);
+    position: relative;
     overflow-y: auto;
+    scroll-behavior: smooth;
 
     .article-header {
       width: 100%;

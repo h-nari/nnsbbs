@@ -18,3 +18,10 @@ i18next.init({
   resources: { en, jp }
 });
 
+$(window).on('keydown', e => {
+  if (e.key == ' ') {
+    window.nnsbbs.show_next();
+    e.preventDefault();
+    e.stopPropagation();
+  }
+});

@@ -23,12 +23,21 @@ export class ToolBar {
       this.title = this.id;
   }
 
-  html(): string {
+  innerHtml() {
     let s = tag('i', { id: this.id_chk, class: this.bOpen ? this.open_icon_name : this.close_icon_name })
     s += span({ class: 'toolbar-title' }, this.title);
     for (let btn of this.btns)
       s += btn.html();
-    return div({ class: 'toolbar', id: this.id }, s);
+    return s;
+  }
+
+  html(): string {
+    return div({ class: 'toolbar', id: this.id }, this.innerHtml());
+  }
+
+  redisplay() {
+    $('#' + this.id).html(this.innerHtml());
+    this.bind();
   }
 
   bind() {

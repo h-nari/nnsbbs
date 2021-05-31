@@ -4,6 +4,7 @@ export class GeometryManager {
   private panes: ToolbarPane[] = [];
   private totalSize: number = 800;
   private id: string;
+  public updateCB: (() => void) | undefined;
 
   constructor(id: string) {
     this.id = id;
@@ -62,5 +63,7 @@ export class GeometryManager {
         pane.setSize(hh);
       }
     }
+    if (this.updateCB)
+      this.updateCB();
   }
 }

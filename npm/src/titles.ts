@@ -9,16 +9,17 @@ import { api_titles, ITitle } from "./dbif";
 
 
 export class TitlesPane extends ToolbarPane {
+  private id_lg: string;
   private id2title: { [key: string]: ITitle } = {};
   private titles: ITitle[] = [];
-  private threads: ITitle[] | undefined;
-  public newsgroup: INewsGroup | undefined;
-  // public cur_article_id: string | undefined;
-  // public cur_article_rev: number | undefined;
-  public cur_rev_id: string | undefined;
+  private threads: ITitle[] = [];
   private bDispTherad: boolean = true;
-  private clickCb: ((newsgroup_id: string, article_id: string) => void) | undefined;
-  private id_lg: string;
+  private scroller = `#${this.id} .titles`;
+  private scrollee = this.scroller + ' >div';
+
+  public newsgroup: INewsGroup | undefined;
+  public cur_rev_id: string | undefined;
+  public clickCb: ((newsgroup_id: string, rev_id: string) => void) | undefined;
   public loaded_titles: ReadSet = new ReadSet();
 
   constructor(id: string, parent: NnsBbs) {
@@ -37,15 +38,20 @@ export class TitlesPane extends ToolbarPane {
     }
     to = Math.min(from + 99, to);
     await this.load(newsgroup, from, to);
+    this.show();
   }
 
-  async load(newsgroup: INewsGroup, from: number, to: number) {
+  async load(newsgroup: INewsGroup, from: number, to: number, bClear: boolean = true) {
     let data = await api_titles(newsgroup.n.id, from, to);
-    this.loaded_titles.clear().add_range(from, to);
-    this.id2title = {}
-    this.titles = [];
-    this.threads = [];
+    if (bClear) {
+      this.loaded_titles.clear();
+      this.id2title = {}
+      this.titles = [];
+      this.threads = [];
+      this.cur_rev_id = undefined;
+    }
     for (let d of data) {
+      if (this.loaded_titles.includes(Number(d.article_id))) continue;
       let rev_id = make_rev_id(d.article_id, d.rev);
       this.id2title[rev_id] = d;
       this.titles.push(d);
@@ -66,13 +72,11 @@ export class TitlesPane extends ToolbarPane {
         this.threads.push(d);
       }
     }
+    this.titles.sort((a, b) => Number(a.article_id) - Number(b.article_id));
+    this.threads.sort((a, b) => Number(a.article_id) - Number(b.article_id));
     this.newsgroup = newsgroup;
-    this.cur_rev_id = undefined;
-    this.redisplay(true);    // reset scroll
-  }
-
-  setClickCb(cb: (n: string, m: string) => void) {
-    this.clickCb = cb;
+    this.loaded_titles.add_range(from, to);
+    this.redisplay(bClear);
   }
 
   html(): string {
@@ -83,7 +87,7 @@ export class TitlesPane extends ToolbarPane {
     let s = "";
     if (this.bDispTherad && this.threads) {
       for (let t of this.threads) {
-        s += this.thread_html(t, ' ',' ');
+        s += this.thread_html(t, ' ', ' ');
       }
     } else {
       for (let id in this.titles) {
@@ -148,7 +152,7 @@ export class TitlesPane extends ToolbarPane {
         s += this.thread_html(t.children[i], r1, r2);
       }
     }
-    if (t.revised) 
+    if (t.revised)
       s += this.thread_html(t.revised, rule2 + '┗', rule2 + '  ');
     return s;
   }
@@ -185,23 +189,25 @@ export class TitlesPane extends ToolbarPane {
 
   bind() {
     super.bind();
-    $(`#${this.id_lg} >div`).on('click', ev => {
+    $(`#${this.id_lg} >div`).on('click', async ev => {
       let target = ev.currentTarget;
-      let rev_id: string = target.attributes['rev_id'].value;
-      this.select_article(rev_id);
-      if (this.newsgroup && this.clickCb) {
-        this.clickCb(this.newsgroup.n.id, rev_id);
+      if (target.attributes['rev_id']) {
+        let rev_id: string = target.attributes['rev_id'].value;
+        await this.select_article(rev_id);
+        if (this.newsgroup && this.clickCb) {
+          this.clickCb(this.newsgroup.n.id, rev_id);
+        }
       }
     });
     $(`#${this.id} .more-titles button`).on('click', async e => {
       let elem = e.currentTarget;
-      let from = elem.attributes['from'].value || "";
-      let to = elem.attributes['to'].value || "";
+      let from = (elem.attributes['from'].value || 1) as number;
+      let to = (elem.attributes['to'].value || 1000) as number;
       if (this.newsgroup) {
-        let rs = this.loaded_titles;
-        rs.add_range(from, to);
-        await this.load(this.newsgroup, rs.first() || 1, rs.last() || this.newsgroup.n.max_id);
-        this.parent.redisplay();
+        let scroll = $(this.scroller).scrollTop() || 0;
+        await this.load(this.newsgroup, from, to, false);
+        $(this.scroller).scrollTop(scroll);
+        this.parent.set_i18n_text();
       }
     })
     $(`#${this.id_lg} >div .article-from`).on('click', e => {
@@ -213,28 +219,35 @@ export class TitlesPane extends ToolbarPane {
   }
 
   async select_article(rev_id: string) {
-    const scroller = `#${this.id} .titles`;
-    const scrollee = scroller + ' >div';
-    const line = scrollee + ` >div[rev_id="${rev_id}"]`;
+    const line = this.scrollee + ` >div[rev_id="${rev_id}"]`;
+    if (this.cur_rev_id != rev_id) {
 
-    if ($(line).length == 0 && this.newsgroup) {
-      let r = split_rev_id(rev_id);
-      let id_num = parseInt(r.article_id);
-      await this.load(this.newsgroup, Math.max(1, id_num - 50), Math.min(id_num + 50, this.newsgroup.n.max_id))
+      if ($(line).length == 0 && this.newsgroup) {
+        let r = split_rev_id(rev_id);
+        let id_num = parseInt(r.article_id);
+        await this.load(this.newsgroup, Math.max(1, id_num - 50), Math.min(id_num + 50, this.newsgroup.n.max_id))
+      }
+      $(this.scrollee + ' >div').removeClass('active');
+      $(line).addClass('active');
+      this.cur_rev_id = rev_id;
     }
+  }
 
-    $(scrollee + ' >div').removeClass('active');
-    $(line).addClass('active');
-    this.cur_rev_id = rev_id;
+  // Scroll to show the selected line.
+  scroll_to_show_selected_line(bCenter: boolean = false) {
+    const line = this.scrollee + ' >div.active';
+    if ($(line).length != 1)
+      return;
     let y = $(line).position().top;
-    let sy = $(scroller).scrollTop() || 0;
-    let sh = $(scroller).height() || 0;
+    let sy = $(this.scroller).scrollTop() || 0;
+    let sh = $(this.scroller).height() || 0;
     let lh = $(line).height() || 0;
-    if (y < 0)
-      $(scroller).scrollTop(sy + y);
-    else if (y + lh > sh) {
-      $(scroller).scrollTop(sy + y);
-    }
+    if (bCenter)
+      $(this.scroller).scrollTop(sy + y - sh / 2);
+    else if (y < 0)
+      $(this.scroller).scrollTop(sy + y - 10);
+    else if (y + lh > sh)
+      $(this.scroller).scrollTop(sy + y - sh + lh);
   }
 
   disp_thread(bThread: boolean) {
@@ -256,11 +269,11 @@ export class TitlesPane extends ToolbarPane {
         span({ 'title-i18n': 'unread-articles' }, cUnread), '/',
         span({ 'title-i18n': 'total-articles' }, max_id), ')');
       s += span({ class: 'subscription' }, '(',
-        span({ 'html-i18n': si && si.subscribe ? 'subscribe' : 'unsubscribe' }),
+        span(this.t(si && si.subscribe ? 'subscribe' : 'unsubscribe')),
         ')');
       s += span({ class: 'disp-mode' },
         '[',
-        span({ 'html-i18n': this.bDispTherad ? 'thread-display' : 'time-order-display' }),
+        span(this.t(this.bDispTherad ? 'thread-display' : 'time-order-display')),
         ']');
       s += span({ class: 'loaded-titles' }, 'Loaded: ', span(this.loaded_titles.toString()))
     } else {
@@ -272,10 +285,10 @@ export class TitlesPane extends ToolbarPane {
   scrollToPrevUnread(bFromBottom: boolean = false): boolean {
     let cur: HTMLElement;
     if (this.cur_rev_id && !bFromBottom) {
-      cur = $(`#${this.id} .title-list button[rev_id="${this.cur_rev_id}"]`)[0];
+      cur = $(`#${this.id} .title-list [rev_id="${this.cur_rev_id}"]`)[0];
       cur = cur.previousSibling as HTMLElement;
     } else {
-      let n = $(`#${this.id} .title-list >div`);
+      let n = $(`#${this.id} .title-list >div[rev_id]`);
       if (n.length > 0)
         cur = n[n.length - 1];
       else {
@@ -285,7 +298,7 @@ export class TitlesPane extends ToolbarPane {
     while (cur && cur.classList.contains('read'))
       cur = cur.previousSibling as HTMLElement;
 
-    if (cur && cur.tagName == 'BUTTON') {
+    if (cur && cur.tagName == 'DIV' && cur.attributes['rev_id']) {
       let rev_id = cur.attributes['rev_id'].value;
       this.select_article(rev_id);
       return true;
@@ -294,26 +307,70 @@ export class TitlesPane extends ToolbarPane {
     }
   }
 
-  scrollToNextUnread(bFromTop: boolean = false): boolean {
+  async scrollToNextUnread(bFromTop: boolean = false): Promise<boolean> {
+    if (!this.newsgroup) return false;
     let cur: HTMLElement;
+    let rev_id: string = '';
     if (this.cur_rev_id && !bFromTop) {
-      cur = $(`#${this.id} .title-list button[rev_id="${this.cur_rev_id}"]`)[0];
+      rev_id = this.cur_rev_id;
+      cur = $(`#${this.id} .title-list [rev_id="${this.cur_rev_id}"]`)[0];
       cur = cur.nextElementSibling as HTMLElement;
     } else {
-      let n = $(`#${this.id} .title-list >div`);
+      let n = $(`#${this.id} .title-list >div[rev_id]`);
       if (n.length == 0)
         return false;
       cur = n[0];
     }
-    while (cur && cur.classList.contains('read'))
+    while (cur && cur.classList.contains('read')) {
+      rev_id = cur.attributes['rev_id'].value || '';
       cur = cur.nextElementSibling as HTMLElement;
-
-    if (cur && cur.tagName == 'BUTTON') {
-      let rev_id = cur.attributes['rev_id'].value;
+    }
+    if (cur && cur.tagName == 'DIV' && cur.attributes['rev_id']) {
+      rev_id = cur.attributes['rev_id'].value;
       this.select_article(rev_id);
       return true;
-    } else {
-      return false;
     }
+
+    let article_id = Number(split_rev_id(rev_id).article_id);
+    console.log('article_id:', article_id);
+    if (this.newsgroup.subsInfo) {
+      let readset = this.newsgroup.subsInfo.read;
+      while (readset.includes(article_id)) article_id++;
+      console.log('article_id:', article_id);
+      if (article_id > this.newsgroup.n.max_id) {
+        console.log('return false');
+        return false;
+      }
+    }
+
+    if (cur && $(cur).hasClass('more-titles')) {
+      let btn = cur.children[0];
+      let from = Number(btn.attributes['from'].value || '0');
+      let to = Number(btn.attributes['to'].value || '0');
+
+      if (article_id >= from && article_id <= to) {
+        await this.load(this.newsgroup, Number(from), Number(to), false);
+        cur = $(`#${this.id} .title-list [rev_id="${rev_id}"]`)[0];
+        console.log('cur:', cur);
+        if (!cur) throw new Error('unexpected-situation');
+        while (cur && cur.classList.contains('read'))
+          cur = cur.nextElementSibling as HTMLElement;
+        if (cur && cur.tagName == 'DIV' && cur.attributes['rev_id']) {
+          rev_id = cur.attributes['rev_id'].value;
+          this.select_article(rev_id);
+          return true;
+        }
+      }
+    }
+    console.log('select_article:', article_id);
+    await this.select_article(make_rev_id(String(article_id), 0));
+    return true;
+  }
+
+  update_subsInfo(rev_id: string) {
+    let line = this.scrollee + ` [rev_id="${rev_id}"]`;
+    $(line).addClass('read');
+    this.set_title();
+    this.toolbar.redisplay();
   }
 }

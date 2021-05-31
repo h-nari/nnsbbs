@@ -48,7 +48,6 @@ export default class NnsBbs {
       icon: 'check-all',
       explain: 'show-all-newsgroups',
       action: () => {
-        // $('#newsgroup_lg').removeClass('hide-not-subscribed');
         this.ng_pane.bShowAll = true;
         this.redisplay();
       }
@@ -56,10 +55,13 @@ export default class NnsBbs {
       icon: 'check',
       explain: 'only-subscribed-newsgroups',
       action: () => {
-        // $('#newsgroup_lg').addClass('hide-not-subscribed');
         this.ng_pane.bShowAll = false;
         this.redisplay();
       }
+    })).add_menu(new Menu({
+      icon: 'play-fill',
+      explain: 'show-next-unread-article',
+      action: () => { this.show_next(); }
     }));
 
 
@@ -111,10 +113,10 @@ export default class NnsBbs {
     })).add_menu(new Menu({
       icon: 'chevron-bar-down',
       explain: 'next-unread-article',
-      action: () => {
+      action: async () => {
         let t = this.titles_pane;
         let a = this.article_pane;
-        t.scrollToNextUnread() || t.scrollToNextUnread(true);   // search from Top
+        await t.scrollToNextUnread() || await t.scrollToNextUnread(true);   // search from Top
         if (!a.bClosed && t.newsgroup && t.cur_rev_id)
           this.select_article(t.newsgroup.n.id, t.cur_rev_id);
       }
@@ -134,6 +136,12 @@ export default class NnsBbs {
       action: () => {
         if (this.titles_pane.newsgroup)
           this.user.post_article_dlg(this.titles_pane.newsgroup);
+      }
+    })).add_menu(new Menu({
+      icon: 'chevron-bar-contract',
+      explain: 'scroll-to-show-the-selected-line',
+      action: () => {
+        this.titles_pane.scroll_to_show_selected_line(true);
       }
     }));
 
@@ -239,6 +247,9 @@ export default class NnsBbs {
 
   bind() {
     this.gm.bind();
+    this.gm.updateCB = () => {
+      this.titles_pane.scroll_to_show_selected_line();
+    };
 
     this.ng_pane.showAllNewsgroupCb = () => {
       this.ng_pane.bShowAll = true;
@@ -248,9 +259,9 @@ export default class NnsBbs {
     this.ng_pane.setClickCb((ng: INewsGroup) => {
       this.select_newsgroup(ng);
     })
-    this.titles_pane.setClickCb((newsgroup_id, article_id) => {
-      this.select_article(newsgroup_id, article_id);
-    });
+    this.titles_pane.clickCb = (newsgroup_id, rev_id) => {
+      this.select_article(newsgroup_id, rev_id);
+    };
 
     this.article_pane.fNext = () => {
       this.next_article();
@@ -344,10 +355,10 @@ export default class NnsBbs {
       if (rev_id == "") {
         this.article_pane.close();
       } else {
-        this.select_article(this.cur_newsgroup_id, rev_id);
+        await this.select_article(this.cur_newsgroup_id, rev_id);
       }
     }
-    this.redisplay();
+    this.set_i18n_text();
   }
 
   // Processing when a newsgroup is selected.
@@ -364,7 +375,7 @@ export default class NnsBbs {
     this.ng_pane.select_newsgroup(newsgroup);
     await this.titles_pane.open(newsgroup);
 
-    this.titles_pane.scrollToNextUnread();
+    await this.titles_pane.scrollToNextUnread();
     this.titles_pane.show();
     this.article_pane.close();
     this.redisplay();
@@ -378,7 +389,9 @@ export default class NnsBbs {
 
   async select_article(newsgroup_id: string, rev_id: string) {
     await this.article_pane.open(newsgroup_id, rev_id);
-    this.titles_pane.select_article(rev_id);
+    this.article_pane.redisplay();
+    await this.titles_pane.select_article(rev_id);
+    this.titles_pane.scroll_to_show_selected_line();
     this.article_pane.show();
 
     if (this.titles_pane.newsgroup) {
@@ -387,19 +400,23 @@ export default class NnsBbs {
         subsInfo = this.titles_pane.newsgroup.subsInfo = { subscribe: false, read: new ReadSet(), update: false };
       let r = split_rev_id(rev_id);
       subsInfo.read.add_range(Number(r.article_id));                 // make article read
+      this.titles_pane.update_subsInfo(rev_id);
+      this.ng_pane.update_subsInfo(this.titles_pane.newsgroup);
       this.ng_pane.saveSubsInfo();
     }
-    this.redisplay();
 
     window.history.pushState(null, '', `/bbs/${this.cur_newsgroup}/${rev_id}`);
     document.title = `nnsbbs/bss/${this.cur_newsgroup}/${rev_id}`
   }
 
-  next_article() {
+  async next_article() {
     let t = this.titles_pane;
-    if (!t.scrollToNextUnread()) {
+    if (! await t.scrollToNextUnread()) {
       this.ng_pane.scrollToNextSubscribedNewsgroup();
-      t.scrollToNextUnread();
+      if (this.ng_pane.cur_newsgroup) {
+        this.select_newsgroup(this.ng_pane.cur_newsgroup)
+        await t.scrollToNextUnread();
+      }
     }
     if (t.cur_rev_id && t.newsgroup)
       this.select_article(t.newsgroup.n.id, t.cur_rev_id);
@@ -533,6 +550,44 @@ export default class NnsBbs {
         }
       }
     });
+  }
+
+  // show next unread article
+  // return false if no unread article
+  async show_next(): Promise<boolean> {
+    console.log('**show_next');
+
+    if (this.titles_pane.bClosed) {        // title_pane  closed
+      if (this.cur_newsgroup_id == '') {
+        if (!this.ng_pane.scrollToNextSubscribedNewsgroup())
+          return false;
+      }
+      if (this.ng_pane.cur_newsgroup)
+        await this.select_newsgroup(this.ng_pane.cur_newsgroup);
+    }
+
+    if (this.article_pane.bClosed) {  // title_pane open, artcle_pane closed
+      let nid = this.titles_pane.newsgroup?.n.id;
+      let rev_id = this.titles_pane.cur_rev_id;
+      if (nid && rev_id)
+        await this.select_article(nid, rev_id);
+      else {
+        while (true) {
+          if (!this.ng_pane.scrollToNextSubscribedNewsgroup()) return false;
+          if (this.ng_pane.cur_newsgroup) {
+            await this.select_newsgroup(this.ng_pane.cur_newsgroup);
+            return true;
+          }
+        }
+      }
+    } else {                               // article_pane  open
+      if (this.article_pane.scrolled_to_end()) {
+        this.next_article();
+      } else {
+        this.article_pane.scroll();
+      }
+    }
+    return true;
   }
 }
 

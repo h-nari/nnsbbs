@@ -1,9 +1,11 @@
-import { get_json, escape_html, size_str, split_rev_id } from "./util";
-import { div, button, span, img, tag } from "./tag";
-import { ToolBar } from "./toolbar";
+import { escape_html, size_str } from "./util";
+import { div, span, img, tag } from "./tag";
 import { ToolbarPane } from "./pane";
 import NnsBbs from "./nnsbbs";
-import { api_newsgroup, api_article, IArticle } from "./dbif";
+import { api_article, IArticle } from "./dbif";
+
+const scroller = '#article .article';
+const end = scroller + " .article-end";
 
 export class ArticlePane extends ToolbarPane {
   private id_header: string;
@@ -120,5 +122,19 @@ export class ArticlePane extends ToolbarPane {
 
   toggle_header() {
     this.setHeaderDisp(!this.bDispHeader);
+  }
+
+  scrolled_to_end() {
+    let sy = $(scroller).scrollTop() || 0;
+    let h = $(scroller).height() || 0;
+    let y = $(end).position().top;
+    let eh = $(end).height() || 0;
+    return y + eh < h;
+  }
+
+  scroll() {
+    let h = $(scroller).height() || 0;
+    let sy = $(scroller).scrollTop() || 0;
+    $(scroller).scrollTop(sy + h - 20);
   }
 }
