@@ -31,7 +31,7 @@ sub get_theme {
     my $c          = shift;
     my $db         = NnsBbs::Db::new($c);
     my $session_id = $c->session('id');
-    return '00-default' unless $session_id;
+    return $c->url_for('/theme/theme-00-default.css') unless $session_id;
     my $sql = "select theme";
     $sql .= " from user as u,session as s";
     $sql .= " where u.id=s.user_id and s.id=?";
