@@ -54,7 +54,7 @@ export class TopBar {
     m.clear();
     m.add(new Menu({
       name: i18next.t('logout'),
-      action: () => { this.parent.user.logout(); }
+      action: () => { this.parent.user.logout_dlg(); }
     }));
     m.add(new Menu({
       name: i18next.t('Profile'),
@@ -86,10 +86,10 @@ export class TopBar {
     m.clear();
     this.menu_login.add(new Menu({
       name: i18next.t('login'),
-      action: () => { this.parent.user.login(); }
+      action: () => { this.parent.user.login_dlg(); }
     })).add(new Menu({
       name: i18next.t('User Registration'),
-      action: () => { this.parent.user.user_registration(); }
+      action: () => { this.parent.user.user_registration_dlg('MAIL_AUTH'); }
     }));
     this.bModerator = false;
     this.update_badge();

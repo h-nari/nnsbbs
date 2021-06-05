@@ -20,12 +20,39 @@ our %Lexicon = (
     'user.information '     => 'ユーザ情報',
     'user.management'       => 'ユーザ管理',
     'newsgroup.management'  => 'ニュースグループ管理',
-    'access.mail_auth.link' =>
+    'access.mail.auth.link' =>
       "メールアドレスの認証を完了させるために\n"
       . "次のURLをアクセスして下さい。\n\n",
-    'ignore.if.no.idea' => "このメールに心当たりがない場合は\n無視して下さい。",
-    "email.title" => "NnsBbsメール認証",
-    "report.manager" => "通報管理"
+    'access.password.reset.link' =>
+"パスワードを再設定するため 次のURLをアクセスして下さい\n\n",
+    'ignore.if.no.idea' =>
+"このメールに心当たりがない場合は\n無視して下さい。",
+    'email.title'                => 'NnsBbsメール認証',
+    'report.manager'             => '通報管理',
+    'id.is.not.registered'       => 'このIDは登録されていません',
+    'fail.to.mail.authorization' => 'メール認証に失敗しました',
+    'fail.to.reset.password' =>
+      'パスワードのリセットに失敗しました',
+    'reset.password' => 'パスワード再設定',
+    'mail.address'   => 'メールアドレス',
+    'input.email' =>
+'確認用、認証に使用したメールアドレスを入力してください。',
+    'auth.id'   => '認証ID',
+    'disp-name' => '表示名',
+    'disp-name-explain' =>
+'掲示板で名前として表示されます。本名である必要はありません。
+        いつでも変更可能です。',
+    'password' => 'パスワード',
+    'input.password' =>
+'ログイン用のパスワードを入力してください。(8文字以上)',
+    'password.for.confirm' => 'パスワード(確認)',
+    'password.for.confirm.explain' =>
+      '確認用に上と同じパスワードを入力して下さい。',
+    'change.password'            => 'パスワード変更',
+    'user.registration'          => 'ユーザ登録',
+    'user.registration.complete' => 'ユーザ登録完了',
+    'password.reset.complete'    => 'パスワード変更完了',
+    'enjoy.bbs'                  => '掲示板をお楽しみ下さい。',
 );
 
 1;

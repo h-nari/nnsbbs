@@ -1,11 +1,12 @@
 % layout 'default';
-% title 'NNSBBSメール認証失敗';
-
+% title 'NNSBBS' ;
+<div id="main">
 <div id="auth">
   <div class="title">
-  このIDは登録されていません。
+  <%= $title %>
   </div>
   <div class="content">
-  メールアドレス認証に失敗しました。
+  <%== $msg %> 
   </div>
+</div>
 </div>

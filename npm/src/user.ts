@@ -1,11 +1,11 @@
 import { div, input, button, tag, label, a, span, select, option, selected, icon } from './tag';
-import { api_membership, IMembership, api_post, api_attachment, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, IPostArg } from './dbif';
+import { api_membership, IMembership, api_post, api_attachment, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, IPostArg, api_mail_auth } from './dbif';
 import { INewsGroup } from "./newsgroup";
 import { escape_html, get_json, make_rev_id } from './util';
 import { createHash } from 'sha1-uint8array';
 import NnsBbs from './nnsbbs';
 import { Attachment } from './attachemnt';
-import i18next from 'i18next';
+import './jconfirm';
 
 
 export class User {
@@ -17,24 +17,24 @@ export class User {
     this.parent = parent;
   }
 
-  login() {
+  login_dlg() {
     let i18next = this.parent.i18next;
     return new Promise((resolve, reject) => {
-      $.confirm({
+      var jc = $.confirm({
         title: i18next.t('login'),
         type: 'blue',
         columnClass: 'large',
         content: div({ class: 'login' },
           tag('form',
             div({ class: 'form-group row' },
-              label({ for: 'email', class: 'col-sm-3 col-form-label' }, i18next.t('email') as string),
+              label({ for: 'email', class: 'col-sm-3 col-form-label' }, i18next.t('email')),
               div({ class: 'col-sm-6' }, input({ type: 'text', class: 'form-control', id: 'email', placeholder: 'email@example.com' }))),
             div({ class: 'form-group row' },
-              label({ for: 'inputPassword', class: 'col-sm-3 col-form-label' }, i18next.t('password') as string),
+              label({ for: 'inputPassword', class: 'col-sm-3 col-form-label' }, i18next.t('password')),
               div({ class: 'col-sm-6' }, input({ type: 'password', class: 'form-control', id: 'inputPassword', placeholder: 'Password' })))),
           div({ class: 'login-links' },
-            a({ href: '#' }, i18next.t('forget-password') as string),
-            a({ href: '#' }, i18next.t('user-registration') as string)
+            a({ href: '#', class: 'link-forget-password' }, i18next.t('forget-password')),
+            a({ href: '#', class: 'link-user-registration' }, i18next.t('user-registration'))
           )),
         buttons: {
           login: {
@@ -70,12 +70,22 @@ export class User {
             text: i18next.t('cancel'),
             action: () => { resolve(false); }
           }
+        },
+        onOpen: () => {
+          $('.login .link-forget-password').on('click', () => {
+            jc.close();
+            this.user_registration_dlg('PASSWORD_RESET');
+          });
+          $('.login .link-user-registration').on('click', () => {
+            jc.close();
+            this.user_registration_dlg('MAIL_AUTH');
+          });
         }
       });
     });
   }
 
-  logout() {
+  logout_dlg() {
     let i18next = this.parent.i18next;
     $.confirm({
       title: i18next.t('logout'),
@@ -98,24 +108,27 @@ export class User {
     })
   }
 
-  user_registration() {
+  user_registration_dlg(action: 'MAIL_AUTH' | 'PASSWORD_RESET') {
     let i18next = this.parent.i18next;
+    let bReg = action == 'MAIL_AUTH';
+    let title = i18next.t(bReg ? 'user-registration' : 'password-reset');
     $.confirm({
-      title: i18next.t('user-registration'),
+      title,
       type: 'green',
       columnClass: 'large',
       content: div({ class: 'user-registration' },
-        div({ class: 'explain' }, i18next.t('enter-email-for-authentication') as string),
+        div({ class: 'explain' }, i18next.t(bReg ? 'enter-email-for-authentication' : 'enter-email-for-password-reset')),
         tag('form',
           div({ class: 'form-group row' },
-            label({ for: 'email', class: 'col-sm-3 col-form-label' }, i18next.t('email') as string),
+            label({ for: 'email', class: 'col-sm-3 col-form-label' }, i18next.t('email')),
             div({ class: 'col-sm-6' },
-              input({ type: 'text', class: 'form-control', id: 'email', placeholder: 'email@example.com' }))))),
+              input({ type: 'text', class: 'form-control email', placeholder: 'email@example.com' }))))),
       buttons: {
         ok: {
           text: 'ok',
           action: () => {
-            let email: string = $('#email').val() as string;
+            let email = $('.user-registration .email').val() as string;
+            console.log('email:', email);
             if (!email) {
               $.alert(i18next.t('input-email'));
               return false;
@@ -123,10 +136,15 @@ export class User {
               $.alert(i18next.t('bad-format-email'));
               return false;
             } else {
-              get_json('/api/mail_auth', { data: { email } }).then((d: any) => {
-                if (d.result == 0) {
-                  $.alert('failed:' + d.mes);
-                  return false;
+              api_mail_auth(email, action).then(d => {
+                let i18next = this.parent.i18next;
+                if (d.result != 'ok') {
+                  $.alert({
+                    title: i18next.t('error'),
+                    type: 'red',
+                    columnClass: 'medium',
+                    content: i18next.t(d.mes ? d.mes : 'failed')
+                  });
                 } else {
                   $.alert(i18next.t('sent-url'));
                 }
@@ -147,7 +165,7 @@ export class User {
   async profile_dlg() {
     const i18next = this.parent.i18next;
     if (!this.user) {
-      if (!await this.login()) return;
+      if (!await this.login_dlg()) return;
     }
     this.membership = await get_json('/api/membership') as IMembership;
 
@@ -220,7 +238,7 @@ export class User {
     };
 
     if (!this.user) {
-      if (!await this.login()) return;
+      if (!await this.login_dlg()) return;
     }
 
     if (!this.user) return;

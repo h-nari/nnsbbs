@@ -1,7 +1,7 @@
 interface JQueryStatic {
-  alert: (any) => void;
-  confirm: (any) => void;
-  dialog: (any) => void;
+  alert: (arg0:any) => any;
+  confirm: (arg0:any) => any;
+  dialog: (arg0:any) => any;
 };
 
 interface JQuery {

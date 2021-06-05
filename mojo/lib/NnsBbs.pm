@@ -22,6 +22,11 @@ sub startup ($self) {
         theme => sub {
             my $c = shift;
             return get_theme($c);
+        },
+        l => sub {
+            my $c      = shift;
+            my $str_id = shift;
+            return $c->l($str_id);
         }
     );
 
@@ -30,7 +35,7 @@ sub startup ($self) {
 
     $r->get('/index.html')->to('top#show');
     $r->get('/')->to('top#show');
-    $r->get('/mail_auth/#id')->to('auth#mail');
+    $r->get('/mail_auth/#id')->to('auth#mail_auth');
     $r->post('/register')->to('auth#register');
     $r->get('/bbs')->to('top#bbs');
     $r->get('/bbs/#newsgroup')->to('top#bbs');
@@ -43,11 +48,11 @@ sub startup ($self) {
     $r->get('/admin/report')->to('admin#report');
     $r->get('/admin/report/#id')->to('admin#report');
 
-    $r->get('/api/newsgroup')->to('api#newsgroup');
-    $r->get('/api/titles')->to('api#titles');
-    $r->get('/api/article')->to('api#article');
-    $r->get('/api/mail_auth')->to('api#mail_auth');
-    $r->get('/api/membership')->to('api#membership');
+    $r->any('/api/newsgroup')->to('api#newsgroup');
+    $r->any('/api/titles')->to('api#titles');
+    $r->any('/api/article')->to('api#article');
+    $r->any('/api/mail_auth')->to('api#mail_auth');
+    $r->any('/api/membership')->to('api#membership');
     $r->any('/api/theme')->to('api#theme');
     $r->any('/api/user')->to('api#user');
     $r->any('/api/login')->to('auth#api_login');

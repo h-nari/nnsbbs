@@ -123,47 +123,51 @@ sub article($self) {
 }
 
 sub mail_auth($self) {
-    my $email = $self->param("email");
-    if ( !$email ) {
-        $self->render(
-            text   => "param email is required",
-            status => '400'
-        );
-        return;
-    }
-    if ( $email !~ /[\w.]+@(\w+\.)*\w+/ ) {
-        $self->render( json => { result => 0, mes => 'bad email format' } );
-        return;
-    }
+    eval {
+        my $email  = $self->param("email");
+        my $action = $self->param("action");
+        die "param-email-is-required\n" unless ($email);
+        die "bad-email-format\n"        unless ( $email =~ /[\w.]+@(\w+\.)*\w+/ );
+        die "param-action-is-required\n" unless ($action);
+        die "action-must-be-MAIL_AUTH-or-PASSWORD_RESET"
+          if $action != 'MAIL_AUTH' && $action != 'PASSWORD_RESET';
+        my $db    = NnsBbs::Db::new($self);
+        my $sql   = "select count(*) as count from user where mail=?";
+        my $rh    = $db->select_rh( $sql, $email );
+        my $count = $rh->{'count'};
 
-    my $db    = NnsBbs::Db::new($self);
-    my $sql   = "select count(*) as count from user where mail=?";
-    my $rh    = $db->select_rh( $sql, $email );
-    my $count = $rh->{'count'};
-    if ( $count > 0 ) {
-        $self->render(
-            json => { result => 0, mes => 'email is already used' } );
-        return;
-    }
-    $sql = "delete from mail_auth  where";
-    $sql .= " created_at < date_sub(now(),interval 30 day) ";
-    $sql .= " or email=?";
-    $db->execute( $sql, $email );
+        if ( $action eq 'MAIL_AUTH' ) {
+            die "email-is-already-used\n" if ( $count > 0 );
+        }
+        else {
+            die "email-is-not-registered\n" if ( $count == 0 );
+        }
+        $sql = "delete from mail_auth  where";
+        $sql .= " created_at < date_sub(now(),interval 30 day) ";
+        $sql .= " or email=?";
+        $db->execute( $sql, $email );
 
-    my $id = random_id(12);
-    $sql = "insert into mail_auth(id,email) values (?,?)";
-    $db->execute( $sql, $id, $email );
-    $db->commit;
+        my $id = random_id(12);
+        $sql = "insert into mail_auth(id,email,action) values (?,?,?)";
+        $db->execute( $sql, $id, $email, $action );
+        $db->commit;
 
-    my $url = $self->url_for("/mail_auth/$id")->to_abs;
-    my $c   = $self->l('access.mail_auth.link');
-    $c .= "   $url\n";
-    $c .= "\n";
-    $c .= $self->l('ignore.if.no.idea');
+        my $url = $self->url_for("/mail_auth/$id")->to_abs;
+        my $c   = "";
 
-    NnsBbs::Mail::send( $email, $self->l('email.title'), $c );
+        $c .= $self->l('access.mail.auth.link') if ( $action eq 'MAIL_AUTH' );
+        $c .= $self->l('access.password.reset.link')
+          if ( $action eq 'PASSWORD_RESET' );
+        $c .= "   $url\n";
+        $c .= "\n";
+        $c .= $self->l('ignore.if.no.idea');
 
-    $self->render( json => { result => 1 } );
+        NnsBbs::Mail::send( $email, $self->l('email.title'), $c );
+
+        $self->render( json => { result => 'ok' } );
+    };
+    $self->render( json => { result => 'ng', mes => $@ } ) if $@;
+
 }
 
 sub profile_read {

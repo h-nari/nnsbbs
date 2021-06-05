@@ -6,7 +6,10 @@ use String::Random;
 use Digest::SHA1 qw(sha1_hex);
 use NnsBbs::Util qw(random_id);
 
-sub mail($self) {
+sub mail_auth($self) {
+    my $path   = $self->req->url->path;
+    my $bReset = $path =~ m|^/password_reset/|;
+
     my $id = $self->param('id');
 
     if ( !$id ) {
@@ -14,25 +17,41 @@ sub mail($self) {
         return;
     }
     my $db  = NnsBbs::Db::new($self);
-    my $sql = "select email from mail_auth where id=?";
+    my $sql = "select action from mail_auth where id=?";
     my $ah  = $db->select_ah( $sql, $id );
     my $len = @$ah + 0;
     if ( $len == 0 ) {
-        $self->stash( script_part => '' );
+        $self->stash(
+            script_part => '',
+            title       => 'NNSBBS',
+            title2      => $self->l('id.is.not.registered'),
+            msg         => $self->l(
+                $bReset
+                ? 'fail.to.reset.password'
+                : 'fail.to.mail.authorization'
+            )
+        );
         $self->render( template => 'auth/no_id' );
     }
     elsif ( $len == 1 ) {
-        $db->execute( "delete from mail_auth where id=?", $id );
-        $db->commit;
+        my ($action) = @$ah;
+        my $bReg = $action eq 'MAIL_AUTH';
+
+        # $db->execute( "delete from mail_auth where id=?", $id );
+        # $db->commit;
         $self->stash(
+            bReg        => $bReg,
             script_part => '',
             id          => $id,
-            title       => $self->l('Email.verification.successful'),
-            msg         => $self->l('fill.in.form'),
-            email       => '',
-            disp_name   => '',
-            pwd1        => '',
-            pwd2        => ''
+            title       => 'NNSBBS',
+            title2      => $self->l(
+                $bReg ? 'Email.verification.successful' : 'reset.password'
+            ),
+            msg       => $self->l('fill.in.form'),
+            email     => '',
+            disp_name => '',
+            pwd1      => '',
+            pwd2      => ''
         );
         $self->render( template => 'auth/register' );
     }
@@ -49,6 +68,7 @@ sub register($self) {
     my $disp_name = $self->param('disp_name');
     my $pwd1      = $self->param('password1');
     my $pwd2      = $self->param('password2');
+    my $bReg      = $self->param('bReg');
 
     # check parameters
     my $db     = NnsBbs::Db::new($self);
@@ -65,12 +85,13 @@ sub register($self) {
     else {
         $sql = "select count(*) from user where mail=?";
         my ($cnt) = $db->select_ra( $sql, $email );
-        if ( $cnt > 0 ) {
-            push( @errors, $self->l('email.is.already.used') );
-        }
+        push( @errors, $self->l('email.is.already.used') )
+          if ( $bReg && $cnt > 0 );
+        push( @errors, $self->l('email.is.not.registered') )
+          if ( !$bReg && $cnt == 0 );
     }
 
-    if ( !$disp_name ) {
+    if ( $bReg && !$disp_name ) {
         push( @errors, $self->l('disp_name.is.blank') );
     }
     if ( !$pwd1 ) {
@@ -102,7 +123,7 @@ sub register($self) {
         );
         $self->render( template => 'auth/register' );
     }
-    else {
+    elsif ($bReg) {
         my $user_id;
         while (1) {
             $user_id = random_id(12);
@@ -111,10 +132,28 @@ sub register($self) {
             last if ( $c == 0 );
         }
         my $pwd = sha1_hex($pwd1);
-        $sql = "insert into user(id,mail,disp_name,password,logined_at)";
-        $sql .= "values(?,?,?,?,now())";
+        $sql = "insert into user(id,mail,disp_name,password)";
+        $sql .= "values(?,?,?,?)";
         $db->execute( $sql, $user_id, $email, $disp_name, $pwd );
-        $self->stash( script_part => '' );
+        $self->stash(
+            script_part => '',
+            title       => 'NNSBBS',
+            title2      => $self->l('user.registration.complete'),
+            msg         => $self->l('enjoy.bbs')
+        );
+        $self->render( template => 'auth/user_registered' );
+        $db->commit;
+    }
+    else {
+        my $pwd = sha1_hex($pwd1);
+        $sql = "update user set password=? where mail=?";
+        $db->execute( $sql, $pwd, $email );
+        $self->stash(
+            script_part => '',
+            title       => 'NNSBBS',
+            title2      => $self->l('password.reset.complete'),
+            msg         => $self->l('enjoy.bbs')
+        );
         $self->render( template => 'auth/user_registered' );
         $db->commit;
     }
@@ -129,8 +168,9 @@ sub api_login {
         $self->render( text => 'Parameters are missing.', status => '400' );
     }
     else {
-        my $db  = NnsBbs::Db::new($self);
-        my $sql = "select id,disp_name,membership_id,signature,moderator,setting,theme";
+        my $db = NnsBbs::Db::new($self);
+        my $sql =
+          "select id,disp_name,membership_id,signature,moderator,setting,theme";
         $sql .= " from user";
         $sql .= " where mail=? and password=? and not bBanned";
         my $rh = $db->select_rh( $sql, $email, $pwd );

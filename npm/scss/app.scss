@@ -31,4 +31,7 @@ BODY.wait button {
 
 .jconfirm {
   color: black;
+  .jconfirm-content {
+    overflow: hidden !important;
+  }
 }

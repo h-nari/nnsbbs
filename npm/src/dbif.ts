@@ -6,6 +6,7 @@ import { ReadSet } from "./readSet";
 
 interface IResult {
   result: 'ok' | 'ng';
+  mes?: string;
 }
 
 //
@@ -199,6 +200,12 @@ export function api_logout() {
 
 export function api_session() {
   return get_json('/api/session') as Promise<ILogin>;
+}
+//
+// api/mail_auth
+// 
+export function api_mail_auth(email: string, action: 'MAIL_AUTH' | 'PASSWORD_RESET') {
+  return get_json('/api/mail_auth', { method: 'post', data: { email, action } }) as Promise<IResult>;
 }
 //
 // api/subsInfo
