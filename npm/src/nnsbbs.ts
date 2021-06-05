@@ -4,7 +4,6 @@ import { NewsGroupsPane, INewsGroup } from "./newsgroup";
 import { TitlesPane } from './titles';
 import { ArticlePane } from './article';
 import { User } from './user';
-import { Btn, BtnDropdown } from "./toolbar";
 import { GeometryManager } from "./gemotry_manager";
 import { contextMenu, closeContextMenu } from "./context_menu";
 import { i18n } from "i18next";
@@ -75,23 +74,25 @@ export default class NnsBbs {
         window.history.pushState(null, '', '/bbs');
         document.title = 'nnsbbs';
       }
-    })).add_btn(new BtnDropdown({
+    })).add_menu(new Menu({
       icon: 'three-dots',
       explain: 'display-setting',
-      dropdown: [
-        {
-          name: 'thread-display', action: () => {
-            this.titles_pane.disp_thread(true);
-            this.redisplay();
-          }
-        },
-        {
-          name: 'time-order-display', action: () => {
-            this.titles_pane.disp_thread(false);
-            this.redisplay();
-          }
-        },
-      ]
+      action: (e, menu) => {
+        menu.clear();
+        menu.add(new Menu({
+          name: i18next.t('thread-display'),
+          with_check: true,
+          checked: this.titles_pane.bDispTherad,
+          action: (e, m) => { this.titles_pane.disp_thread(true); }
+        }));
+        menu.add(new Menu({
+          name: i18next.t('time-order-display'),
+          with_check: true,
+          checked: !this.titles_pane.bDispTherad,
+          action: (e, m) => { this.titles_pane.disp_thread(false); }
+        }));
+        menu.expand(e);
+      }
     })).add_menu(new Menu({
       icon: 'align-bottom',
       explain: 'goto-end',
@@ -160,20 +161,21 @@ export default class NnsBbs {
         menu.clear();
         menu.add(new Menu({
           icon: 'card-heading',
-          html_i18n: 'toggle-article-header',
+          name: i18next.t('toggle-article-header'),
           action: () => {
             this.article_pane.toggle_header()
           }
         })).add(new Menu({
           icon: 'reply-fill',
-          html_i18n: 'reply-to-article',
+          name: i18next.t('reply-to-article'),
           action: () => {
             if (this.titles_pane.newsgroup && this.article_pane.article)
               this.user.post_article_dlg(this.titles_pane.newsgroup, this.article_pane.article);
           }
         })).add(new Menu({
           icon: 'exclamation-diamond',
-          html_i18n: 'report', action: () => {
+          name: i18next.t('report'),
+          action: () => {
             this.report_dlg();
           }
         }));
@@ -183,7 +185,7 @@ export default class NnsBbs {
         if (newsgroup && article && user && (article.user_id == user.id || user.moderator)) {
           menu.add(new Menu({
             icon: 'pencil-square',
-            html_i18n: 'correct-article',
+            name: i18next.t('correct-article'),
             action: () => {
               if (newsgroup && article)
                 this.user.post_article_dlg(newsgroup, article, true);

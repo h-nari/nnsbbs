@@ -35,3 +35,18 @@ BODY.wait button {
     overflow: hidden !important;
   }
 }
+
+.global-error-dlg {
+  .message {
+    margin: 10px;
+    font-weight: bold;
+    font-size: large;
+  }
+  .loc {
+    > span {
+      margin: 2px 5px;
+      font-weight: bold;
+      font-size: small;
+    }
+  }
+}

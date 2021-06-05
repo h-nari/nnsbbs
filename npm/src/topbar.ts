@@ -56,6 +56,7 @@ export class TopBar {
       name: i18next.t('logout'),
       action: () => { this.parent.user.logout_dlg(); }
     }));
+    m.add(new Menu({ separator: true }));
     m.add(new Menu({
       name: i18next.t('Profile'),
       action: () => { this.parent.user.profile_dlg(); }

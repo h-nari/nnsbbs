@@ -5,6 +5,7 @@ import { ReadSet } from "./readSet";
 import { INewsGroup } from "./newsgroup";
 import NnsBbs from "./nnsbbs";
 import { api_titles, ITitle } from "./dbif";
+import { Menu } from "./menu";
 
 
 
@@ -13,10 +14,10 @@ export class TitlesPane extends ToolbarPane {
   private id2title: { [key: string]: ITitle } = {};
   private titles: ITitle[] = [];
   private threads: ITitle[] = [];
-  private bDispTherad: boolean = true;
   private scroller = `#${this.id} .titles`;
   private scrollee = this.scroller + ' >div';
 
+  public bDispTherad: boolean = true;
   public newsgroup: INewsGroup | undefined;
   public cur_rev_id: string | undefined;
   public clickCb: ((newsgroup_id: string, rev_id: string) => void) | undefined;
@@ -110,8 +111,8 @@ export class TitlesPane extends ToolbarPane {
       if (first) {
         if (first > 1) {
           if (first > 101)
-            b += button({ from: first - 100, to: first - 1, 'html-i18n': 'load-previous-100-titles' });
-          b += button({ from: 1, to: first - 1, 'html-i18n': 'load-all-previous-titles' });
+            b += button({ from: first - 100, to: first - 1 }, this.t('load-pervious-100-titles'));
+          b += button({ from: 1, to: first - 1 }, this.t('load-all-previous-titles'));
         }
       }
     }
@@ -122,8 +123,8 @@ export class TitlesPane extends ToolbarPane {
         let left = max_id - last;
         if (left > 0) {
           if (left > 100)
-            b += button({ from: last + 1, to: last + 100, 'html-i18n': 'load-next-100-titles' });
-          b += button({ from: last + 1, to: max_id, dir, 'html-i18n': 'load-all-subsequent-titles' });
+            b += button({ from: last + 1, to: last + 100 }, this.t('load-next-100-titles'));
+          b += button({ from: last + 1, to: max_id, dir }, this.t('load-all-subsequent-titles'));
         }
       }
     }
@@ -186,10 +187,9 @@ export class TitlesPane extends ToolbarPane {
     return s;
   }
 
-
   bind() {
     super.bind();
-    $(`#${this.id_lg} >div`).on('click', async ev => {
+  $(`#${this.id_lg} >div`).on('click', async ev => {
       let target = ev.currentTarget;
       if (target.attributes['rev_id']) {
         let rev_id: string = target.attributes['rev_id'].value;
@@ -252,8 +252,7 @@ export class TitlesPane extends ToolbarPane {
 
   disp_thread(bThread: boolean) {
     this.bDispTherad = bThread;
-    $('#' + this.id).html(this.inner_html());
-    this.bind();
+    this.redisplay(true);
   }
 
   set_title() {

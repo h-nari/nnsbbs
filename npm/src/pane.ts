@@ -1,6 +1,6 @@
 import { GeometryManager } from "./gemotry_manager";
 import NnsBbs from "./nnsbbs";
-import { ToolBar, Btn } from "./toolbar";
+import { ToolBar } from "./toolbar";
 
 var pane_sn = 0;
 

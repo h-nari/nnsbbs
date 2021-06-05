@@ -6,19 +6,21 @@ var sn = 0;
 type MenuAction = (e: JQuery.ClickEvent, menu: Menu) => void;
 
 interface MenuOption {
-  icon?: string,
-  icon_class?: string,
-  name?: string,
-  html_i18n?: string,
-  right_icon?: string,
-  right_icon_class?: string,
-  explain?: string,
-  action?: MenuAction,
-  link?: string,
-  arg?: any
-  with_check?: true,
-  checked?: boolean,
-  badge?: string
+  icon?: string;
+  icon_class?: string;
+  name?: string;
+  html_i18n?: string;
+  right_icon?: string;
+  right_icon_class?: string;
+  explain?: string;
+  action?: MenuAction;
+  link?: string;
+  arg?: any;
+  with_check?: true;
+  checked?: boolean;
+  badge?: string;
+  separator?: boolean;
+  class?: string;
 };
 
 export class Menu {
@@ -37,7 +39,7 @@ export class Menu {
 
     if (opt.with_check) c += span({ class: 'with-check' }, opt.checked ? icon('check') : '');
     if (opt.icon) c += icon(opt.icon, 'icon ' + nullstr(opt.icon_class));
-    if (opt.name) c += opt.name;
+    if (opt.name) c += div({ class: 'name' }, opt.name);
     if (opt.html_i18n) c += span({ 'html-i18n': opt.html_i18n }, opt.html_i18n);
     if (opt.right_icon) c += icon(opt.right_icon, 'right-icon ' + nullstr(opt.right_icon_class));
     if (opt.badge) c += span({ class: 'badge badge-danger' }, opt.badge);
@@ -45,7 +47,13 @@ export class Menu {
   }
 
   html(): string {
-    return button({ class: 'menu btn', id: this.id, 'title-i18n': this.opt.explain }, this.innerHtml());
+    if (this.opt.separator)
+      return div({ class: 'menu separator' });
+    else {
+      let c = 'menu btn';
+      if (this.opt.class) c += ' ' + this.opt.class;
+      return button({ class: c, id: this.id, 'title-i18n': this.opt.explain }, this.innerHtml());
+    }
   }
 
   bind() {
@@ -77,7 +85,7 @@ export class Menu {
       let y = (offset?.top || 0) + h + 5;
       let style = `top: ${y}px; left: ${x}px;`;
       $('body').prepend(div({ class: 'menu-back', style: 'z-index:10' },
-        div({ id: sub_id, style }, s)));
+        div({ id: sub_id, style, class: 'menu-stack' }, s)));
       this.subMenu.forEach(m => { m.bind(); });
       $('.menu-back').on('click', () => {
         $('.menu-back').remove();
