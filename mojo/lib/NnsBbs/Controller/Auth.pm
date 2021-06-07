@@ -213,7 +213,7 @@ sub api_session {
         my $db = NnsBbs::Db::new($self);
         &update_session($db);
         my $sql = "select disp_name, u.id as id";
-        $sql .= ",membership_id,signature,moderator,theme";
+        $sql .= ",membership_id,signature,moderator,theme,setting";
         $sql .= " from user as u,session as s";
         $sql .= " where u.id = s.user_id and s.id=?";
         my $rh = $db->select_rh( $sql, $session_id );

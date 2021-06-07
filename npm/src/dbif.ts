@@ -46,12 +46,13 @@ export interface ITitle {
   title: string;
   revised?: ITitle;
   children?: ITitle[];
+  bDeleted: number;
   reaction: {
     [type_id: string]: number;
   }
 };
-export function api_titles(newsgroup_id: string, from: number, to: number) {
-  return get_json('/api/titles', { data: { newsgroup_id, from, to } }) as Promise<ITitle[]>;
+export function api_titles(newsgroup_id: string, from: number, to: number, bShowDeleted: boolean = false) {
+  return get_json('/api/titles', { data: { newsgroup_id, from, to, bShowDeleted: bShowDeleted ? 1 : 0 } }) as Promise<ITitle[]>;
 }
 
 
@@ -69,6 +70,11 @@ export interface IArticle {
   rev: number;
   reply_to: string;
   reply_rev: number;
+  bDeleted: number;
+  delete_reason: string;
+  deleted_at?: string;
+  newsgroup_id: string;
+  newsgroup: string;
   attachment: IAttachment[];
 }
 
@@ -332,7 +338,7 @@ export interface IUserAdmin {
 }
 
 //
-//  admin/api/article
+// admin/api/title
 //
 export interface TArticle {
   newsgroup_id: number,
@@ -350,13 +356,22 @@ export interface TArticle {
   deleted_at: string | null,
   content: string | null
 }
-
-//
-// admin/api/title
-//
 export function admin_api_title(user_id: string) {
   return get_json('/admin/api/title', { data: { user_id } }) as Promise<TArticle[]>;
 }
+//
+// admin/api/article
+//
+export interface ArgArticleUpdate {
+  id: string;
+  rev: number;
+  bDeleted?: number;
+  delete_reason?: string;
+}
+export function admin_api_article(arg: ArgArticleUpdate) {
+  return get_json('/admin/api/article', { method: 'post', data: { update: JSON.stringify(arg) } }) as Promise<IResult>;
+}
+
 //
 // admin/api/report
 //

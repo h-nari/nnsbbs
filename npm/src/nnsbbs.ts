@@ -91,6 +91,22 @@ export default class NnsBbs {
           checked: !this.titles_pane.bDispTherad,
           action: (e, m) => { this.titles_pane.disp_thread(false); }
         }));
+
+        let user = this.user.user;
+        if (user && user.moderator) {
+          menu.addSeparator();
+          menu.add(new Menu({
+            name: i18next.t('show-deleted-article'),
+            with_check: true,
+            checked: this.user.setting.d.showDeletedArticle,
+            action: (e, m) => {
+              this.user.setting.d.showDeletedArticle = !this.user.setting.d.showDeletedArticle;
+              this.user.setting.save();
+              this.redisplay();
+            }
+          }));
+        }
+
         menu.expand(e);
       }
     })).add_menu(new Menu({
@@ -183,12 +199,24 @@ export default class NnsBbs {
         let article = this.article_pane.article;
         let user = this.user.user;
         if (newsgroup && article && user && (article.user_id == user.id || user.moderator)) {
+          menu.addSeparator();
           menu.add(new Menu({
             icon: 'pencil-square',
             name: i18next.t('correct-article'),
             action: () => {
               if (newsgroup && article)
                 this.user.post_article_dlg(newsgroup, article, true);
+            }
+          }));
+        }
+        if (newsgroup && article && user && user.moderator) {
+          menu.addSeparator();
+          menu.add(new Menu({
+            icon: 'x-square-fill',
+            name: i18next.t('ban-article'),
+            action: () => {
+              if (newsgroup && article)
+                this.user.ban_article_dlg(newsgroup, article);
             }
           }));
         }
@@ -390,6 +418,11 @@ export default class NnsBbs {
   }
 
   async select_article(newsgroup_id: string, rev_id: string) {
+    let cur_title = this.titles_pane.cur_title();
+    if (cur_title && cur_title.bDeleted && !this.user.setting.d.showDeletedArticle) {
+      this.article_pane.close();
+      return;
+    }
     await this.article_pane.open(newsgroup_id, rev_id);
     this.article_pane.redisplay();
     await this.titles_pane.select_article(rev_id);
@@ -463,9 +496,11 @@ export default class NnsBbs {
 
 
   async onLogin() {
+    console.log('onLogin');
     if (this.user.user) {
-      await this.ng_pane.loadSubsInfo();
+      this.user.setting.load(this.user.user.setting);
       this.topBar.set_login_menu(this.user.user.disp_name);
+      await this.ng_pane.loadSubsInfo();
       this.redisplay();
     } else {
       throw new Error('unexpected situation');

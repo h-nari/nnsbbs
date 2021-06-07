@@ -109,6 +109,10 @@ export class Menu {
     return this;
   }
 
+  addSeparator() {
+    return this.add(new Menu({ separator: true }));
+  }
+
   clear() {
     this.subMenu = [];
     return this;

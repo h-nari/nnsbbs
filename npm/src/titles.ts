@@ -5,9 +5,6 @@ import { ReadSet } from "./readSet";
 import { INewsGroup } from "./newsgroup";
 import NnsBbs from "./nnsbbs";
 import { api_titles, ITitle } from "./dbif";
-import { Menu } from "./menu";
-
-
 
 export class TitlesPane extends ToolbarPane {
   private id_lg: string;
@@ -28,6 +25,11 @@ export class TitlesPane extends ToolbarPane {
     this.id_lg = id + "_lg";
   }
 
+  cur_title() {
+    if(this.cur_rev_id) return this.id2title[this.cur_rev_id];
+    else return undefined;
+  }
+
   async open(newsgroup: INewsGroup) {
     let from = 1;
     let to = newsgroup.n.max_id;
@@ -43,7 +45,7 @@ export class TitlesPane extends ToolbarPane {
   }
 
   async load(newsgroup: INewsGroup, from: number, to: number, bClear: boolean = true) {
-    let data = await api_titles(newsgroup.n.id, from, to);
+    let data = await api_titles(newsgroup.n.id, from, to, this.parent.user.setting.d.showDeletedArticle);
     if (bClear) {
       this.loaded_titles.clear();
       this.id2title = {}
@@ -167,6 +169,8 @@ export class TitlesPane extends ToolbarPane {
       c.push('read');
     if (this.cur_rev_id == rev_id)
       c.push('active');
+    if (d.bDeleted)
+      c.push('deleted');
     if (c.length > 0) opt['class'] = c.join(' ');
     let reactions = '';
     let reaction_type = this.parent.reaction_type;
@@ -189,7 +193,7 @@ export class TitlesPane extends ToolbarPane {
 
   bind() {
     super.bind();
-  $(`#${this.id_lg} >div`).on('click', async ev => {
+    $(`#${this.id_lg} >div`).on('click', async ev => {
       let target = ev.currentTarget;
       if (target.attributes['rev_id']) {
         let rev_id: string = target.attributes['rev_id'].value;

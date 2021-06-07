@@ -28,20 +28,22 @@ sub titles($self) {
     my $newsgroup_id = $self->param("newsgroup_id");
     my $from         = $self->param("from");
     my $to           = $self->param("to");
+    my $bShowDeleted = $self->param("bShowDeleted");
 
     eval {
         die "newsgroup_id is required\n" unless ($newsgroup_id);
         my $db = NnsBbs::Db::new($self);
         my ( $level, $moderator ) = access_level( $self, $db );
+        die "no priviledge for show deleted" if $bShowDeleted && !$moderator;
+
         my ($rpl) = $db->select_ra( "select rpl from newsgroup where id=?",
             $newsgroup_id );
         die "no read permission.\n"
           if ( ( !defined($rpl) || $rpl > $level ) && !$moderator );
         my $sql = "select id as article_id ,rev,title,reply_to,reply_rev";
-        $sql .= ",created_at as date,user_id,disp_name";
+        $sql .= ",created_at as date,user_id,disp_name,bDeleted";
         $sql .= " from article";
         $sql .= " where newsgroup_id = ?";
-        $sql .= " and not bDeleted";
 
         my @params = ($newsgroup_id);
         if ($from) {
@@ -59,7 +61,7 @@ sub titles($self) {
         $sql .= " from article as a,reaction as r";
         $sql .= " where a.newsgroup_id=r.newsgroup_id";
         $sql .= " and a.id=r.article_id and a.rev=r.rev";
-        $sql .= " and a.newsgroup_id = ? and not bDeleted";
+        $sql .= " and a.newsgroup_id = ?";
         $sql .= " group by a.id,a.rev,type_id";
         @params = ($newsgroup_id);
         if ($from) {
@@ -81,6 +83,14 @@ sub titles($self) {
         for my $t (@$data) {
             $t->{reaction} = $arh->{ $t->{article_id}, $t->{rev} }
               if $arh->{ $t->{article_id}, $t->{rev} };
+            printf STDERR "*** %s : bDeleted:%d bShowDeleted:%d***\n",
+              $t->{article_id},
+              $t->{bDeleted}, $bShowDeleted;
+            if ( $t->{bDeleted} && !$bShowDeleted ) {
+                print STDERR "deleted article\n";
+                $t->{title}     = '==== Deleted Article ====';
+                $t->{disp_name} = 'XXXXXX';
+            }
         }
         $self->render( json => $data );
     };
@@ -102,11 +112,14 @@ sub article($self) {
         die "No read permission.\n"
           if ( ( !defined($rpl) || $rpl > $level ) && !$moderator );
 
-        my $sql = "select content,created_at as date,disp_name as author";
-        $sql .= ",title,rev,id as article_id,user_id,reply_to,reply_rev";
-        $sql .= " from article";
-        $sql .= " where newsgroup_id = ? and id = ? and rev=?";
-        $sql .= " order by rev desc limit 1";
+        my $sql = "select content,a.created_at as date,disp_name as author";
+        $sql .= ",title,rev,a.id as article_id,user_id,reply_to,reply_rev";
+        $sql .=
+          ",a.bDeleted as bDeleted,delete_reason,a.deleted_at as deleted_at";
+        $sql .= ",newsgroup_id,n.name as newsgroup";
+        $sql .= " from article as a,newsgroup as n";
+        $sql .=
+" where a.newsgroup_id=n.id and newsgroup_id = ? and a.id = ? and rev=?";
         my $hr = $db->select_rh( $sql, $newsgroup_id, $article_id, $rev );
 
         $sql = "select file_id,comment,filename,content_type";
@@ -127,7 +140,7 @@ sub mail_auth($self) {
         my $email  = $self->param("email");
         my $action = $self->param("action");
         die "param-email-is-required\n" unless ($email);
-        die "bad-email-format\n"        unless ( $email =~ /[\w.]+@(\w+\.)*\w+/ );
+        die "bad-email-format\n" unless ( $email =~ /[\w.]+@(\w+\.)*\w+/ );
         die "param-action-is-required\n" unless ($action);
         die "action-must-be-MAIL_AUTH-or-PASSWORD_RESET"
           if $action != 'MAIL_AUTH' && $action != 'PASSWORD_RESET';

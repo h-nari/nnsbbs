@@ -110,7 +110,9 @@
         background-color: #007bff;
         color: white;
       }
-
+      > div.deleted  {
+        text-decoration: line-through double;
+      }
       .more-titles {
         text-align: center;
         button {

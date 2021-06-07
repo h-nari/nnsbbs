@@ -170,7 +170,7 @@ sub api_user($self) {
     my ( $level, $moderator ) = access_level( $self, $db );
     my $id = $self->param('id');
 
-    if ( !$moderator) {
+    if ( !$moderator ) {
         $self->render( text => 'Access Forbidden', status => '403' );
     }
 
@@ -428,5 +428,38 @@ sub update_report ( $db, $n ) {
         $cnt++;
     }
     return $cnt;
+}
+
+sub api_article($self) {
+    my $update = $self->param('update');
+    my $db     = NnsBbs::Db::new($self);
+    my ( $level, $moderator ) = access_level( $self, $db );
+
+    eval {
+        die "access forbidden" unless ($moderator);
+        if ($update) {
+            my $arg = from_json($update);
+            my $id  = $arg->{'id'};
+            my $rev = $arg->{'rev'};
+            die "id required" unless $id;
+            die "rev required" if $rev eq "";
+            my $cnt = 0;
+            while ( my ( $key, $value ) = each(%$arg) ) {
+                next if ( $key eq 'id' || $key eq 'rev' );
+                my $sql = "update article set $key=?";
+                $sql .= ",deleted_at=now()" if ( $key eq "bDeleted" );
+                $sql .= " where id=? and rev=?";
+                $db->execute( $sql, $value, $id, $rev );
+                $cnt++;
+            }
+            die "no parameter specified" if $cnt == 0;
+            $db->commit;
+            $self->render( json => { result => 'ok' } );
+        }
+        else {
+            die "no command";
+        }
+    };
+    $self->render( text => $@, status => '400' ) if $@;
 }
 1;

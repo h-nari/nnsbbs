@@ -166,11 +166,16 @@ export const jp = {
     'mail-used-to-register': 'ユーザー登録に使用したメールアドレス',
     'signature': '署名',
     'signature-insert-into-article': '記事の最後に挿入される署名',
-    'too-big-file-bigger-than-100m':'添付可能なファイルサイズの上限は100Mbyteです',
-    'show-next-unread-article':'次の未読記事を表示',
-    'scroll-to-show-the-selected-line':'選択された記事が表示されるようにスクロールする',
-    'password-reset':'パスワードを忘れたら',
-    'enter-email-for-password-reset':'パスワード再設定のURLを送りますので、登録したメールアドレスを入力して下さい',
-    'email-is-already-used':'このメールアドレスは既に使用されています'
+    'too-big-file-bigger-than-100m': '添付可能なファイルサイズの上限は100Mbyteです',
+    'show-next-unread-article': '次の未読記事を表示',
+    'scroll-to-show-the-selected-line': '選択された記事が表示されるようにスクロールする',
+    'password-reset': 'パスワードを忘れたら',
+    'enter-email-for-password-reset': 'パスワード再設定のURLを送りますので、登録したメールアドレスを入力して下さい',
+    'email-is-already-used': 'このメールアドレスは既に使用されています',
+    'show-deleted-article': '非表示の記事を表示',
+    'ban-article': '記事非表示設定',
+    'ban': '非表示',
+    'delete-reason': '非表示にする理由',
+    'target-article': '対象記事'
   }
 };

@@ -69,6 +69,7 @@ sub startup ($self) {
     $r->any('/api/report_type')->to('api#report_type');
     $r->any('/api/report_treatment')->to('api#report_treatment');
 
+    $r->any('/admin/api/article')->to('admin#api_article');
     $r->any('/admin/api/newsgroup')->to('admin#api_newsgroup');
     $r->any('/admin/api/user')->to('admin#api_user');
     $r->any('/admin/api/title')->to('admin#api_title');

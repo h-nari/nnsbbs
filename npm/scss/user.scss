@@ -60,3 +60,20 @@ form.edit-profile {
     font-weight: bold;
   }
 }
+
+.article-ban-dlg {
+  padding: 10px;
+  .article-name {
+    font-weight: bold;
+  }
+  .ban {
+    input {
+      margin-right: 10px;
+    }
+  }
+  .reason {
+    textarea {
+      width: 100%;
+    }
+  }
+}

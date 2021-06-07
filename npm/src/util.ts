@@ -1,3 +1,4 @@
+import { IArticle } from "./dbif";
 
 
 export function get_json(path: string, option = {}) {
@@ -69,7 +70,7 @@ export function nullstr(s: string | undefined | null): string {
 }
 
 export function make_rev_id(article_id: string, rev: number): string {
-  if (typeof (rev) != 'number') 
+  if (typeof (rev) != 'number')
     throw new Error('rev is not number!');
   return rev == 0 ? article_id : article_id + '.' + rev;
 }
@@ -80,4 +81,8 @@ export function split_rev_id(rev_id: string): { article_id: string, rev: number 
   m = rev_id.match(/^\d+$/);
   if (m) return { article_id: rev_id, rev: 0 };
   throw new Error('bad format rev_id:' + rev_id);
+}
+
+export function article_str(a: IArticle): string {
+  return a.newsgroup + '/' + a.article_id + ' : ' + a.title;
 }

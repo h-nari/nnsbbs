@@ -1,16 +1,19 @@
 import { div, input, button, tag, label, a, span, select, option, selected, icon } from './tag';
-import { api_membership, IMembership, api_post, api_attachment, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, IPostArg, api_mail_auth } from './dbif';
+import { api_membership, IMembership, api_post, api_attachment, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, IPostArg, api_mail_auth, admin_api_article } from './dbif';
 import { INewsGroup } from "./newsgroup";
-import { escape_html, get_json, make_rev_id } from './util';
+import { article_str, escape_html, get_json, make_rev_id } from './util';
 import { createHash } from 'sha1-uint8array';
 import NnsBbs from './nnsbbs';
 import { Attachment } from './attachemnt';
 import './jconfirm';
+import { Setting } from './setting';
+
 
 
 export class User {
   public parent: NnsBbs;
   public user: (IUser | null) = null;
+  public setting = new Setting(this);
   public membership: IMembership | null = null;
 
   constructor(parent: NnsBbs) {
@@ -436,6 +439,43 @@ export class User {
       }
     });
   }
+
+  ban_article_dlg(newsgroup: INewsGroup, article: IArticle) {
+    let i18next = this.parent.i18next;
+    console.log('article:', article);
+    $.confirm({
+      title: i18next.t('ban-article'),
+      type: 'red',
+      columnClass: 'medium',
+      content: div({ class: 'article-ban-dlg' },
+        div({ class: 'row' },
+          div({ class: 'col-4 label' }, i18next.t('target-article'), ':'),
+          div({ class: 'col-8 article-name' }, article_str(article))),
+        div({ class: 'ban' },
+          input({ id: 'ban-chk-btn', type: 'checkbox', checked: selected(article.bDeleted != 0) }),
+          label({ for: 'ban-chk-btn' }, i18next.t('ban'))),
+        div({ class: 'reason' },
+          div({ class: 'label' }, i18next.t('delete-reason')),
+          tag('textarea', { rows: 5 }, article.delete_reason)
+        )
+      ),
+      buttons: {
+        ok: {
+          text: i18next.t('write'),
+          action: async () => {
+            let bDeleted = $('#ban-chk-btn').prop('checked') ? 1 : 0;
+            let delete_reason = ($('.article-ban-dlg .reason textarea').val() || '') as string;
+            await admin_api_article({
+              id: article.article_id, rev: article.rev, bDeleted, delete_reason
+            });
+            this.parent.redisplay();
+          }
+        },
+        cancel: { text: i18next.t('cancel') }
+      }
+    });
+  }
+
 }
 
 interface IFormGroupOpt {

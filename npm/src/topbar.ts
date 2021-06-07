@@ -56,7 +56,7 @@ export class TopBar {
       name: i18next.t('logout'),
       action: () => { this.parent.user.logout_dlg(); }
     }));
-    m.add(new Menu({ separator: true }));
+    m.addSeparator();
     m.add(new Menu({
       name: i18next.t('Profile'),
       action: () => { this.parent.user.profile_dlg(); }
@@ -67,6 +67,7 @@ export class TopBar {
     }));
     if (this.parent.user.user?.moderator) {
       this.bModerator = true;
+      m.addSeparator();
       m.add(new Menu({ name: i18next.t('user-manager'), link: '/admin/user' }));
       m.add(new Menu({ name: i18next.t('newsgroup-manager'), link: '/admin/newsgroup' }));
       this.menu_report_manager = new Menu({ name: i18next.t('report-manager'), link: '/admin/report' });
