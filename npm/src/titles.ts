@@ -26,7 +26,7 @@ export class TitlesPane extends ToolbarPane {
   }
 
   cur_title() {
-    if(this.cur_rev_id) return this.id2title[this.cur_rev_id];
+    if (this.cur_rev_id) return this.id2title[this.cur_rev_id];
     else return undefined;
   }
 
@@ -183,7 +183,7 @@ export class TitlesPane extends ToolbarPane {
     let s = div(opt,
       div({ class: 'article-rule' }, rule),
       div({ class: 'article-id' }, make_rev_id(d.article_id, d.rev)),
-      div({ class: 'article-from', title: d.disp_name, user_id: d.user_id }, escape_html(d.disp_name)),
+      div({ class: 'article-from', user_id: d.user_id }, escape_html(d.disp_name)),
       div({ class: 'article-time' }, d.date),
       div({ class: 'article-title' }, escape_html(d.title)),
       reactions
@@ -214,12 +214,13 @@ export class TitlesPane extends ToolbarPane {
         this.parent.set_i18n_text();
       }
     })
-    $(`#${this.id_lg} >div .article-from`).on('click', e => {
-      let user_id = e.currentTarget.attributes['user_id'].value;
-      this.parent.user.show_profile(user_id);
-      e.preventDefault();
-      e.stopPropagation();
-    });
+
+    /*    $(`#${this.id_lg} >div .article-from`).on('click', e => { */
+    /*      let user_id = e.currentTarget.attributes['user_id'].value; */
+    /*      this.parent.user.show_profile(user_id); */
+    /*      e.preventDefault(); */
+    /*      e.stopPropagation(); */
+    /*    }); */
   }
 
   async select_article(rev_id: string) {

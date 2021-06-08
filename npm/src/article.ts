@@ -107,7 +107,7 @@ export class ArticlePane extends ToolbarPane {
     this.article = data;
     this.toolbar.title =
       span({ class: 'id' }, '[' + rev_id + ']') +
-      span({ class: 'author' }, escape_html(data.author)) +
+      span({ class: 'author', 'title-i18n':'show-profile' }, escape_html(data.author)) +
       span({ class: 'date' }, data.date) +
       span({ class: 'title' }, escape_html(data.title));
   }
