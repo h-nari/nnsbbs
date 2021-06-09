@@ -86,3 +86,25 @@ export function split_rev_id(rev_id: string): { article_id: string, rev: number 
 export function article_str(a: IArticle): string {
   return a.newsgroup + '/' + a.article_id + ' : ' + a.title;
 }
+
+export function set_i18n(selector: string = '') {
+  let i18next = window.nnsbbs.i18next;
+  $(selector + ' [i18n]').each(function () {
+    let key = $(this).attr('i18n') || "no-key";
+    let val = i18next.t(key);
+    $(this).text(val);
+  });
+  $(selector + ' [html-i18n]').each(function () {
+    let key = $(this).attr('html-i18n') || "no-key";
+    let val = i18next.t(key);
+    $(this).text(val);
+  });
+  $(selector + ' [title-i18n]').each(function () {
+    let key = $(this).attr('title-i18n') || "no-key";
+    let val = i18next.t(key);
+    $(this).attr('title', val);
+  });
+  $(selector + ' [title]').tooltip({
+    delay: 500
+  });
+}

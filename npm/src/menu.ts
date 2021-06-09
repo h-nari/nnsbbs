@@ -1,5 +1,5 @@
 import { div, button, icon, span } from './tag';
-import { nullstr } from './util';
+import { nullstr, set_i18n } from './util';
 
 var sn = 0;
 
@@ -90,7 +90,7 @@ export class Menu {
       $('.menu-back').on('click', () => {
         $('.menu-back').remove();
       });
-      window.nnsbbs.set_i18n_text();
+      set_i18n();
       let w0 = $('.menu-back').width() || 0;
       let w = $('#' + sub_id).width() || 0;
       w0 -= 30;

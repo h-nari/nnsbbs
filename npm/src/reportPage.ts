@@ -1,6 +1,7 @@
 import { admin_api_report_read, admin_api_report_update, api_report_treatment, IReportAdmin } from "./dbif";
 import NnsBbs from "./nnsbbs";
 import { a, button, div, option, select, selected, span, tag } from "./tag";
+import { set_i18n } from "./util";
 
 export class ReportPage {
   private id = "report-page";
@@ -63,7 +64,7 @@ export class ReportPage {
   redisplay() {
     $('#' + this.id).html(this.innerHtml());
     this.bind();
-    this.parent.set_i18n_text();
+    set_i18n('#' + this.id);
   }
 
   async open(id: number) {

@@ -83,9 +83,6 @@ sub titles($self) {
         for my $t (@$data) {
             $t->{reaction} = $arh->{ $t->{article_id}, $t->{rev} }
               if $arh->{ $t->{article_id}, $t->{rev} };
-            printf STDERR "*** %s : bDeleted:%d bShowDeleted:%d***\n",
-              $t->{article_id},
-              $t->{bDeleted}, $bShowDeleted;
             if ( $t->{bDeleted} && !$bShowDeleted ) {
                 print STDERR "deleted article\n";
                 $t->{title}     = '==== Deleted Article ====';

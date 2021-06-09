@@ -2,7 +2,10 @@ import { div, button, span, input, tag, a } from "./tag";
 import { ToolbarPane } from './pane';
 import { ReadSet } from "./readSet";
 import NnsBbs from "./nnsbbs";
-import { TNewsgroup, api_session, api_profile_read, api_profile_write, api_subsInfo_read, ISubsHash, ISubsElem, api_subsInfo_write } from "./dbif";
+import { TNewsgroup, api_session, api_profile_read, api_profile_write, api_subsInfo_read, ISubsHash, ISubsElem, api_subsInfo_write, api_newsgroup } from "./dbif";
+import { NewsgroupTree } from "./newsgroupTree";
+import { Menu } from "./menu";
+import { set_i18n } from "./util";
 const moment = require('moment');
 
 export interface INewsGroup {
@@ -22,20 +25,47 @@ export interface ISubsJson {
   read: string;
 };
 
-export class NewsGroupsPane extends ToolbarPane {
+export class NewsgroupsPane extends ToolbarPane {
   public bShowAll: boolean = true;
   private id_lg: string;      // list-group id
   private newsgroups: INewsGroup[] = [];
-  public clickCb: ((newsgroup: INewsGroup) => void) | null = null;
-  public showAllNewsgroupCb: (() => void) | null = null;
-  public cur_newsgroup: INewsGroup | null = null;
+  public clickCb: ((path: string) => void) | undefined;
+  public showAllNewsgroupCb: (() => void) | undefined;
   public subsInfo: { [name: string]: ISubsInfo } = {};
   private savedSubsString: { [newsgroup_id: string]: string } = {};
+  public root: NewsgroupTree = new NewsgroupTree(this, '', '');
+  public curNode: NewsgroupTree | undefined;
+  public menu: Menu;
 
   constructor(id: string, parent: NnsBbs) {
     super(id, parent);
     this.id_lg = id + "_lg";
     this.toolbar.title = 'NewsGroup';
+    this.menu = new Menu({ icon: 'three-dots' });
+    this.toolbar.add_menu(this.menu);
+    this.menu.opt.action = (e, m) => {
+      m.clear();
+      m.add(new Menu({
+        name: this.t('expand-all-hierarchies'),
+        action: () => {
+          this.root.forEach(n => { n.fold = false; });
+          this.redisplay();
+        }
+      }));
+      m.add(new Menu({
+        name: this.t('collapse-all-hierarchies'),
+        action: () => {
+          this.root.forEach(n => { n.fold = true; });
+          this.redisplay();
+        }
+      }));
+      m.expand(e);
+    };
+
+    this.toolbar.add_menu(new Menu({
+      icon: 'arrow-clockwise',
+      explain: 'reload'
+    }));
 
     if (false) {
       setInterval(() => {
@@ -47,6 +77,22 @@ export class NewsGroupsPane extends ToolbarPane {
   setNewsgroups(data: TNewsgroup[]) {
     this.newsgroups = data.map(t => { return { n: t, subsInfo: null } });
     this.setSubsInfoIntoNewsgroup();
+    let old_root = this.root;
+    this.root = new NewsgroupTree(this, '', '');
+    for (let n of this.newsgroups)
+      this.root.allocNewsgroup(n.n.name, n);
+    var list: NewsgroupTree[] = [];
+    this.root.forEach(n => list.push(n));
+    for (let i = 0; i < list.length; i++) 
+      list[i].next = i < list.length - 1 ? list[i + 1] : undefined;
+
+    this.root.sumUp(n => n.calc());
+    if (old_root.children.length > 0) {
+      this.root.forEach(n => {
+        let n0 = old_root.findNewsgroup(n.path);
+        if (n0) n.fold = n0.fold;
+      });
+    }
   }
 
   setSubsInfoIntoNewsgroup() {
@@ -61,44 +107,15 @@ export class NewsGroupsPane extends ToolbarPane {
     }
   }
 
-  setClickCb(cb: (n: INewsGroup) => void) {
-    this.clickCb = cb;
-  }
-
   html(): string {
     return div({ id: this.id }, this.inner_html());
   }
 
   inner_html(): string {
-    let s = "";
-    for (let d of this.newsgroups) {
-      let si = d.subsInfo;
-      if (si?.subscribe || this.bShowAll) {
-        let unread = d.n.max_id;
-        let c = "";
-        let opt = { type: 'checkbox', class: 'newsgroup-check', title: 'subscribe-newsgroup' };
-        if (si && si.subscribe) opt['checked'] = null;
-        c += input(opt);
-        c += span({ class: 'newsgroup-name' }, d.n.name);
-        if (si)
-          unread = Math.max(d.n.max_id - si.read.count(), 0);
-        c += span({ class: 'newsgroup-status' },
-          '(', span({ class: 'unread', 'title-i18n': 'unread-articles' }, unread,),
-          '/', span({ class: 'max-id', 'title-i18n': 'total-articles' }, d.n.max_id), ')');
-        let m = moment(d.n.posted_at);
-        c += span({ class: 'posted-at' }, this.t('last-post'), ': ', m.format('YYYY/MM/DD HH:mm:ss'));
-        let opt2 = { class: 'newsgroup-line', 'newsgroup-name': d.n.name, 'newsgroup-id': d.n.id };
-        if (this.cur_newsgroup && this.cur_newsgroup.n.name == d.n.name)
-          opt2.class += " active";
-        if (unread == 0) opt2.class += " read";
-        if (si?.subscribe) opt2.class += " subscribe";
-        s += button(opt2, c);
-      }
-    }
-
+    let s = this.root.sub_html();
     let b: string;
     if (s.length > 0)
-      b = div({ id: this.id_lg, class: 'nb-list-group' }, s);
+      b = div({ class: 'ng-tree' }, s);
     else {
       b = div({ class: 'no-newsgroup' },
         div(
@@ -116,74 +133,66 @@ export class NewsGroupsPane extends ToolbarPane {
   }
   bind() {
     super.bind();
-    $(`#${this.id_lg} >button`).on('click', ev => {
-      let t = ev.currentTarget;
-      let ng_name = t.attributes['newsgroup-name'].value;
-      if (this.clickCb) this.clickCb(ng_name);
-    });
-    $(`#${this.id_lg} .newsgroup-line .newsgroup-check`).on('change', ev => {
-      let target = ev.currentTarget;
-      let parent = target.parentElement;
-      if (parent) {
-        let name = parent.attributes['newsgroup-name'].value;
-        let newsgroup = this.name2newsgroup(name);
-        if (!newsgroup)
-          throw new Error('newsgroup ' + name + ' not found');
-        let subscribe = $(target).is(':checked');
-        if (!newsgroup.subsInfo)
-          newsgroup.subsInfo = { subscribe: true, read: new ReadSet(), update: false };
-        newsgroup.subsInfo.subscribe = subscribe;
-        this.saveSubsInfo();
-
-        if (subscribe)
-          $(parent).addClass('subscribe');
-        else
-          $(parent).removeClass('subscribe');
-      }
-    });
-    $('#' + this.id + '_showall').on('click', () => {
-      if (this.showAllNewsgroupCb)
-        this.showAllNewsgroupCb();
-    });
+    this.root.bind();
+    set_i18n('#' + this.id);
   }
 
-  redisplay() {
+  async redisplay(bFromDB: boolean = false) {
+    $('.tooltip').remove();
+    if (bFromDB) {
+      this.toolbar.title = this.t('newsgroup');
+      await this.loadSubsInfo();
+      let data = await api_newsgroup();
+      this.setNewsgroups(data);
+    }
+
     let scroll = $(`#${this.id} .newsgroup`).scrollTop();
     $('#' + this.id).html(this.inner_html());
     this.bind();
     $(`#${this.id} .newsgroup`).scrollTop(scroll || 0);
-    if (this.cur_newsgroup)
-      this.select_newsgroup(this.cur_newsgroup);
+    if (this.curNode)
+      this.select_newsgroup(this.curNode.path);
   }
 
-  select_newsgroup(newsgroup: INewsGroup) {
-    const scroller = `#${this.id} .newsgroup`;
-    const scrollee = scroller + " >div";
-    const line = scrollee + ` >button[newsgroup-id=${newsgroup.n.id}]`;
-    $(scrollee + ' >button').removeClass('active');
-    if ($(line).length < 1) {
-      console.log('newsgroup:', newsgroup.n.name, 'id:', newsgroup.n.id, ' not found');
-      return;
+  async select_newsgroup(path: string) {
+    let node = this.root.findNewsgroup(path);
+    if (node) {
+      for (let n: NewsgroupTree | undefined = node.parent; n; n = n.parent)
+        n.fold = false;
+
+      if (this.curNode != node) {
+        this.curNode = node;
+        await this.redisplay();
+      }
+
+      const scroller = `#${this.id} .newsgroup`;
+      const scrollee = scroller + " .ng-tree";
+      const line = scrollee + ` .sub-tree[path="${path}"] .ng-node`;
+      $(scrollee + ' .ng-node').removeClass('active');
+      if ($(line).length < 1) {
+        console.log('newsgroup:', path, ' not found');
+        return;
+      }
+      $(line).addClass('active');
+      let y = $(line).position().top;
+      let sy = $(scroller).scrollTop() || 0;
+      let sh = $(scroller).height() || 0;
+      let lh = $(line).height() || 0;
+      if (y < 0)
+        $(scroller).scrollTop(sy + y - (sh - lh) / 2);
+      else if (y + lh > sh)
+        $(scroller).scrollTop(sy + y - (sh - lh) / 2);
     }
-    $(line).addClass('active');
-    let y = $(line).position().top;
-    let sy = $(scroller).scrollTop() || 0;
-    let sh = $(scroller).height() || 0;
-    let lh = $(line).height() || 0;
-    if (y < 0)
-      $(scroller).scrollTop(sy + y);
-    else if (y + lh > sh)
-      $(scroller).scrollTop(sy + y);
-
-    this.cur_newsgroup = newsgroup;
+    return node;
   }
+
 
   name2newsgroup(name: string): INewsGroup | null {
-    for (let ng of this.newsgroups) {
+    for (let ng of this.newsgroups)
       if (ng.n.name == name) return ng;
-    }
     return null;
   }
+
 
   clearSubsInfo() {
     this.subsInfo = {};
@@ -229,10 +238,8 @@ export class NewsGroupsPane extends ToolbarPane {
         });
         si.update = true;
       }
-      if (saveData.length > 0) {
-        console.log('saveData:', saveData);
+      if (saveData.length > 0)
         await api_subsInfo_write(user.id, saveData)
-      }
     }
   }
 
@@ -246,60 +253,27 @@ export class NewsGroupsPane extends ToolbarPane {
     }
   }
 
-  read_all(newsgroup: string, last: number = 0) {
-    let d = this.name2newsgroup(newsgroup);
-    if (!d) throw new Error(`newsgroup:${newsgroup} is not exists`);
-    if (!d.subsInfo)
-      d.subsInfo = { subscribe: false, read: new ReadSet(), update: false };
-    d.subsInfo.read.clear();
-    d.subsInfo.read.add_range(1, d.n.max_id - last);
-    this.saveSubsInfo();
-  }
-
-  unread_all(newsgroup: string) {
-    let d = this.name2newsgroup(newsgroup);
-    if (!d) throw new Error(`newsgroup:${newsgroup} is not exists`);
-    if (!d.subsInfo)
-      d.subsInfo = { subscribe: false, read: new ReadSet(), update: false };
-    d.subsInfo.read.clear();
-    this.saveSubsInfo();
-  }
-
   scrollToNextSubscribedNewsgroup(bFromTop: boolean = false): boolean {
-    let cur: HTMLElement;
-    if (this.cur_newsgroup && !bFromTop) {
-      cur = $(`#${this.id} .nb-list-group button[newsgroup-id=${this.cur_newsgroup.n.id}]`)[0];
-      cur = cur.nextSibling as HTMLElement;
-    } else {
-      let n = $(`#${this.id} .nb-list-group button`);
-      if (n.length > 0) cur = n[0]
-      else return false;
+    let node: NewsgroupTree | undefined = this.curNode;
+    if (!node || bFromTop) node = this.root;
+    if (node) node = node.next;
+    while (node && !node.hasArticles()) {
+      node = node.next;
     }
-    while (cur && (!$(cur).hasClass('subscribe') || $(cur).hasClass('read')))
-      cur = cur.nextSibling as HTMLElement;
-    if (cur) {
-      let name = cur.attributes['newsgroup-name'].value;
-      let ng = this.name2newsgroup(name);
-      if (ng) {
-        this.select_newsgroup(ng);
-        return true;
-      }
-    }
+
+    if (node) {
+      this.select_newsgroup(node.path);
+      return true;
+    } else if (this.root.next)
+      this.select_newsgroup(this.root.next.path);
     return false;
   }
 
-  update_subsInfo(newsgroup: INewsGroup) {
-    let n = newsgroup.n;
-    let si = newsgroup.subsInfo;
-    if (si) {
-      let unread = n.max_id - si.read.count();
-      let c = '(' + span({ class: 'unread', 'title-i18n': 'unread-articles' }, unread,) +
-        '/' + span({ class: 'max-id', 'title-i18n': 'total-articles' }, n.max_id) + ')';
-      $(`#${this.id} [newsgroup-id="${n.id}"] .newsgroup-status`).html(c);
 
-      let line = `#${this.id} [newsgroup-id="${n.id}"].newsgroup-line`;
-      if (unread) $(line).removeClass('read');
-      else $(line).addClass('read');
-    }
+  update_subsInfo(path: string) {
+    let node = this.root.findNewsgroup(path);
+    if (!node) throw new Error(`newsgroup ${path} not found.`);
+    for (let n: NewsgroupTree | undefined = node; n; n = n.parent)
+      n.calc();
   }
 }

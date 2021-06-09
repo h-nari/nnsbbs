@@ -3,12 +3,16 @@ import { User } from "./user";
 
 export interface ISettingData {
   showDeletedArticle: boolean;
+  articleUnread: number;
 }
 
 
 export class Setting {
   private user: User;
-  public d: ISettingData = { showDeletedArticle: false };
+  public d: ISettingData = {
+    showDeletedArticle: false,
+    articleUnread: 20
+  };
 
   constructor(user: User) {
     this.user = user;

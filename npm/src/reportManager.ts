@@ -2,6 +2,7 @@ import { admin_api_report_list, admin_api_report_read, api_report_treatment, api
 import { Menu } from "./menu";
 import NnsBbs from "./nnsbbs";
 import { a, button, div, input, option, select, selected, span, table, td, th, tr } from "./tag"
+import { set_i18n } from "./util";
 
 export class ReportManaget {
   private id = "report-manager";
@@ -146,7 +147,7 @@ export class ReportManaget {
   redisplay() {
     $('#' + this.id).html(this.inner_html());
     this.bind();
-    this.parent.set_i18n_text();
+    set_i18n();
   }
 
   bind() {

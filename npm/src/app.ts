@@ -11,13 +11,13 @@ declare global {
   }
 }
 
-let nb = new NnsBbs(i18next);
-window.nnsbbs = nb;
 i18next.init({
   lng: 'jp',
   debug: true,
   resources: { en, jp }
 });
+let nb = new NnsBbs(i18next);
+window.nnsbbs = nb;
 
 $(window).on('keydown', e => {
   if (e.key == ' ') {

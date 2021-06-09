@@ -1,7 +1,7 @@
 import { div, input, button, tag, label, a, span, select, option, selected, icon } from './tag';
 import { api_membership, IMembership, api_post, api_attachment, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, IPostArg, api_mail_auth, admin_api_article } from './dbif';
 import { INewsGroup } from "./newsgroup";
-import { article_str, escape_html, get_json, make_rev_id } from './util';
+import { article_str, escape_html, get_json, make_rev_id, set_i18n } from './util';
 import { createHash } from 'sha1-uint8array';
 import NnsBbs from './nnsbbs';
 import { Attachment } from './attachemnt';
@@ -131,7 +131,6 @@ export class User {
           text: 'ok',
           action: () => {
             let email = $('.user-registration .email').val() as string;
-            console.log('email:', email);
             if (!email) {
               $.alert(i18next.t('input-email'));
               return false;
@@ -230,7 +229,7 @@ export class User {
     const redisplay_func = () => {
       let htmls = attachment_list.map(a => a.html());
       $('.post-article .attachment-area').html(div(...htmls));
-      this.parent.set_i18n_text();
+      set_i18n();
       attachment_list.forEach(a => {
         a.bind();
         a.onDelete = () => {
@@ -322,7 +321,7 @@ export class User {
         }
       },
       onOpen: () => {
-        this.parent.set_i18n_text();
+        set_i18n('.post-article');
         $('.btn-quote').on('click', () => {
           if (a) quote_article('post-content', n, a);
         });
@@ -421,7 +420,7 @@ export class User {
       content: div({ class: 'user-setting overflow-hidden' },
         div({ class: 'row' },
           div({ class: 'col title', i18n: 'theme' }), div({ class: 'col value' }, c))),
-      onOpen: () => { this.parent.set_i18n_text(); },
+      onOpen: () => { set_i18n('.user-setting'); },
       buttons: {
         write: {
           text: i18next.t('write'),
@@ -442,7 +441,6 @@ export class User {
 
   ban_article_dlg(newsgroup: INewsGroup, article: IArticle) {
     let i18next = this.parent.i18next;
-    console.log('article:', article);
     $.confirm({
       title: i18next.t('ban-article'),
       type: 'red',

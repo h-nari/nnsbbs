@@ -5,6 +5,6 @@ interface JQueryStatic {
 };
 
 interface JQuery {
-  tooltip(): void;
+  tooltip(any): void;
 }
 

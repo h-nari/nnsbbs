@@ -15,7 +15,6 @@ $(window).on('resize', () => {
 });
 
 $(window).on('popstate', e => {
-  console.log('popstate:', document.location.pathname);
   var d = document.location.pathname.split('/');
   var nb = window.nnsbbs;
   if (d.length == 2)

@@ -1,4 +1,4 @@
-import { escape_html, make_rev_id, split_rev_id } from "./util";
+import { escape_html, make_rev_id, set_i18n, split_rev_id } from "./util";
 import { div, button, span, icon } from "./tag";
 import { ToolbarPane } from "./pane";
 import { ReadSet } from "./readSet";
@@ -113,7 +113,7 @@ export class TitlesPane extends ToolbarPane {
       if (first) {
         if (first > 1) {
           if (first > 101)
-            b += button({ from: first - 100, to: first - 1 }, this.t('load-pervious-100-titles'));
+            b += button({ from: first - 100, to: first - 1 }, this.t('load-previous-100-titles'));
           b += button({ from: 1, to: first - 1 }, this.t('load-all-previous-titles'));
         }
       }
@@ -211,7 +211,7 @@ export class TitlesPane extends ToolbarPane {
         let scroll = $(this.scroller).scrollTop() || 0;
         await this.load(this.newsgroup, from, to, false);
         $(this.scroller).scrollTop(scroll);
-        this.parent.set_i18n_text();
+        set_i18n();
       }
     })
 
@@ -331,20 +331,16 @@ export class TitlesPane extends ToolbarPane {
     }
     if (cur && cur.tagName == 'DIV' && cur.attributes['rev_id']) {
       rev_id = cur.attributes['rev_id'].value;
-      this.select_article(rev_id);
+      await this.select_article(rev_id);
       return true;
     }
 
     let article_id = Number(split_rev_id(rev_id).article_id);
-    console.log('article_id:', article_id);
     if (this.newsgroup.subsInfo) {
       let readset = this.newsgroup.subsInfo.read;
       while (readset.includes(article_id)) article_id++;
-      console.log('article_id:', article_id);
-      if (article_id > this.newsgroup.n.max_id) {
-        console.log('return false');
+      if (article_id > this.newsgroup.n.max_id)
         return false;
-      }
     }
 
     if (cur && $(cur).hasClass('more-titles')) {
@@ -355,18 +351,16 @@ export class TitlesPane extends ToolbarPane {
       if (article_id >= from && article_id <= to) {
         await this.load(this.newsgroup, Number(from), Number(to), false);
         cur = $(`#${this.id} .title-list [rev_id="${rev_id}"]`)[0];
-        console.log('cur:', cur);
         if (!cur) throw new Error('unexpected-situation');
         while (cur && cur.classList.contains('read'))
           cur = cur.nextElementSibling as HTMLElement;
         if (cur && cur.tagName == 'DIV' && cur.attributes['rev_id']) {
           rev_id = cur.attributes['rev_id'].value;
-          this.select_article(rev_id);
+          await this.select_article(rev_id);
           return true;
         }
       }
     }
-    console.log('select_article:', article_id);
     await this.select_article(make_rev_id(String(article_id), 0));
     return true;
   }

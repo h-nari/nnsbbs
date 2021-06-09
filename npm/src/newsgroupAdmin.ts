@@ -17,8 +17,8 @@ export class NewsgroupAdmin {
   private id = 'newsgroup-admin';
   public parent: NnsBbs;
   private newsgroups: INewsgroupAdmin[] = [];
-  public root: NewsgroupTree = new NewsgroupTree(this, '', '');
-  private curNode: NewsgroupTree | null = null;
+  public root: NewsgroupAdminTree = new NewsgroupAdminTree(this, '', '');
+  private curNode: NewsgroupAdminTree | null = null;
   private savedData: string = '{}';
   public menu: Menu;
   public bShowDeleted: boolean = false;
@@ -140,7 +140,7 @@ export class NewsgroupAdmin {
       this.newsgroups = await get_json('/admin/api/newsgroup') as INewsgroupAdmin[];
       this.membership = await get_json('/api/membership') as IMembership;
       let old_root = this.root;
-      this.root = new NewsgroupTree(this, '', '');
+      this.root = new NewsgroupAdminTree(this, '', '');
       for (let n of this.newsgroups)
         this.root.allocNewsgroup(n.name, n);
       if (this.curNode)
@@ -156,8 +156,11 @@ export class NewsgroupAdmin {
       this.root.scan();
       this.root.makeMenu();
     }
+    let scroller = `#${this.id} .newsgroup-tree >div`;
+    let sy = $(scroller).scrollTop() || 0;
     $('#' + this.id).html(this.innerHtml());
     this.bind();
+    $(scroller).scrollTop(sy);
   }
 
   detailHtml(): string {
@@ -243,7 +246,7 @@ export class NewsgroupAdmin {
 
   }
 
-  new_newsgroups_dlg(parent: NewsgroupTree | null = null) {
+  new_newsgroups_dlg(parent: NewsgroupAdminTree | null = null) {
     let i18next = this.parent.i18next;
     let upper_node = '';
     if (parent) {
@@ -318,18 +321,16 @@ export class NewsgroupAdmin {
       await get_json('/admin/api/newsgroup', { method: 'post', data: { update: JSON.stringify(update_list) } });
   }
 
-  async deleteMarkedNewsgroup(node: NewsgroupTree, result: { cnt: number, list: string[] }): Promise<boolean> {
-    let children: NewsgroupTree[] = [];
+  async deleteMarkedNewsgroup(node: NewsgroupAdminTree, result: { cnt: number, list: string[] }): Promise<boolean> {
+    let children: NewsgroupAdminTree[] = [];
     for (let c of node.children) {
       let deleted = await this.deleteMarkedNewsgroup(c, result);
       if (!deleted) children.push(c);
     }
     if (!node.bDeleted || children.length > 0 && node.newsgroup && node.newsgroup.max_id > 0) {
-      console.log(node.path, ' is keep');
       node.children = children;
       return false;
     } else {
-      console.log(node.path, ' is deleted');
       if (node.newsgroup) {
         await get_json('/admin/api/newsgroup', { method: 'post', data: { delete: JSON.stringify([{ id: node.newsgroup.id }]) } });
       }
@@ -435,16 +436,16 @@ function form_check(id: string, label_str: string, value: boolean) {
   );
 }
 
-class NewsgroupTree {
+export class NewsgroupAdminTree {
   public newsgroupAdmin: NewsgroupAdmin;
   public name: string;
   public path: string;
   public newsgroup: (INewsgroupAdmin | null) = null;
-  public children: NewsgroupTree[] = [];
+  public children: NewsgroupAdminTree[] = [];
   public ord0: number = 0;
   public ord: number = 0;
   public depth: number = 0;
-  public fold: boolean = false;
+  public fold: boolean = true;
   public menu: Menu;
   public bDeleted: number = 0;
 
@@ -455,28 +456,28 @@ class NewsgroupTree {
     this.menu = new Menu({ icon: 'three-dots' });
   }
 
-  map(func: (n: NewsgroupTree) => void) {
+  map(func: (n: NewsgroupAdminTree) => void) {
     func(this);
     for (let c of this.children)
       c.map(func);
   }
 
-  findNewsgroup(path: string): NewsgroupTree | null {
+  findNewsgroup(path: string): NewsgroupAdminTree | null {
     let s = splitPath(path);
-    let parent: NewsgroupTree | null;
+    let parent: NewsgroupAdminTree | null;
     if (s.parent) {
       parent = this.findNewsgroup(s.parent);
-    } else parent = this;
-
-    if (parent) {
-      for (let c of parent.children)
-        if (c.path == path)
+      if (parent)
+        return parent.findNewsgroup(s.base);
+    } else {
+      for (let c of this.children)
+        if (c.name == path)
           return c;
     }
     return null;
   }
 
-  allocNewsgroup(path: string, n: (INewsgroupAdmin | null) = null): NewsgroupTree {
+  allocNewsgroup(path: string, n: (INewsgroupAdmin | null) = null): NewsgroupAdminTree {
     let i = path.indexOf('.');
     if (i < 0) {
       let child = this.allocChild(path);
@@ -494,13 +495,13 @@ class NewsgroupTree {
     }
   }
 
-  allocChild(name: string): NewsgroupTree {
+  allocChild(name: string): NewsgroupAdminTree {
     for (let c of this.children) {
       if (c.name == name)
         return c;
     }
     let path = this.path == '' ? name : this.path + '.' + name;
-    let c = new NewsgroupTree(this.newsgroupAdmin, name, path);
+    let c = new NewsgroupAdminTree(this.newsgroupAdmin, name, path);
     this.children.push(c);
     return c;
   }
@@ -542,7 +543,6 @@ class NewsgroupTree {
       this.menu.add(new Menu({
         name: i18next.t('remove-delete-flag'),
         action: e => {
-          console.log('call undelete');
           this.undelete();
         }
       }));
@@ -550,7 +550,6 @@ class NewsgroupTree {
         this.menu.add(new Menu({
           name: i18next.t('remove-delete-flag-of-lower-levels'),
           action: e => {
-            console.log('call undelete');
             this.undelete('tree');
           }
         }));
@@ -570,7 +569,7 @@ class NewsgroupTree {
       }
     }));
     if (this.children.length > 1)
-      this.menu.add(new Menu({ name: i18next.t('reordering'), action: reorderChildDlg, arg: this }));
+      this.menu.add(new Menu({ name: i18next.t('reordering'), action: e => { reorderChildDlg(e, this) } }));
     if (this.depth > 0) {
       this.menu.add(new Menu({
         name: i18next.t('fold-all'),
@@ -600,7 +599,7 @@ class NewsgroupTree {
       c.makeMenu();
   }
 
-  sub_html(selected_node: NewsgroupTree | null = null): string {
+  sub_html(selected_node: NewsgroupAdminTree | null = null): string {
     let s = '';
     for (let c of this.children) {
       if (this.newsgroupAdmin.bShowDeleted || !c.bDeleted)
@@ -609,13 +608,13 @@ class NewsgroupTree {
     return s;
   }
 
-  html(selected_node: NewsgroupTree | null = null): string {
+  html(selected_node: NewsgroupAdminTree | null = null): string {
     let fold_icon = '';
     if (this.children.length > 0)
       fold_icon = span({ class: 'btn-fold ' + (this.fold ? 'bi-chevron-right' : 'bi-chevron-down') })
 
     let c = 'newsgroup-line d-flex';
-    if (this == selected_node) c += ' selected';
+    if (this === selected_node) c += ' selected';
     if (this.bDeleted) c += ' deleted';
     return div({ class: 'sub-tree', fold: selected(this.fold) },
       div({ path: this.path, class: c },
@@ -672,7 +671,6 @@ class NewsgroupTree {
         columnClass: 'medium',
         buttons: {
           'Real Delete': async () => {
-            console.log('Real Delete');
             let n = this.newsgroup;
             if (n) {
               await get_json('/admin/api/newsgroup', {
@@ -814,15 +812,14 @@ class NewsgroupTree {
 
 // --------------------- End of NewsgroupTree Class ------------------------
 
-function reorderChildDlg(e: JQuery.ClickEvent, arg: any) {
-  let node = arg as NewsgroupTree;
-
+function reorderChildDlg(e: JQuery.ClickEvent, node: NewsgroupAdminTree) {
+  let i18next = window.nnsbbs.i18next;
   $.confirm({
-    title: 'ニュースグループの並び変更',
+    title: i18next.t('reorder-newsgroups'),
     type: 'yellow',
     columnClass: 'medium',
     content: div({ class: 'reorder-child' },
-      div({ class: 'explain' }, 'ニュースグループ名をドラッグし順番を変更して下さい'),
+      div({ class: 'explain' }, 'drag-newsgroup-to-reorder'),
       ul({ class: 'sortable' }, node.children.map(c =>
         li({ class: 'ui-state-default', path: c.path }, icon('grip-vertical'),
           span(c.path))).join(''))),
@@ -832,7 +829,7 @@ function reorderChildDlg(e: JQuery.ClickEvent, arg: any) {
     },
     buttons: {
       ok: {
-        text: '設定',
+        text: i18next.t('set'),
         action: async () => {
           let children = $('.sortable').children();
           let list: string[] = [];
@@ -843,14 +840,14 @@ function reorderChildDlg(e: JQuery.ClickEvent, arg: any) {
         }
       },
       cancel: {
-        text: 'キャンセル',
+        text: i18next.t('cancel'),
       }
     }
   });
 
 }
 
-function splitPath(path: string): { parent: string | null, base: string } {
+export function splitPath(path: string): { parent: string | null, base: string } {
   let i = path.indexOf('.');
   if (i < 0) return { parent: null, base: path };
   else return { parent: path.substring(0, i), base: path.substring(i + 1) };

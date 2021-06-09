@@ -19,7 +19,7 @@ our %Lexicon = (
     'error.in.registration' => "登録情報にエラーがあります",
     'user.information '     => 'ユーザ情報',
     'user.management'       => 'ユーザ管理',
-    'newsgroup.management'  => 'ニュースグループ管理',
+    'newsgroup.management'  => '掲示板管理',
     'access.mail.auth.link' =>
       "メールアドレスの認証を完了させるために\n"
       . "次のURLをアクセスして下さい。\n\n",
