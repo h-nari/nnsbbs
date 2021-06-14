@@ -1,7 +1,7 @@
 import { div, input, button, tag, label, a, span, select, option, selected, icon } from './tag';
 import { api_membership, IMembership, api_post, api_attachment, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, IPostArg, api_mail_auth, admin_api_article } from './dbif';
 import { INewsGroup } from "./newsgroup";
-import { article_str, escape_html, get_json, make_rev_id, set_i18n } from './util';
+import { article_str, escape_html, get_json, set_i18n } from './util';
 import { createHash } from 'sha1-uint8array';
 import NnsBbs from './nnsbbs';
 import { Attachment } from './attachemnt';
@@ -223,7 +223,7 @@ export class User {
     });
   }
 
-  async post_article_dlg(n: INewsGroup, a: (IArticle | null) = null, correctArticle: boolean = false) {
+  async post_article_dlg(n: INewsGroup, a: (IArticle | null) = null) {
     const i18next = this.parent.i18next;
     var attachment_list: Attachment[] = [];
     const redisplay_func = () => {
@@ -247,15 +247,9 @@ export class User {
     let title = '';
     let content = '';
     if (a) {
-      if (correctArticle) {
-        title = a.title;
-        content = a.content;
-        a.attachment.forEach(a => attachment_list.push(new Attachment(a)));
-      } else {
-        if (a.title.match(/^Re:/)) title = a.title;
-        else title = 'Re:' + a.title;
-        content = this.user.signature;
-      }
+      if (a.title.match(/^Re:/)) title = a.title;
+      else title = 'Re:' + a.title;
+      content = this.user.signature;
     } else {
       content = this.user.signature;
     }
@@ -264,10 +258,10 @@ export class User {
     let c = tag('form', { class: 'post-article' },
       form_input('post-name', i18next.t('disp-name'), { value: this.user.disp_name }),
       form_input('post-title', i18next.t('subject'), { value: title }),
-      form_post_textarea('post-content', i18next.t('body'), a, { value: content, rows: 10 }, correctArticle),
+      form_post_textarea('post-content', i18next.t('body'), a, { value: content, rows: 10 }),
       div({ class: 'attachment-area' }));
     $.confirm({
-      title: i18next.t(correctArticle ? 'correct-article' : 'post-article'),
+      title: i18next.t('post-article'),
       columnClass: 'large',
       type: 'orange',
       content: c,
@@ -277,7 +271,7 @@ export class User {
           action: async () => {
             let user_id = this.user?.id || '';
             let newsgroup_id = n.n.id;
-            let reply_to = '', reply_rev = 0;
+            let reply_to = '';
             let title = $('#post-title').val() as string;
             let disp_name = $('#post-name').val() as string;
             let content = $('#post-content').val() as string;
@@ -285,18 +279,11 @@ export class User {
             if (disp_name == '') return error_dlg('name-is-blank');
             if (content == '') return error_dlg('content-is-blank');
 
-            if (a) {
-              reply_to = correctArticle ? a.reply_to : a.article_id;
-              reply_rev = correctArticle ? a.reply_rev : a.rev;
-            }
+            if (a) reply_to = a.reply_to;
 
             content = 'content-type: text/plain\n\n' + content;
 
-            let postArg: IPostArg = { newsgroup_id, user_id, disp_name, title, content, reply_to, reply_rev };
-            if (correctArticle && a) {
-              postArg.article_id = a.article_id;
-              postArg.rev = a.rev + 1;
-            }
+            let postArg: IPostArg = { newsgroup_id, user_id, disp_name, title, content, reply_to };
             let r = await api_post(postArg);
             if (attachment_list.length > 0) {
               let fd = new FormData();
@@ -306,7 +293,6 @@ export class User {
               });
               fd.append('newsgroup_id', newsgroup_id);
               fd.append('article_id', r.article_id);
-              fd.append('rev', String(r.rev));
               let attach = attachment_list.map(a => a.data());
               fd.append('attach', JSON.stringify(attach));
               let r2 = await api_attachment(fd);
@@ -464,7 +450,7 @@ export class User {
             let bDeleted = $('#ban-chk-btn').prop('checked') ? 1 : 0;
             let delete_reason = ($('.article-ban-dlg .reason textarea').val() || '') as string;
             await admin_api_article({
-              id: article.article_id, rev: article.rev, bDeleted, delete_reason
+              id: article.article_id, bDeleted, delete_reason
             });
             this.parent.redisplay();
           }
@@ -516,14 +502,14 @@ function form_textarea(id: string, label_str: string, opt: IFormGroupOpt) {
     input_part);
 }
 
-function form_post_textarea(id: string, label_str: string, a: IArticle | null, opt: IFormGroupOpt, correct_article: boolean) {
+function form_post_textarea(id: string, label_str: string, a: IArticle | null, opt: IFormGroupOpt) {
   let input_part: string;
   input_part = tag('textarea', {
     id, rows: opt.rows, readonly: opt.readonly,
     class: 'form-control', placeholder: opt.placeholder
   }, opt.value || '');
   let reply_btn = '';
-  if (a && !correct_article)
+  if (a)
     reply_btn = button({ class: 'btn ml-2 btn-quote', type: 'button', 'title-i18n': 'quote-article' },
       icon('chat-left-quote'));
   let attach_btn = button({ class: 'btn ml-auto btn-attach', type: 'button', 'title-i18n': 'attach-file' },
@@ -558,7 +544,7 @@ function form_membership(id: string, label_str: string, help_str: string, value:
 
 function quote_article(id: string, n: INewsGroup, a: IArticle) {
   let c = $('#' + id).val();
-  let qs = 'In article ' + n.n.name + '/' + make_rev_id(a.article_id, a.rev) + '\n';
+  let qs = 'In article ' + n.n.name + '/' + a.article_id + '\n';
   qs += a.author + ' writes:'
   qs += '\n';
 

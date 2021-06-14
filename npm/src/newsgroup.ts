@@ -83,7 +83,7 @@ export class NewsgroupsPane extends ToolbarPane {
       this.root.allocNewsgroup(n.n.name, n);
     var list: NewsgroupTree[] = [];
     this.root.forEach(n => list.push(n));
-    for (let i = 0; i < list.length; i++) 
+    for (let i = 0; i < list.length; i++)
       list[i].next = i < list.length - 1 ? list[i + 1] : undefined;
 
     this.root.sumUp(n => n.calc());

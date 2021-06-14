@@ -262,8 +262,7 @@ sub api_title($self) {
     eval {
         die "user_id is required" if ( !$user_id );
 
-        my $sql = "select newsgroup_id,id,rev,rev_reason,title,reply_to";
-        $sql .= ",reply_rev";
+        my $sql = "select newsgroup_id,id,title,reply_to";
         $sql .= ",user_id,disp_name,ip,bDeleted,created_at,deleted_at";
         $sql .= " from article where user_id=? order by created_at";
         $data = $db->select_ah( $sql, $user_id );
@@ -347,7 +346,7 @@ sub api_report($self) {
             $sql .= " r.id as id,type_id,treatment_id";
             $sql .= ",t.name as type,m.name as treatment";
             $sql .= ",n.name as newsgroup,a.id as article_id";
-            $sql .= ",title,disp_name,r.rev as rev";
+            $sql .= ",title,disp_name";
             $sql .= ",a.created_at as posted_at";
             $sql .= ",notifier,detail,treatment_detail";
             $sql .= ",r.created_at as created_at,treated_at";
@@ -360,7 +359,6 @@ sub api_report($self) {
         $sql .= " where r.newsgroup_id=n.id";
         $sql .= " and r.newsgroup_id=a.newsgroup_id";
         $sql .= " and r.article_id=a.id";
-        $sql .= " and r.rev=a.rev";
         $sql .= " and r.type_id=t.id";
         $sql .= " and r.treatment_id=m.id";
 
@@ -440,16 +438,14 @@ sub api_article($self) {
         if ($update) {
             my $arg = from_json($update);
             my $id  = $arg->{'id'};
-            my $rev = $arg->{'rev'};
             die "id required" unless $id;
-            die "rev required" if $rev eq "";
             my $cnt = 0;
             while ( my ( $key, $value ) = each(%$arg) ) {
-                next if ( $key eq 'id' || $key eq 'rev' );
+                next if ( $key eq 'id');
                 my $sql = "update article set $key=?";
                 $sql .= ",deleted_at=now()" if ( $key eq "bDeleted" );
-                $sql .= " where id=? and rev=?";
-                $db->execute( $sql, $value, $id, $rev );
+                $sql .= " where id=?";
+                $db->execute( $sql, $value, $id);
                 $cnt++;
             }
             die "no parameter specified" if $cnt == 0;

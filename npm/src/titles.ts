@@ -1,4 +1,4 @@
-import { escape_html, make_rev_id, set_i18n, split_rev_id } from "./util";
+import { escape_html, set_i18n} from "./util";
 import { div, button, span, icon } from "./tag";
 import { ToolbarPane } from "./pane";
 import { ReadSet } from "./readSet";
@@ -16,8 +16,8 @@ export class TitlesPane extends ToolbarPane {
 
   public bDispTherad: boolean = true;
   public newsgroup: INewsGroup | undefined;
-  public cur_rev_id: string | undefined;
-  public clickCb: ((newsgroup_id: string, rev_id: string) => void) | undefined;
+  public cur_article_id: string | undefined;
+  public clickCb: ((newsgroup_id: string, article_id: string) => void) | undefined;
   public loaded_titles: ReadSet = new ReadSet();
 
   constructor(id: string, parent: NnsBbs) {
@@ -26,7 +26,7 @@ export class TitlesPane extends ToolbarPane {
   }
 
   cur_title() {
-    if (this.cur_rev_id) return this.id2title[this.cur_rev_id];
+    if (this.cur_article_id) return this.id2title[this.cur_article_id];
     else return undefined;
   }
 
@@ -51,23 +51,14 @@ export class TitlesPane extends ToolbarPane {
       this.id2title = {}
       this.titles = [];
       this.threads = [];
-      this.cur_rev_id = undefined;
+      this.cur_article_id = undefined;
     }
     for (let d of data) {
       if (this.loaded_titles.includes(Number(d.article_id))) continue;
-      let rev_id = make_rev_id(d.article_id, d.rev);
-      this.id2title[rev_id] = d;
+      let a_id = d.article_id;
+      this.id2title[a_id] = d;
       this.titles.push(d);
-      if (d.rev > 0) {
-        let rev0_id = make_rev_id(d.article_id, d.rev - 1);
-        let rev0 = this.id2title[rev0_id];
-        if (rev0) {
-          rev0.revised = d;
-          continue;
-        }
-      }
-      let reply_rev_id = make_rev_id(d.reply_to, d.reply_rev);
-      let parent = this.id2title[reply_rev_id];
+      let parent = this.id2title[d.reply_to];
       if (parent) {
         if (!parent.children) parent.children = [];
         parent.children.push(d);
@@ -145,29 +136,24 @@ export class TitlesPane extends ToolbarPane {
   }
 
   thread_html(t: ITitle, rule1: string = '', rule2: string = '') {
-    if (t.revised && (!t.children || t.children.length == 0))
-      return this.thread_html(t.revised, rule1, rule2);
     let s = this.title_html(t, rule1);
     if (t.children) {
       for (let i = 0; i < t.children.length; i++) {
-        let r1 = rule2 + (i < t.children.length - 1 || t.revised ? '┣' : '┗');
-        let r2 = rule2 + (i < t.children.length - 1 || t.revised ? '┃' : '  ');
+        let r1 = rule2 + (i < t.children.length - 1 ? '┣' : '┗');
+        let r2 = rule2 + (i < t.children.length - 1 ? '┃' : '  ');
         s += this.thread_html(t.children[i], r1, r2);
       }
     }
-    if (t.revised)
-      s += this.thread_html(t.revised, rule2 + '┗', rule2 + '  ');
     return s;
   }
 
   title_html(d: ITitle, rule: string = ''): string {
-    let rev_id = make_rev_id(d.article_id, d.rev);
-    let opt = { rev_id };
+    let opt = { article_id: d.article_id };
     let c: string[] = ['title-contextmenu'];
     let si = this.newsgroup?.subsInfo;
     if (si && si.read.includes(Number(d.article_id)))
       c.push('read');
-    if (this.cur_rev_id == rev_id)
+    if (this.cur_article_id == d.article_id)
       c.push('active');
     if (d.bDeleted)
       c.push('deleted');
@@ -182,7 +168,7 @@ export class TitlesPane extends ToolbarPane {
     }
     let s = div(opt,
       div({ class: 'article-rule' }, rule),
-      div({ class: 'article-id' }, make_rev_id(d.article_id, d.rev)),
+      div({ class: 'article-id' }, d.article_id),
       div({ class: 'article-from', user_id: d.user_id }, escape_html(d.disp_name)),
       div({ class: 'article-time' }, d.date),
       div({ class: 'article-title' }, escape_html(d.title)),
@@ -195,11 +181,11 @@ export class TitlesPane extends ToolbarPane {
     super.bind();
     $(`#${this.id_lg} >div`).on('click', async ev => {
       let target = ev.currentTarget;
-      if (target.attributes['rev_id']) {
-        let rev_id: string = target.attributes['rev_id'].value;
-        await this.select_article(rev_id);
+      if (target.attributes['article_id']) {
+        let article_id: string = target.attributes['article_id'].value;
+        await this.select_article(article_id);
         if (this.newsgroup && this.clickCb) {
-          this.clickCb(this.newsgroup.n.id, rev_id);
+          this.clickCb(this.newsgroup.n.id, article_id);
         }
       }
     });
@@ -214,27 +200,19 @@ export class TitlesPane extends ToolbarPane {
         set_i18n();
       }
     })
-
-    /*    $(`#${this.id_lg} >div .article-from`).on('click', e => { */
-    /*      let user_id = e.currentTarget.attributes['user_id'].value; */
-    /*      this.parent.user.show_profile(user_id); */
-    /*      e.preventDefault(); */
-    /*      e.stopPropagation(); */
-    /*    }); */
   }
 
-  async select_article(rev_id: string) {
-    const line = this.scrollee + ` >div[rev_id="${rev_id}"]`;
-    if (this.cur_rev_id != rev_id) {
+  async select_article(article_id: string) {
+    const line = this.scrollee + ` >div[article_id="${article_id}"]`;
+    if (this.cur_article_id != article_id) {
 
       if ($(line).length == 0 && this.newsgroup) {
-        let r = split_rev_id(rev_id);
-        let id_num = parseInt(r.article_id);
+        let id_num = parseInt(article_id);
         await this.load(this.newsgroup, Math.max(1, id_num - 50), Math.min(id_num + 50, this.newsgroup.n.max_id))
       }
       $(this.scrollee + ' >div').removeClass('active');
       $(line).addClass('active');
-      this.cur_rev_id = rev_id;
+      this.cur_article_id = article_id;
     }
   }
 
@@ -288,11 +266,11 @@ export class TitlesPane extends ToolbarPane {
 
   scrollToPrevUnread(bFromBottom: boolean = false): boolean {
     let cur: HTMLElement;
-    if (this.cur_rev_id && !bFromBottom) {
-      cur = $(`#${this.id} .title-list [rev_id="${this.cur_rev_id}"]`)[0];
+    if (this.cur_article_id && !bFromBottom) {
+      cur = $(`#${this.id} .title-list [article_id="${this.cur_article_id}"]`)[0];
       cur = cur.previousSibling as HTMLElement;
     } else {
-      let n = $(`#${this.id} .title-list >div[rev_id]`);
+      let n = $(`#${this.id} .title-list >div[article_id]`);
       if (n.length > 0)
         cur = n[n.length - 1];
       else {
@@ -302,9 +280,9 @@ export class TitlesPane extends ToolbarPane {
     while (cur && cur.classList.contains('read'))
       cur = cur.previousSibling as HTMLElement;
 
-    if (cur && cur.tagName == 'DIV' && cur.attributes['rev_id']) {
-      let rev_id = cur.attributes['rev_id'].value;
-      this.select_article(rev_id);
+    if (cur && cur.tagName == 'DIV' && cur.attributes['article_id']) {
+      let article_id = cur.attributes['article_id'].value;
+      this.select_article(article_id);
       return true;
     } else {
       return false;
@@ -314,32 +292,32 @@ export class TitlesPane extends ToolbarPane {
   async scrollToNextUnread(bFromTop: boolean = false): Promise<boolean> {
     if (!this.newsgroup) return false;
     let cur: HTMLElement;
-    let rev_id: string = '';
-    if (this.cur_rev_id && !bFromTop) {
-      rev_id = this.cur_rev_id;
-      cur = $(`#${this.id} .title-list [rev_id="${this.cur_rev_id}"]`)[0];
+    let article_id: string = '';
+    if (this.cur_article_id && !bFromTop) {
+      article_id = this.cur_article_id;
+      cur = $(`#${this.id} .title-list [article_id="${this.cur_article_id}"]`)[0];
       cur = cur.nextElementSibling as HTMLElement;
     } else {
-      let n = $(`#${this.id} .title-list >div[rev_id]`);
+      let n = $(`#${this.id} .title-list >div[article_id]`);
       if (n.length == 0)
         return false;
       cur = n[0];
     }
     while (cur && cur.classList.contains('read')) {
-      rev_id = cur.attributes['rev_id'].value || '';
+      article_id = cur.attributes['article_id'].value || '';
       cur = cur.nextElementSibling as HTMLElement;
     }
-    if (cur && cur.tagName == 'DIV' && cur.attributes['rev_id']) {
-      rev_id = cur.attributes['rev_id'].value;
-      await this.select_article(rev_id);
+    if (cur && cur.tagName == 'DIV' && cur.attributes['article_id']) {
+      article_id = cur.attributes['article_id'].value;
+      await this.select_article(article_id);
       return true;
     }
 
-    let article_id = Number(split_rev_id(rev_id).article_id);
+    let article_num = Number(article_id);
     if (this.newsgroup.subsInfo) {
       let readset = this.newsgroup.subsInfo.read;
-      while (readset.includes(article_id)) article_id++;
-      if (article_id > this.newsgroup.n.max_id)
+      while (readset.includes(article_num)) article_num++;
+      if (article_num > this.newsgroup.n.max_id)
         return false;
     }
 
@@ -348,25 +326,25 @@ export class TitlesPane extends ToolbarPane {
       let from = Number(btn.attributes['from'].value || '0');
       let to = Number(btn.attributes['to'].value || '0');
 
-      if (article_id >= from && article_id <= to) {
-        await this.load(this.newsgroup, Number(from), Number(to), false);
-        cur = $(`#${this.id} .title-list [rev_id="${rev_id}"]`)[0];
+      if (article_num >= from && article_num <= to) {
+        await this.load(this.newsgroup, from, to, false);
+        cur = $(`#${this.id} .title-list [article_id="${article_id}"]`)[0];
         if (!cur) throw new Error('unexpected-situation');
         while (cur && cur.classList.contains('read'))
           cur = cur.nextElementSibling as HTMLElement;
-        if (cur && cur.tagName == 'DIV' && cur.attributes['rev_id']) {
-          rev_id = cur.attributes['rev_id'].value;
-          await this.select_article(rev_id);
+        if (cur && cur.tagName == 'DIV' && cur.attributes['article_id']) {
+          article_id = cur.attributes['article_id'].value;
+          await this.select_article(article_id);
           return true;
         }
       }
     }
-    await this.select_article(make_rev_id(String(article_id), 0));
+    await this.select_article(article_id);
     return true;
   }
 
-  update_subsInfo(rev_id: string) {
-    let line = this.scrollee + ` [rev_id="${rev_id}"]`;
+  update_subsInfo(article_id: string) {
+    let line = this.scrollee + ` [article_id="${article_id}"]`;
     $(line).addClass('read');
     this.set_title();
     this.toolbar.redisplay();

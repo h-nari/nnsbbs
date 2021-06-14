@@ -41,7 +41,6 @@ create table report (
   treatment_id        int                default 0,     -- reporting treatment
   newsgroup_id        int                not null,      -- article to be reported
   article_id          int                not null,      -- article to be reported
-  rev                 int                not null,      -- article to be reported
   notifier            varchar(255) ,                    -- notifier of this report
   want_response       boolean            default false, -- notifier want response
   detail              text               default "",

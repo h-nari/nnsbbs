@@ -5,11 +5,8 @@ drop table if exists article;
 create table article (
   newsgroup_id  integer      not null,
   id            integer      not null,
-  rev           integer      default 0,      -- revision 
-  rev_reason    text         default "",     -- Reason for revision
   title         text         not null,
   reply_to      integer      default 0,
-  reply_rev     integer      default 0,      -- Revision of the replied article
   user_id       varchar(255) not null,       -- Author
   disp_name     varchar(255) default "",     -- Author's display name
   ip            varchar(255) default "",     -- IP address of the writing source

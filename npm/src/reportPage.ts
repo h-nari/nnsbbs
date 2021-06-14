@@ -20,9 +20,8 @@ export class ReportPage {
     let r = this.report;
     if (r) {
       let article = '[' + r.newsgroup + '/' + r.article_id;
-      if (r.rev > 0) article += '#' + r.rev;
       article += ']';
-      let link = window.nnsbbs_baseURL + 'bbs/' + r.newsgroup + '/' + r.article_id + '/' + r.rev;
+      let link = window.nnsbbs_baseURL + 'bbs/' + r.newsgroup + '/' + r.article_id;
       return div({ class: 'report-page' },
         a({ href: window.nnsbbs_baseURL + 'admin/report', i18n: 'to-report-list' }),
         div({ class: 'report-part' },

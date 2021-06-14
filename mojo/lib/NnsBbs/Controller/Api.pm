@@ -40,7 +40,7 @@ sub titles($self) {
             $newsgroup_id );
         die "no read permission.\n"
           if ( ( !defined($rpl) || $rpl > $level ) && !$moderator );
-        my $sql = "select id as article_id ,rev,title,reply_to,reply_rev";
+        my $sql = "select id as article_id ,title,reply_to";
         $sql .= ",created_at as date,user_id,disp_name,bDeleted";
         $sql .= " from article";
         $sql .= " where newsgroup_id = ?";
@@ -54,15 +54,15 @@ sub titles($self) {
             $sql .= "and id <= ?";
             push @params, $to;
         }
-        $sql .= " order by id,rev";
+        $sql .= " order by id";
         my $data = $db->select_ah( $sql, @params );
 
-        $sql = "select article_id,a.rev as rev,count(*) as count,type_id";
+        $sql = "select article_id,count(*) as count,type_id";
         $sql .= " from article as a,reaction as r";
         $sql .= " where a.newsgroup_id=r.newsgroup_id";
-        $sql .= " and a.id=r.article_id and a.rev=r.rev";
+        $sql .= " and a.id=r.article_id";
         $sql .= " and a.newsgroup_id = ?";
-        $sql .= " group by a.id,a.rev,type_id";
+        $sql .= " group by a.id,type_id";
         @params = ($newsgroup_id);
         if ($from) {
             $sql .= " and id >= ?";
@@ -76,13 +76,12 @@ sub titles($self) {
         my $arh = {};
         for my $ra (@$ah) {
             my $a_id = $ra->{article_id};
-            my $rev  = $ra->{rev};
-            $arh->{ $a_id, $rev } = {} unless $arh->{ $a_id, $rev };
-            $arh->{ $a_id, $rev }->{ $ra->{type_id} } = $ra->{count};
+            $arh->{$a_id} = {} unless $arh->{$a_id};
+            $arh->{$a_id}->{ $ra->{type_id} } = $ra->{count};
         }
         for my $t (@$data) {
-            $t->{reaction} = $arh->{ $t->{article_id}, $t->{rev} }
-              if $arh->{ $t->{article_id}, $t->{rev} };
+            $t->{reaction} = $arh->{ $t->{article_id} }
+              if $arh->{ $t->{article_id} };
             if ( $t->{bDeleted} && !$bShowDeleted ) {
                 print STDERR "deleted article\n";
                 $t->{title}     = '==== Deleted Article ====';
@@ -97,7 +96,6 @@ sub titles($self) {
 sub article($self) {
     my $newsgroup_id = $self->param("newsgroup_id");
     my $article_id   = $self->param("article_id");
-    my $rev          = $self->param("rev") || '0';
 
     eval {
         die "param newsgroup_id is required\n" unless ($newsgroup_id);
@@ -110,22 +108,21 @@ sub article($self) {
           if ( ( !defined($rpl) || $rpl > $level ) && !$moderator );
 
         my $sql = "select content,a.created_at as date,disp_name as author";
-        $sql .= ",title,rev,a.id as article_id,user_id,reply_to,reply_rev";
+        $sql .= ",title,a.id as article_id,user_id,reply_to";
         $sql .=
           ",a.bDeleted as bDeleted,delete_reason,a.deleted_at as deleted_at";
         $sql .= ",newsgroup_id,n.name as newsgroup";
         $sql .= " from article as a,newsgroup as n";
-        $sql .=
-" where a.newsgroup_id=n.id and newsgroup_id = ? and a.id = ? and rev=?";
-        my $hr = $db->select_rh( $sql, $newsgroup_id, $article_id, $rev );
+        $sql .= " where a.newsgroup_id=n.id and newsgroup_id = ? and a.id = ?";
+        my $hr = $db->select_rh( $sql, $newsgroup_id, $article_id );
 
         $sql = "select file_id,comment,filename,content_type";
         $sql .= ",length(data) as size";
         $sql .= " from attachment as a,attached_file as f";
         $sql .= " where a.file_id=f.id and newsgroup_id=?";
-        $sql .= " and article_id=? and rev=?";
+        $sql .= " and article_id=?";
         $sql .= " order by ord";
-        my $ah = $db->select_ah( $sql, $newsgroup_id, $article_id, $rev );
+        my $ah = $db->select_ah( $sql, $newsgroup_id, $article_id );
         $hr->{'attachment'} = $ah;
         $self->render( json => $hr );
     };
@@ -237,13 +234,11 @@ sub post_article {
     my $ip            = $self->client_ip;
     my $newsgroup_id  = $self->param('newsgroup_id');
     my $article_id    = $self->param('article_id');
-    my $rev           = $self->param('rev');
     my $title         = $self->param('title');
     my $user_id       = $self->param('user_id');
     my $disp_name     = $self->param('disp_name');
     my $content       = $self->param('content');
     my $reply_to      = $self->param('reply_to') || 0;
-    my $reply_rev     = $self->param('reply_rev') || 0;
     my @missing_param = ();
 
     eval {
@@ -267,19 +262,17 @@ sub post_article {
             $sql = "select max_id from newsgroup where id=? for update";
             my ($max_id) = $db->select_ra( $sql, $newsgroup_id );
             $article_id = $max_id + 1;
-            $rev        = 0;
-
             $sql = "update newsgroup set max_id=?,posted_at=now() where id=?";
             $db->execute( $sql, $article_id, $newsgroup_id );
         }
 
         $sql = "insert into article";
-        $sql .= "(newsgroup_id,id,rev,title,reply_to,reply_rev,";
+        $sql .= "(newsgroup_id,id,title,reply_to,";
         $sql .= "user_id,disp_name,ip,content)";
-        $sql .= "values(?,?,?,?,?,?,?,?,?,?)";
+        $sql .= "values(?,?,?,?,?,?,?,?)";
         $db->execute(
-            $sql,       $newsgroup_id, $article_id, $rev,
-            $title,     $reply_to,     $reply_rev,  $user_id,
+            $sql,       $newsgroup_id, $article_id,
+            $title,     $reply_to,     $user_id,
             $disp_name, $ip,           $content
         );
         $db->commit;
@@ -287,7 +280,6 @@ sub post_article {
             json => {
                 result     => 'ok',
                 article_id => $article_id . "",
-                rev        => $rev
             }
         );
     };
@@ -303,7 +295,6 @@ sub membership ($self) {
 sub attachment($self) {
     my $newsgroup_id = $self->param('newsgroup_id');
     my $article_id   = $self->param('article_id');
-    my $rev          = $self->param('rev') || 0;
     my $attach_json  = $self->param('attach');
     my $files        = $self->req->every_upload('file');
 
@@ -353,9 +344,9 @@ sub attachment($self) {
             my ( $comment, $file_id ) = @{ $attach->[$i] };
 
             $sql = "insert into attachment";
-            $sql .= "(newsgroup_id,article_id,rev,file_id,ord,comment)";
-            $sql .= "values(?,?,?,?,?,?)";
-            $db->execute( $sql, $newsgroup_id, $article_id, $rev, $file_id, $i,
+            $sql .= "(newsgroup_id,article_id,file_id,ord,comment)";
+            $sql .= "values(?,?,?,?,?)";
+            $db->execute( $sql, $newsgroup_id, $article_id, $file_id, $i,
                 $comment );
         }
         $db->commit;
@@ -415,26 +406,24 @@ sub reaction($self) {
     my $user_id = $self->param('user_id');
     my $n_id    = $self->param('newsgroup_id');
     my $a_id    = $self->param('article_id');
-    my $rev     = $self->param('rev');
     my $type_id = $self->param('type_id');
     my $sql;
     my $db = NnsBbs::Db::new($self);
     eval {
         if ($type_id) {
-            die "user_id,newsgroup_id,article_id,rev are required\n"
+            die "user_id,newsgroup_id,article_id are required\n"
               if ( !defined($user_id)
                 || !defined($n_id)
-                || !defined($a_id)
-                || !defined($rev) );
+                || !defined($a_id) );
             $sql = "delete from reaction";
             $sql .= " where newsgroup_id=? and article_id=?";
-            $sql .= " and rev=? and user_id=?";
-            $db->execute( $sql, $n_id, $a_id, $rev, $user_id );
+            $sql .= " and user_id=?";
+            $db->execute( $sql, $n_id, $a_id, $user_id );
             if ( $type_id >= 0 ) {
-                $sql = "insert into reaction(newsgroup_id,article_id,rev";
+                $sql = "insert into reaction(newsgroup_id,article_id";
                 $sql .= ",user_id,type_id)";
                 $sql .= "values(?,?,?,?,?)";
-                $db->execute( $sql, $n_id, $a_id, $rev, $user_id, $type_id );
+                $db->execute( $sql, $n_id, $a_id, $user_id, $type_id );
             }
             $db->commit;
             $self->render( json => { result => 'ok' } );
@@ -442,18 +431,18 @@ sub reaction($self) {
         elsif ($user_id) {
             $sql = "select type_id from reaction";
             $sql .= " where newsgroup_id=? and article_id=?";
-            $sql .= " and rev=? and user_id=?";
+            $sql .= " and user_id=?";
             my ($type_id) =
-              $db->select_ra( $sql, $n_id, $a_id, $rev, $user_id );
+              $db->select_ra( $sql, $n_id, $a_id, $user_id );
             $self->render( json => { result => 'ok', type_id => $type_id } );
         }
         else {
             $sql = "select type_id,user_id,disp_name";
             $sql .= " from reaction as r,user as u";
             $sql .= " where r.user_id=u.id";
-            $sql .= " and newsgroup_id=? and article_id=? and rev=?";
+            $sql .= " and newsgroup_id=? and article_id=?";
             $sql .= " order by r.created_at";
-            my ($type_id) = $db->select_ah( $sql, $n_id, $a_id, $rev, );
+            my ($type_id) = $db->select_ah( $sql, $n_id, $a_id );
             $self->render( json => { result => 'ok', data => $type_id } );
         }
     };
@@ -482,12 +471,12 @@ sub report($self) {
         if ($insert) {
             my $d = from_json($insert);
             $sql = "insert into report";
-            $sql .= "(type_id,newsgroup_id,article_id,rev";
+            $sql .= "(type_id,newsgroup_id,article_id";
             $sql .= ",notifier,detail)";
-            $sql .= "values(?,?,?,?,?,?);";
+            $sql .= "values(?,?,?,?,?);";
             my @param = ();
 
-            for my $k (qw/type_id newsgroup_id article_id rev/) {
+            for my $k (qw/type_id newsgroup_id article_id/) {
                 my $dd = $d->{$k};
                 die "$k not set\n" unless defined($dd);
                 push( @param, $dd );

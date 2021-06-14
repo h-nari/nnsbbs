@@ -1,5 +1,5 @@
 import { option, select, selected } from "./tag"
-import { get_json, split_rev_id } from "./util";
+import { get_json } from "./util";
 import { ReadSet } from "./readSet";
 
 
@@ -37,14 +37,11 @@ export function api_newsgroup() {
 //
 export interface ITitle {
   article_id: string;
-  rev: number;
   date: string;
   user_id: string;
   disp_name: string;
   reply_to: string;
-  reply_rev: number;
   title: string;
-  revised?: ITitle;
   children?: ITitle[];
   bDeleted: number;
   reaction: {
@@ -67,9 +64,7 @@ export interface IArticle {
   user_id: string;
   title: string;
   article_id: string;
-  rev: number;
   reply_to: string;
-  reply_rev: number;
   bDeleted: number;
   delete_reason: string;
   deleted_at?: string;
@@ -86,10 +81,9 @@ export interface IAttachment {
   size: number;
 };
 
-export function api_article(newsgroup_id: string, rev_id: string) {
-  let r = split_rev_id(rev_id);
+export function api_article(newsgroup_id: string, article_id: string) {
   return get_json('/api/article',
-    { data: { newsgroup_id, article_id: r.article_id, rev: r.rev } }) as Promise<IArticle>;
+    { data: { newsgroup_id, article_id } }) as Promise<IArticle>;
 }
 
 //
@@ -147,19 +141,16 @@ export function api_profile_write(a: ArgProfile) {
 export interface IPostArg {
   newsgroup_id: string;
   article_id?: string;
-  rev?: number;
   user_id: string;
   disp_name: string;
   title: string;
   content: string;
   reply_to?: string;
-  reply_rev?: number;
 }
 
 interface IPostResult {
   result: 'ok' | 'ng';
   article_id: string;
-  rev: number;
 }
 
 export function api_post(arg: IPostArg) {
@@ -254,15 +245,15 @@ export interface IReactionTypeResult {
 export function api_reaction_type() {
   return get_json('/api/reaction_type') as Promise<IReactionTypeResult>;
 }
-export function api_reaction_write(newsgroup_id: string, article_id: string, rev: number, user_id: string, type_id: number) {
-  return get_json('/api/reaction', { method: 'post', data: { newsgroup_id, article_id, rev, user_id, type_id } }) as Promise<IResult>;
+export function api_reaction_write(newsgroup_id: string, article_id: string, user_id: string, type_id: number) {
+  return get_json('/api/reaction', { method: 'post', data: { newsgroup_id, article_id, user_id, type_id } }) as Promise<IResult>;
 }
 export interface IReactionUser {
   result: 'ok' | 'ng';
   type_id: number;
 }
-export function api_reaction_user(newsgroup_id: string, article_id: string, rev: number, user_id: string) {
-  return get_json('/api/reaction', { method: 'post', data: { newsgroup_id, article_id, rev, user_id } }) as Promise<IReactionUser>;
+export function api_reaction_user(newsgroup_id: string, article_id: string, user_id: string) {
+  return get_json('/api/reaction', { method: 'post', data: { newsgroup_id, article_id, user_id } }) as Promise<IReactionUser>;
 }
 export interface IReaction {
   type_id: number;
@@ -273,8 +264,8 @@ export interface IReactionResult {
   result: 'ok' | 'ng';
   data: IReaction[];
 }
-export function api_reaction(newsgroup_id: number, article_id: number, rev: number) {
-  return get_json('/api/reaction', { method: 'post', data: { newsgroup_id, article_id, rev } }) as Promise<IReactionUser>;
+export function api_reaction(newsgroup_id: number, article_id: number) {
+  return get_json('/api/reaction', { method: 'post', data: { newsgroup_id, article_id } }) as Promise<IReactionUser>;
 }
 //
 // api/report_type
@@ -301,7 +292,6 @@ export interface IReport {
   treadment_id?: number,
   newsgroup_id: string,
   article_id: string,
-  rev: number,
   notifier?: string,
   detail?: string,
 }
@@ -343,11 +333,8 @@ export interface IUserAdmin {
 export interface TArticle {
   newsgroup_id: number,
   id: number,
-  rev: number,
-  rev_reason: string,
   title: string,
   reply_to: number,
-  reply_rev: number,
   user_id: string,
   disp_name: string,
   ip: string,
@@ -364,7 +351,6 @@ export function admin_api_title(user_id: string) {
 //
 export interface ArgArticleUpdate {
   id: string;
-  rev: number;
   bDeleted?: number;
   delete_reason?: string;
 }
@@ -384,7 +370,6 @@ export interface IReportAdmin {
   newsgroup: string;
   article_id: number;
   title: string;
-  rev: number;
   disp_name: string;
   posted_at: string;
   notifier: string | null;
@@ -422,7 +407,6 @@ export interface ArgReportUpdate {
   treatment_id?: number;
   newsgroup_id?: number;
   article_id?: number;
-  rev?: number;
   notifier?: string;
   want_response?: number;
   detail?: string;

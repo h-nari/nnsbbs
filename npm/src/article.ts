@@ -94,8 +94,8 @@ export class ArticlePane extends ToolbarPane {
     this.bind();
   }
 
-  async open(newsgroup_id: string, rev_id: string) {
-    let data = await api_article(newsgroup_id, rev_id);
+  async open(newsgroup_id: string, id: string) {
+    let data = await api_article(newsgroup_id, id);
     let c = data.content;
     let i = c.indexOf('\n\n');
     if (i >= 0) {
@@ -106,7 +106,7 @@ export class ArticlePane extends ToolbarPane {
     }
     this.article = data;
     this.toolbar.title =
-      span({ class: 'id' }, '[' + rev_id + ']') +
+      span({ class: 'id' }, '[' + id + ']') +
       span({ class: 'author', 'title-i18n':'show-profile' }, escape_html(data.author)) +
       span({ class: 'date' }, data.date) +
       span({ class: 'title' }, escape_html(data.title));

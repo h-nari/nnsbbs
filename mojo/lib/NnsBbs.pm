@@ -39,7 +39,7 @@ sub startup ($self) {
     $r->post('/register')->to('auth#register');
     $r->get('/bbs')->to('top#bbs');
     $r->get('/bbs/#newsgroup')->to('top#bbs');
-    $r->get('/bbs/#newsgroup/#rev_id')->to('top#bbs');
+    $r->get('/bbs/#newsgroup/#id')->to('top#bbs');
     $r->get('/attachment/#id')->to('top#attachment');
 
     $r->get('/admin/user')->to('admin#user_list');

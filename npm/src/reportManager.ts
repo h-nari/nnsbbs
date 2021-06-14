@@ -99,9 +99,8 @@ export class ReportManaget {
 
       for (let r of this.reportList) {
         let article = '[' + r.newsgroup + '/' + r.article_id;
-        if (r.rev > 0) article += '#' + r.rev;
         article += ']';
-        let href = window.nnsbbs_baseURL + 'bbs/' + r.newsgroup + '/' + r.article_id + '/' + r.rev;
+        let href = window.nnsbbs_baseURL + 'bbs/' + r.newsgroup + '/' + r.article_id ;
         c += tr(
           td({ class: 'id' }, a({ href: '/admin/report/' + r.id }, r.id)),
           td({ class: 'created_at' }, r.created_at),

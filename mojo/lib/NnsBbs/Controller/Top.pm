@@ -10,12 +10,11 @@ sub show ($self) {
 
 sub bbs ($self) {
     my $newsgroup = $self->param('newsgroup') || "";
-    my $rev_id    = $self->param('rev_id')    || "";
+    my $id        = $self->param('id')        || "";
 
     my $s = "<script>\n";
     $s .= "\$(()=>{\n";
-    $s .=
-      sprintf( '  nnsbbs.top_page("%s","%s");', $newsgroup, $rev_id ) . "\n";
+    $s .= sprintf( '  nnsbbs.top_page("%s","%s");', $newsgroup, $id ) . "\n";
     $s .= "});\n";
     $s .= "</script>\n";
 

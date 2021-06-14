@@ -17,10 +17,9 @@ create table reaction (
   user_id      varchar(255) not null,
   newsgroup_id int          not null,
   article_id   int          not null,
-  rev          int          not null,
   type_id      int          not null,
   created_at   datetime     default now(),
   foreign key(type_id) references reaction_type(id)
 );
-create unique index  reaction_idx on reaction(user_id,newsgroup_id,article_id,rev);
+create unique index  reaction_idx on reaction(user_id,newsgroup_id,article_id);
 create index  reaction_idx2 on reaction(newsgroup_id,article_id);
