@@ -36,7 +36,7 @@ export class TopBar {
           resolve(true);
         }
         else {
-          this.parent.user.user = null;
+          this.parent.user.user = undefined;
           this.parent.onLogout();
           resolve(false);
         }

@@ -333,7 +333,7 @@ export default class NnsBbs {
     }
     window.history.pushState(null, '', `/bbs/${path}`);
     document.title = `nnsbbs/${path}`;
-}
+  }
 
   async select_article(newsgroup_id: string, rev_id: string) {
     let cur_title = this.titles_pane.cur_title();
@@ -398,21 +398,22 @@ export default class NnsBbs {
       this.user.setting.load(this.user.user.setting);
       this.topBar.set_login_menu(this.user.user.disp_name);
       await this.ng_pane.loadSubsInfo();
+      this.top_page();
       this.redisplay();
     } else {
       throw new Error('unexpected situation');
     }
   }
 
-  beforeLogout() {
-    this.ng_pane.saveSubsInfo();
+  async beforeLogout() {
+    await this.ng_pane.saveSubsInfo();
   }
 
   onLogout() {
+    this.user.user = undefined;
     this.topBar.set_logout_menu();
     this.ng_pane.clearSubsInfo();
-    if (window.location.pathname.startsWith('/admin'))
-      window.location.pathname = '/';
+    this.top_page();
     this.redisplay();
   }
 

@@ -12,7 +12,7 @@ import { Setting } from './setting';
 
 export class User {
   public parent: NnsBbs;
-  public user: (IUser | null) = null;
+  public user: IUser | undefined;
   public setting = new Setting(this);
   public membership: IMembership | null = null;
 
@@ -59,7 +59,7 @@ export class User {
               api_login(email, pwd).then(data => {
                 if (!data.login) {
                   $.alert(this.parent.i18next.t('login-failed'));
-                  this.user = null;
+                  this.user = undefined;
                   resolve(false);
                 } else {
                   this.user = data.user;
@@ -96,8 +96,8 @@ export class User {
       buttons: {
         logout: {
           text: i18next.t('logout'),
-          action: () => {
-            this.parent.beforeLogout();
+          action: async () => {
+            await this.parent.beforeLogout();
             api_logout().then(() => {
               this.parent.onLogout();
             });

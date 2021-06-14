@@ -207,7 +207,6 @@ export class NewsgroupTree {
     });
 
     $(`.ng-tree .ng-node[path="${this.path}"]  .btn-fold`).on('click', e => {
-      console.log('click!')
       if (!this.noChild())
         this.fold = !this.fold;
       this.ng_pane.redisplay();
