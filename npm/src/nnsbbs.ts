@@ -338,8 +338,6 @@ export default class NnsBbs {
 
     if (this.titles_pane.newsgroup) {
       let subsInfo = this.titles_pane.newsgroup.subsInfo;
-      if (!subsInfo)
-        subsInfo = this.titles_pane.newsgroup.subsInfo = { subscribe: false, read: new ReadSet(), update: false };
       subsInfo.read.add_range(Number(article_id));                 // make article read
       this.titles_pane.update_subsInfo(article_id);
       this.ng_pane.update_subsInfo(this.titles_pane.newsgroup.n.name);
@@ -385,8 +383,8 @@ export default class NnsBbs {
     if (this.user.user) {
       this.user.setting.load(this.user.user.setting);
       this.topBar.set_login_menu(this.user.user.disp_name);
+      await this.top_page();
       await this.ng_pane.loadSubsInfo();
-      this.top_page();
       this.redisplay();
     } else {
       throw new Error('unexpected situation');
@@ -397,11 +395,12 @@ export default class NnsBbs {
     await this.ng_pane.saveSubsInfo();
   }
 
-  onLogout() {
+  async onLogout() {
     this.user.user = undefined;
     this.topBar.set_logout_menu();
     this.ng_pane.clearSubsInfo();
-    this.top_page();
+    await this.top_page();
+    await this.ng_pane.loadSubsInfo();
     this.redisplay();
   }
 

@@ -149,7 +149,7 @@ export class TitlesPane extends ToolbarPane {
 
   title_html(d: ITitle, rule: string = ''): string {
     let opt = { article_id: d.article_id };
-    let c: string[] = ['title-contextmenu'];
+    let c: string[] = [];
     let si = this.newsgroup?.subsInfo;
     if (si && si.read.includes(Number(d.article_id)))
       c.push('read');

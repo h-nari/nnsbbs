@@ -6,11 +6,12 @@ import { TNewsgroup, api_session, api_profile_read, api_profile_write, api_subsI
 import { NewsgroupTree } from "./newsgroupTree";
 import { Menu } from "./menu";
 import { set_i18n } from "./util";
+import { SubsInfo } from "./subsInfo";
 const moment = require('moment');
 
 export interface INewsGroup {
   n: TNewsgroup;
-  subsInfo: ISubsInfo | null;
+  subsInfo: SubsInfo;
 };
 
 // Subscription information: 
@@ -31,7 +32,7 @@ export class NewsgroupsPane extends ToolbarPane {
   private newsgroups: INewsGroup[] = [];
   public clickCb: ((path: string) => void) | undefined;
   public showAllNewsgroupCb: (() => void) | undefined;
-  public subsInfo: { [name: string]: ISubsInfo } = {};
+  public subsInfo: { [name: string]: SubsInfo } = {};
   private savedSubsString: { [newsgroup_id: string]: string } = {};
   public root: NewsgroupTree = new NewsgroupTree(this, '', '');
   public curNode: NewsgroupTree | undefined;
@@ -75,8 +76,7 @@ export class NewsgroupsPane extends ToolbarPane {
   }
 
   setNewsgroups(data: TNewsgroup[]) {
-    this.newsgroups = data.map(t => { return { n: t, subsInfo: null } });
-    this.setSubsInfoIntoNewsgroup();
+    this.newsgroups = data.map(t => { return { n: t, subsInfo: new SubsInfo(t.id) } });
     let old_root = this.root;
     this.root = new NewsgroupTree(this, '', '');
     for (let n of this.newsgroups)
@@ -92,18 +92,6 @@ export class NewsgroupsPane extends ToolbarPane {
         let n0 = old_root.findNewsgroup(n.path);
         if (n0) n.fold = n0.fold;
       });
-    }
-  }
-
-  setSubsInfoIntoNewsgroup() {
-    if (this.subsInfo && this.newsgroups.length > 0) {
-      for (let ng of this.newsgroups) {
-        ng.subsInfo = this.subsInfo[ng.n.id];
-        if (!ng.subsInfo) {
-          ng.subsInfo = { subscribe: false, read: new ReadSet(), update: false };
-          this.subsInfo[ng.n.id] = ng.subsInfo;
-        }
-      }
     }
   }
 
@@ -141,9 +129,10 @@ export class NewsgroupsPane extends ToolbarPane {
     $('.tooltip').remove();
     if (bFromDB) {
       this.toolbar.title = this.t('newsgroup');
-      await this.loadSubsInfo();
       let data = await api_newsgroup();
       this.setNewsgroups(data);
+      console.log('newsgroup:', this.newsgroups);
+      await this.loadSubsInfo();
     }
 
     let scroll = $(`#${this.id} .newsgroup`).scrollTop();
@@ -198,7 +187,7 @@ export class NewsgroupsPane extends ToolbarPane {
     this.subsInfo = {};
     this.savedSubsString = {};
     for (let ng of this.newsgroups)
-      ng.subsInfo = null;
+      ng.subsInfo = new SubsInfo(ng.n.id);
   }
 
   // Load subscription information
@@ -206,52 +195,62 @@ export class NewsgroupsPane extends ToolbarPane {
     let h: ISubsHash = {};
     if (this.parent.user.user)
       h = await api_subsInfo_read(this.parent.user.user.id);
+    else {
+      let str = localStorage.getItem('nnsbbs_subsInfo');
+      if (str) h = JSON.parse(str)
+    }
     this.clearSubsInfo();
     for (let newsgroup_id in h) {
-      let v = h[newsgroup_id];
-      let s = this.subsInfo[newsgroup_id] = {
-        subscribe: v.subscribe != 0,
-        read: new ReadSet(v.done),
-        update: v.update ? v.update != 0 : false
-      };
-      this.savedSubsString[newsgroup_id] = JSON.stringify(s);
+      if (newsgroup_id in this.newsgroups) {
+        let v = h[newsgroup_id];
+        let s = this.subsInfo[newsgroup_id] = new SubsInfo(newsgroup_id, v);
+        this.savedSubsString[newsgroup_id] = JSON.stringify(s.subsElem());
+      }
     }
-    this.setSubsInfoIntoNewsgroup();
+    console.log('loadSubsInfo:', this.subsInfo);
+
+    for (let nid in this.newsgroups) {
+      if (nid in this.subsInfo)
+        this.newsgroups[nid].subsInfo = this.subsInfo[nid];
+    }
   }
 
   // Save your subscription information
   async saveSubsInfo(bForced: boolean = false) {
+    console.log('saveSubsInfo:', this.subsInfo);
     let user = this.parent.user.user;
-    if (!user) return;
-    for (let nid in this.subsInfo) {
-      let si = this.subsInfo[nid];
-      let jsonStr = JSON.stringify(si);
+    let changed = 0;
+    for (let ng of this.newsgroups) {
+      let nid = ng.n.id;
+      let subsElem = ng.subsInfo.subsElem();
+      let jsonStr = JSON.stringify(subsElem);
       let savedStr = this.savedSubsString[nid];
-      let saveData: ISubsElem[] = [];
       if (jsonStr != savedStr || bForced) {
         this.savedSubsString[nid] = jsonStr;
-        saveData.push({
-          newsgroup_id: nid,
-          subscribe: si.subscribe ? 1 : 0,
-          done: si.read.toString(),
-          update: si.update ? 1 : 0
-        });
-        si.update = true;
+        changed++;
+        if (user)
+          await api_subsInfo_write(user.id, [subsElem])
       }
-      if (saveData.length > 0)
-        await api_subsInfo_write(user.id, saveData)
+    }
+    console.log('changed:', changed);
+    if (changed && !user) {
+      let h: ISubsHash = {};
+      for (let ng of this.newsgroups)
+        h[ng.n.id] = ng.subsInfo.subsElem();
+      localStorage.setItem('nnsbbs_subsInfo', JSON.stringify(h));
     }
   }
-
-  getSubsInfo(name: string): ISubsInfo | null {
-    let ng = this.name2newsgroup(name);
-    if (ng)
-      return ng.subsInfo;
-    else {
-      console.log(`newsgroup: ${name} not found`);
-      return null;
+  /*
+    getSubsInfo(name: string): ISubsInfo | null {
+      let ng = this.name2newsgroup(name);
+      if (ng)
+        return ng.subsInfo;
+      else {
+        console.log(`newsgroup: ${name} not found`);
+        return null;
+      }
     }
-  }
+  */
 
   scrollToNextSubscribedNewsgroup(bFromTop: boolean = false): boolean {
     let node: NewsgroupTree | undefined = this.curNode;

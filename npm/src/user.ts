@@ -244,7 +244,6 @@ export class User {
     }
 
     if (!this.user) return;
-    // TODO: 投稿できるか権限があるかチェック
     if (Number(this.user.membership_id) < n.n.wpl) {
       console.log('membership_id:', this.user.membership_id, 'wpl:', n.n.wpl);
       let i18next = this.parent.i18next;

@@ -218,11 +218,11 @@ export class NewsgroupTree {
       if (!target) return;
       let path = target.attributes['path'].value;
       let node = this.ng_pane.root.findNewsgroup(path);
-      if (!node || !node.ng || !node.ng.subsInfo) return;
+      if (!node || !node.ng) return;
       node.ng.subsInfo.subscribe = !node.ng.subsInfo.subscribe;
       node.ng_pane.saveSubsInfo();
       for (let n: NewsgroupTree | undefined = node; n; n = n.parent)
-        n.calc();
+      node.toRoot(n=>n.calc());
       node.ng_pane.redisplay();
     });
 
