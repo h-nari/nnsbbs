@@ -1,3 +1,5 @@
+import { a, div } from "../tag";
+
 export const jp = {
   translation: {
     "show-all-newsgroups": "全ての掲示板を表示",
@@ -195,6 +197,12 @@ export const jp = {
     'read-info-management': '記事の既読管理',
     'make-unread-last-n': '最後の指定個数だけ未読にする',
     'specified-number': '指定個数',
-    'no-unread-article':'未読記事はありません'
+    'no-unread-article': '未読記事はありません',
+    'no-permission-to-post': div(
+      div('党員以外はこの掲示板には投稿できません。'),
+      div('参政党サポータ(無料)で投稿可能になります。'),
+      div('詳しくは', a({ href: 'https://www.sanseito.jp/supporter/' },
+        'こちらのページ'), 'を御覧ください')
+    )
   }
 };

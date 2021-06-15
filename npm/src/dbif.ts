@@ -1,8 +1,5 @@
 import { option, select, selected } from "./tag"
 import { get_json } from "./util";
-import { ReadSet } from "./readSet";
-
-
 
 interface IResult {
   result: 'ok' | 'ng';
