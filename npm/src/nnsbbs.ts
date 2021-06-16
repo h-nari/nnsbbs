@@ -384,7 +384,6 @@ export default class NnsBbs {
       this.user.setting.load(this.user.user.setting);
       this.topBar.set_login_menu(this.user.user.disp_name);
       await this.top_page();
-      await this.ng_pane.loadSubsInfo();
       this.redisplay();
     } else {
       throw new Error('unexpected situation');
@@ -400,7 +399,6 @@ export default class NnsBbs {
     this.topBar.set_logout_menu();
     this.ng_pane.clearSubsInfo();
     await this.top_page();
-    await this.ng_pane.loadSubsInfo();
     this.redisplay();
   }
 
