@@ -72,6 +72,11 @@ export class TopBar {
       m.add(new Menu({ name: i18next.t('newsgroup-manager'), link: '/admin/newsgroup' }));
       this.menu_report_manager = new Menu({ name: i18next.t('report-manager'), link: '/admin/report' });
       m.add(this.menu_report_manager);
+      m.addSeparator();
+      m.add(new Menu({
+        name: i18next.t('db-check-and-repair'),
+        action: () => { this.parent.newsgroupAdmin.db_check_and_repair_dlg(); }
+      }));
     } else {
       this.bModerator = false;
     }

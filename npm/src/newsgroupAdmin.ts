@@ -1,8 +1,8 @@
 import NnsBbs from "./nnsbbs";
 import { tag, div, span, table, td, th, tr, button, label, selected, input, icon, select, option, li, ul } from "./tag";
-import { get_json } from "./util";
+import { get_json, splitPath } from "./util";
 import { Menu } from "./menu";
-import { IMembership } from "./dbif";
+import { admin_api_db_check, admin_api_db_repair, IMembership } from "./dbif";
 
 const newsgroup_pat = /^[^.\s]+(\.[^.\s]+)*$/;
 
@@ -412,6 +412,41 @@ export class NewsgroupAdmin {
     this.redisplay(true);
   }
 
+  async db_check_and_repair_dlg() {
+    let i18next = this.parent.i18next;
+    let r = await admin_api_db_check();
+    let c = '';
+    if (r.error_count == 0)
+      c = i18next.t('no-db-error-found');
+    else {
+      c = div(i18next.t('n-db-error-found', { n: r.error_count }),
+        ul({ class: 'errors' }, ...r.errors.map(s =>
+          li(span({ class: 'message' }, s.message))))
+      );
+    }
+    $.confirm({
+      title: i18next.t('db-check-and-repair'),
+      type: 'green',
+      columnClass: r.error_count > 0 ? 'xlarge' : 'medium',
+      content: div({ class: 'db-check-and-repair-dlg' }, c),
+      buttons: {
+        repair: {
+          text: i18next.t('repair-db'),
+          action: async () => {
+            let r = await admin_api_db_repair();
+            $.alert(i18next.t('n-db-errors-repaired', { n: r.count }))
+          }
+        },
+        close: {
+          text: i18next.t('close')
+        }
+      },
+      onOpenBefore() {
+        if (r.error_count == 0)
+          this.buttons.repair.hide();
+      }
+    })
+  }
 }
 
 
@@ -808,6 +843,7 @@ export class NewsgroupAdminTree {
       await get_json('/admin/api/newsgroup', { method: 'post', data: { update: JSON.stringify(update_list) } });
     this.newsgroupAdmin.redisplay(true);
   }
+
 }
 
 // --------------------- End of NewsgroupTree Class ------------------------
@@ -847,8 +883,3 @@ function reorderChildDlg(e: JQuery.ClickEvent, node: NewsgroupAdminTree) {
 
 }
 
-export function splitPath(path: string): { parent: string | null, base: string } {
-  let i = path.indexOf('.');
-  if (i < 0) return { parent: null, base: path };
-  else return { parent: path.substring(0, i), base: path.substring(i + 1) };
-}

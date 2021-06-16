@@ -1,9 +1,8 @@
 import { StringMap, TOptions } from 'i18next';
 import { Menu } from './menu';
 import { INewsGroup, NewsgroupsPane } from './newsgroup';
-import { NewsgroupAdminTree, splitPath } from './newsgroupAdmin';
-import { div, icon, input, label, selected, span } from './tag';
-import { set_i18n } from './util';
+import { div, input, selected, span } from './tag';
+import { splitPath } from './util';
 
 export class NewsgroupTree {
   public ng_pane: NewsgroupsPane;

@@ -203,6 +203,11 @@ export const jp = {
       div('参政党サポータ(無料)で投稿可能になります。'),
       div('詳しくは', a({ href: 'https://www.sanseito.jp/supporter/' },
         'こちらのページ'), 'を御覧ください')
-    )
+    ),
+    'db-check-and-repair': 'データベースのチェックと修復',
+    'no-db-error-found':'データベースにエラーは見つかりませんでした',
+    'n-db-error-found':'データベースに{{n}}個のエラーが見つかりました',
+    'repair-db':'データベースを修復する',
+    'n-db-errors-repaired':'データベースの{{n}}個のエラーが修復されました'
   }
 };

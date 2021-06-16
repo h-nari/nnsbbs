@@ -415,3 +415,25 @@ export interface ArgReportUpdate {
 export function admin_api_report_update(arg: ArgReportUpdate) {
   return get_json('/admin/api/report', { method: 'post', data: { update: JSON.stringify(arg) } }) as Promise<IResult>;
 }
+
+//
+//  admin/api/db_check
+//
+export interface IDbCheck {
+  error_count: number,
+  errors: { type: string, message: string }[]
+}
+export function admin_api_db_check() {
+  return get_json('/admin/api/db_check', {}) as Promise<IDbCheck>;
+}
+//
+//  admin/api/db_repair
+//
+export interface IDbRepair {
+  result: 'ok',
+  count: number
+}
+export function admin_api_db_repair() {
+  return get_json('/admin/api/db_repair', {}) as Promise<IDbRepair>;
+}
+

@@ -74,6 +74,8 @@ sub startup ($self) {
     $r->any('/admin/api/user')->to('admin#api_user');
     $r->any('/admin/api/title')->to('admin#api_title');
     $r->any('/admin/api/report')->to('admin#api_report');
+    $r->any('/admin/api/db_check')->to('database#api_check');
+    $r->any('/admin/api/db_repair')->to('database#api_repair');
 }
 
 sub _load_config {

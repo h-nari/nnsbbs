@@ -94,3 +94,9 @@ export function set_i18n(selector: string = '') {
     delay: 500
   });
 }
+
+export function splitPath(path: string): { parent: string | null, base: string } {
+  let i = path.indexOf('.');
+  if (i < 0) return { parent: null, base: path };
+  else return { parent: path.substring(0, i), base: path.substring(i + 1) };
+}
