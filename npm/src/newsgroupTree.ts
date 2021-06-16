@@ -59,35 +59,37 @@ export class NewsgroupTree {
           }
         }));
 
-        m.addSeparator();
-        if (this.noChild()) {
-          m.add(new Menu({
-            name: i18next.t('subscribe'),
-            with_check: true,
-            checked: this.ng?.subsInfo?.subscribe,
-            action: (e, m) => {
-              if (this.ng?.subsInfo) {
-                this.ng.subsInfo.subscribe = !this.ng.subsInfo.subscribe;
-                this.toRoot(n => n.calc());
-                this.ng_pane.redisplay();
+        if (this.ng_pane.parent.user.user) {
+          m.addSeparator();
+          if (this.noChild()) {
+            m.add(new Menu({
+              name: i18next.t('subscribe'),
+              with_check: true,
+              checked: this.ng?.subsInfo?.subscribe,
+              action: (e, m) => {
+                if (this.ng?.subsInfo) {
+                  this.ng.subsInfo.subscribe = !this.ng.subsInfo.subscribe;
+                  this.toRoot(n => n.calc());
+                  this.ng_pane.redisplay();
+                }
               }
-            }
-          }));
-        } else {
+            }));
+          } else {
+            m.add(new Menu({
+              name: i18next.t('subscribe-all'),
+              action: async (e, m) => { this.set_tree_subscribe(true); }
+            })).add(new Menu({
+              name: i18next.t('unsubscribe-all'),
+              action: async (e, m) => { this.set_tree_subscribe(false); }
+            }));
+          }
+
+          m.addSeparator();
           m.add(new Menu({
-            name: i18next.t('subscribe-all'),
-            action: async (e, m) => { this.set_tree_subscribe(true); }
-          })).add(new Menu({
-            name: i18next.t('unsubscribe-all'),
-            action: async (e, m) => { this.set_tree_subscribe(false); }
+            name: i18next.t('read-info-management'),
+            action: (e, m) => { this.read_info_dlg() }
           }));
         }
-
-        m.addSeparator();
-        m.add(new Menu({
-          name: i18next.t('read-info-management'),
-          action: (e, m) => { this.read_info_dlg() }
-        }));
         m.expand(e);
       }
     });
@@ -158,14 +160,17 @@ export class NewsgroupTree {
     let fold_icon = '';
     let ng_num = '';
     let article_num = '';
+    let user = this.ng_pane.parent.user.user;
 
 
     if (this.noChild()) {
       fold_icon = span({ class: 'fold-icon bi-newspaper' });
-      if (this.ng && this.ng.subsInfo?.subscribe)
-        subscribe_icon = span({ class: 'subscribe-icon bi-check-circle', 'title-i18n': 'subscribed' });
-      else
-        subscribe_icon = span({ class: 'subscribe-icon bi-dash-circle-dotted', 'title-i18n': 'unsubscribed' });
+      if (user) {
+        if (this.ng && this.ng.subsInfo?.subscribe)
+          subscribe_icon = span({ class: 'subscribe-icon bi-check-circle', 'title-i18n': 'subscribed' });
+        else
+          subscribe_icon = span({ class: 'subscribe-icon bi-dash-circle-dotted', 'title-i18n': 'unsubscribed' });
+      }
     } else {
       fold_icon = span({ class: 'fold-icon btn-fold ' + (this.fold ? 'bi-chevron-right' : 'bi-chevron-down') });
       ng_num = span({ class: 'ng-num' },
@@ -222,7 +227,7 @@ export class NewsgroupTree {
       node.ng.subsInfo.subscribe = !node.ng.subsInfo.subscribe;
       node.ng_pane.saveSubsInfo();
       for (let n: NewsgroupTree | undefined = node; n; n = n.parent)
-      node.toRoot(n=>n.calc());
+        node.toRoot(n => n.calc());
       node.ng_pane.redisplay();
     });
 

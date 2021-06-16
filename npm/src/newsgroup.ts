@@ -1,8 +1,8 @@
-import { div, button, span, input, tag, a } from "./tag";
+import { div, button } from "./tag";
 import { ToolbarPane } from './pane';
 import { ReadSet } from "./readSet";
 import NnsBbs from "./nnsbbs";
-import { TNewsgroup, api_session, api_profile_read, api_profile_write, api_subsInfo_read, ISubsHash, ISubsElem, api_subsInfo_write, api_newsgroup } from "./dbif";
+import { TNewsgroup, api_subsInfo_read, ISubsHash, ISubsElem, api_subsInfo_write, api_newsgroup } from "./dbif";
 import { NewsgroupTree } from "./newsgroupTree";
 import { Menu } from "./menu";
 import { set_i18n } from "./util";
@@ -28,19 +28,17 @@ export interface ISubsJson {
 
 export class NewsgroupsPane extends ToolbarPane {
   public bShowAll: boolean = true;
-  private id_lg: string;      // list-group id
   private newsgroups: INewsGroup[] = [];
-  private id2ng: { [id: string]: INewsGroup } = {};
   public clickCb: ((path: string) => void) | undefined;
   public showAllNewsgroupCb: (() => void) | undefined;
   private savedSubsString: { [newsgroup_id: string]: string } = {};
   public root: NewsgroupTree = new NewsgroupTree(this, '', '');
   public curNode: NewsgroupTree | undefined;
   public menu: Menu;
+  public nologin_subsInfo = false;
 
   constructor(id: string, parent: NnsBbs) {
     super(id, parent);
-    this.id_lg = id + "_lg";
     this.toolbar.title = 'NewsGroup';
     this.menu = new Menu({ icon: 'three-dots' });
     this.toolbar.add_menu(this.menu);
@@ -77,9 +75,6 @@ export class NewsgroupsPane extends ToolbarPane {
 
   setNewsgroups(data: TNewsgroup[]) {
     this.newsgroups = data.map(t => { return { n: t, subsInfo: new SubsInfo(t.id) } });
-    this.id2ng = {};
-    for (let ng of this.newsgroups)
-      this.id2ng[ng.n.id] = ng;
     let old_root = this.root;
     this.root = new NewsgroupTree(this, '', '');
     for (let n of this.newsgroups)
@@ -196,7 +191,7 @@ export class NewsgroupsPane extends ToolbarPane {
     let h: ISubsHash = {};
     if (this.parent.user.user)
       h = await api_subsInfo_read(this.parent.user.user.id);
-    else {
+    else if(this.nologin_subsInfo){
       let str = localStorage.getItem('nnsbbs_subsInfo');
       if (str) h = JSON.parse(str)
     }
@@ -226,8 +221,7 @@ export class NewsgroupsPane extends ToolbarPane {
           await api_subsInfo_write(user.id, [subsElem])
       }
     }
-    console.log('changed:', changed);
-    if (changed && !user) {
+    if ( changed && !user && this.nologin_subsInfo ) {
       let h: ISubsHash = {};
       for (let ng of this.newsgroups)
         h[ng.n.id] = ng.subsInfo.subsElem();
