@@ -1,4 +1,4 @@
-import { div, button } from "./tag";
+import { div, button, span } from "./tag";
 import { ToolbarPane } from './pane';
 import { ReadSet } from "./readSet";
 import NnsBbs from "./nnsbbs";
@@ -7,6 +7,7 @@ import { NewsgroupTree } from "./newsgroupTree";
 import { Menu } from "./menu";
 import { set_i18n } from "./util";
 import { SubsInfo } from "./subsInfo";
+import i18next from "i18next";
 const moment = require('moment');
 
 export interface INewsGroup {
@@ -45,19 +46,36 @@ export class NewsgroupsPane extends ToolbarPane {
     this.menu.opt.action = (e, m) => {
       m.clear();
       m.add(new Menu({
-        name: this.t('expand-all-hierarchies'),
-        action: () => {
-          this.root.forEach(n => { n.fold = false; });
-          this.redisplay();
-        }
-      }));
-      m.add(new Menu({
-        name: this.t('collapse-all-hierarchies'),
+        name: this.t('fold-all'),
         action: () => {
           this.root.forEach(n => { n.fold = true; });
           this.redisplay();
         }
       }));
+      m.add(new Menu({
+        name: this.t('unfold-all'),
+        action: () => {
+          this.root.forEach(n => { n.fold = false; });
+          this.redisplay();
+        }
+      }));
+
+      if (this.parent.user.user) {
+        m.addSeparator();
+        m.add(new Menu({
+          name: i18next.t('subscribe-all'),
+          action: async (e, m) => { this.root.set_tree_subscribe(true); }
+        })).add(new Menu({
+          name: i18next.t('unsubscribe-all'),
+          action: async (e, m) => { this.root.set_tree_subscribe(false); }
+        }));
+
+        m.addSeparator();
+        m.add(new Menu({
+          name: i18next.t('read-info-management'),
+          action: (e, m) => { this.root.read_info_dlg() }
+        }));
+      }
       m.expand(e);
     };
 
@@ -125,12 +143,28 @@ export class NewsgroupsPane extends ToolbarPane {
 
   async redisplay(bFromDB: boolean = false) {
     $('.tooltip').remove();
+
     if (bFromDB) {
-      this.toolbar.title = this.t('newsgroup');
       let data = await api_newsgroup();
       this.setNewsgroups(data);
       await this.loadSubsInfo();
     }
+    this.toolbar.title = this.t('newsgroup');
+    if (this.parent.user.user) {
+      this.toolbar.title += span({ class: 'num-subscribed' },
+        span({ class: 'title' }, this.t('num-subscribed')),
+        span({ class: 'num' }, this.root.subscribed_ng_num),
+        '/',
+        span({ class: 'total' }, this.root.ng_num)
+      );
+      this.toolbar.title += span({ class: 'num-article' },
+        span({ class: 'title' }, this.t('num-unread')),
+        span({ class: 'unread' }, this.root.unread_article_num));
+    }
+    this.toolbar.title += span({ style: 'flex-grow: 10' });
+    this.toolbar.title += span({ class: 'posted-at' },
+      span({ class: 'title' }, this.t('posted-at')),
+      span({ class: 'value' }, this.root.posted_at));
 
     let scroll = $(`#${this.id} .newsgroup`).scrollTop();
     $('#' + this.id).html(this.inner_html());
@@ -191,7 +225,7 @@ export class NewsgroupsPane extends ToolbarPane {
     let h: ISubsHash = {};
     if (this.parent.user.user)
       h = await api_subsInfo_read(this.parent.user.user.id);
-    else if(this.nologin_subsInfo){
+    else if (this.nologin_subsInfo) {
       let str = localStorage.getItem('nnsbbs_subsInfo');
       if (str) h = JSON.parse(str)
     }
@@ -221,7 +255,7 @@ export class NewsgroupsPane extends ToolbarPane {
           await api_subsInfo_write(user.id, [subsElem])
       }
     }
-    if ( changed && !user && this.nologin_subsInfo ) {
+    if (changed && !user && this.nologin_subsInfo) {
       let h: ISubsHash = {};
       for (let ng of this.newsgroups)
         h[ng.n.id] = ng.subsInfo.subsElem();

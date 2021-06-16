@@ -172,17 +172,19 @@ export class NewsgroupTree {
       }
     } else {
       fold_icon = span({ class: 'fold-icon btn-fold ' + (this.fold ? 'bi-chevron-right' : 'bi-chevron-down') });
-      ng_num = span({ class: 'ng-num' },
-        '(',
-        span({ 'title-i18n': 'no-of-subscribed-newsgroups' }, this.subscribed_ng_num),
-        '/',
-        span({ 'title-i18n': 'no-of-newsgroups' }, this.ng_num),
-        ')');
+      if (user) {
+        ng_num = span({ class: 'ng-num' },
+          '(',
+          span({ 'title-i18n': 'no-of-subscribed-newsgroups' }, this.subscribed_ng_num),
+          '/',
+          span({ 'title-i18n': 'no-of-newsgroups' }, this.ng_num),
+          ')');
+      }
     }
     article_num = span({ class: 'article-num' },
-      i18next.t('no-of-articles'), '(',
-      span({ class: 'unread' }, this.unread_article_num),
-      '/', this.article_num, ')');
+      i18next.t('no-of-articles'),
+      user ? span({ class: 'unread' }, this.unread_article_num) + '/' : '',
+      this.article_num);
 
     return div({ path: this.path, class: 'ng-node d-flex' + (this == this.ng_pane.curNode ? ' selected' : '') },
       fold_icon,
@@ -243,11 +245,13 @@ export class NewsgroupTree {
 
 
     if (this.ng) {
-      if (this.noChild())
-        this.article_num = this.unread_article_num = this.ng.n.max_id;
-      if (this.ng.subsInfo && this.ng.subsInfo.subscribe && this.noChild()) {
-        this.subscribed_ng_num = 1;
-        this.unread_article_num = this.article_num - this.ng.subsInfo.read.count();
+      if (this.noChild()) {
+        this.article_num = this.ng.n.max_id;
+        this.unread_article_num = 0;
+        if (this.ng.subsInfo && this.ng.subsInfo.subscribe) {
+          this.subscribed_ng_num = 1;
+          this.unread_article_num = this.article_num - this.ng.subsInfo.read.count();
+        }
       }
     }
     if (this.noChild()) {

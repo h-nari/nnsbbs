@@ -208,6 +208,8 @@ export const jp = {
     'no-db-error-found':'データベースにエラーは見つかりませんでした',
     'n-db-error-found':'データベースに{{n}}個のエラーが見つかりました',
     'repair-db':'データベースを修復する',
-    'n-db-errors-repaired':'データベースの{{n}}個のエラーが修復されました'
+    'n-db-errors-repaired':'データベースの{{n}}個のエラーが修復されました',
+    'num-subscribed':'購読数',
+    'num-unread':'未読記事数'
   }
 };
