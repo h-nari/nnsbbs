@@ -92,7 +92,7 @@ export class NewsgroupsPane extends ToolbarPane {
   }
 
   setNewsgroups(data: TNewsgroup[]) {
-    this.newsgroups = data.map(t => { return { n: t, subsInfo: new SubsInfo(t.id) } });
+    this.newsgroups = data.map(t => { return { n: t, subsInfo: new SubsInfo(t.id, t.max_id, t.deleted_articles) } });
     let old_root = this.root;
     this.root = new NewsgroupTree(this, '', '');
     for (let n of this.newsgroups)
@@ -217,7 +217,7 @@ export class NewsgroupsPane extends ToolbarPane {
   clearSubsInfo() {
     this.savedSubsString = {};
     for (let ng of this.newsgroups)
-      ng.subsInfo = new SubsInfo(ng.n.id);
+      ng.subsInfo = new SubsInfo(ng.n.id, ng.n.max_id, ng.n.deleted_articles);
   }
 
   // Load subscription information
@@ -233,7 +233,7 @@ export class NewsgroupsPane extends ToolbarPane {
     for (let ng of this.newsgroups) {
       let nid = ng.n.id;
       if (nid in h)
-        ng.subsInfo = new SubsInfo(nid, h[nid]);
+        ng.subsInfo = new SubsInfo(nid,ng.n.max_id, ng.n.deleted_articles, h[nid]);
       this.savedSubsString[nid] = JSON.stringify(ng.subsInfo.subsElem());
     }
     this.root.sumUp(n => n.calc());

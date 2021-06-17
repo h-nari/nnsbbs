@@ -338,7 +338,7 @@ export default class NnsBbs {
 
     if (this.titles_pane.newsgroup) {
       let subsInfo = this.titles_pane.newsgroup.subsInfo;
-      subsInfo.read.add_range(Number(article_id));                 // make article read
+      subsInfo.read(article_id);                               // make article read
       this.titles_pane.update_subsInfo(article_id);
       this.ng_pane.update_subsInfo(this.titles_pane.newsgroup.n.name);
       this.ng_pane.saveSubsInfo();

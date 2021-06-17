@@ -436,16 +436,18 @@ sub api_article($self) {
     eval {
         die "access forbidden" unless ($moderator);
         if ($update) {
-            my $arg = from_json($update);
-            my $id  = $arg->{'id'};
-            die "id required" unless $id;
+            my $arg          = from_json($update);
+            my $newsgroup_id = $arg->{newsgroup_id};
+            my $id           = $arg->{id};
+            die "newsgroup_id required" unless $newsgroup_id;
+            die "id required"           unless $id;
             my $cnt = 0;
             while ( my ( $key, $value ) = each(%$arg) ) {
-                next if ( $key eq 'id');
+                next if ( $key eq 'id' );
                 my $sql = "update article set $key=?";
                 $sql .= ",deleted_at=now()" if ( $key eq "bDeleted" );
-                $sql .= " where id=?";
-                $db->execute( $sql, $value, $id);
+                $sql .= " where newsgroup_id=? and id=?";
+                $db->execute( $sql, $value, $newsgroup_id, $id );
                 $cnt++;
             }
             die "no parameter specified" if $cnt == 0;

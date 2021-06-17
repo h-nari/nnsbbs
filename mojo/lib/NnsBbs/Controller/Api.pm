@@ -19,9 +19,26 @@ sub newsgroup ($self) {
         push( @param, $level );
     }
     $sql .= " order by ord,name";
-    my $data = $db->select_ah( $sql, @param );
+    my $ng_list = $db->select_ah( $sql, @param );
 
-    $self->render( json => $data );
+    $sql = "select newsgroup_id,id from article where bDeleted";
+    my $d_list   = $db->select_aa($sql);
+    my $ng2dlist = {};
+    for my $d (@$d_list) {
+        my ( $nid, $aid ) = @$d;
+        if ( $ng2dlist->{$nid} ) {
+            push( @{ $ng2dlist->{$nid} }, $aid );
+        }
+        else {
+            $ng2dlist->{$nid} = [$aid];
+        }
+    }
+    for my $n (@$ng_list) {
+        my $dlist = $ng2dlist->{ $n->{id} } || [];
+        $n->{'deleted_articles'} = $dlist;
+    }
+    print Dumper $ng_list;
+    $self->render( json => $ng_list );
 }
 
 sub titles($self) {
@@ -432,8 +449,7 @@ sub reaction($self) {
             $sql = "select type_id from reaction";
             $sql .= " where newsgroup_id=? and article_id=?";
             $sql .= " and user_id=?";
-            my ($type_id) =
-              $db->select_ra( $sql, $n_id, $a_id, $user_id );
+            my ($type_id) = $db->select_ra( $sql, $n_id, $a_id, $user_id );
             $self->render( json => { result => 'ok', type_id => $type_id } );
         }
         else {

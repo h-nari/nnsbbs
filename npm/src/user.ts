@@ -457,6 +457,7 @@ export class User {
             let bDeleted = $('#ban-chk-btn').prop('checked') ? 1 : 0;
             let delete_reason = ($('.article-ban-dlg .reason textarea').val() || '') as string;
             await admin_api_article({
+              newsgroup_id: article.newsgroup_id,
               id: article.article_id, bDeleted, delete_reason
             });
             this.parent.redisplay();

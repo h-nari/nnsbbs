@@ -11,19 +11,20 @@ interface IResult {
 //
 
 export interface TNewsgroup {
-  id: string,
-  name: string,
-  comment: string,
-  max_id: number,
-  posted_at: string,
-  rpl: number,
-  wpl: number,
-  bLocked: number,
-  bDeleted: number,
-  created_at: string,
-  locked_at: string | null,
-  deleted_at: string | null,
-  ord: number
+  id: string;
+  name: string;
+  comment: string;
+  max_id: number;
+  posted_at: string;
+  rpl: number;
+  wpl: number;
+  bLocked: number;
+  bDeleted: number;
+  created_at: string;
+  locked_at: string | null;
+  deleted_at: string | null;
+  ord: number;
+  deleted_articles: number[];
 }
 
 export function api_newsgroup() {
@@ -347,6 +348,7 @@ export function admin_api_title(user_id: string) {
 // admin/api/article
 //
 export interface ArgArticleUpdate {
+  newsgroup_id: string;
   id: string;
   bDeleted?: number;
   delete_reason?: string;

@@ -1,4 +1,4 @@
-import { escape_html, set_i18n} from "./util";
+import { escape_html, set_i18n } from "./util";
 import { div, button, span, icon } from "./tag";
 import { ToolbarPane } from "./pane";
 import { ReadSet } from "./readSet";
@@ -31,14 +31,12 @@ export class TitlesPane extends ToolbarPane {
   }
 
   async open(newsgroup: INewsGroup) {
-    let from = 1;
     let to = newsgroup.n.max_id;
     let si = newsgroup.subsInfo;
-    if (si && si.read.ranges.length > 0) {
-      let r = si.read.ranges[0];
-      if (r[0] == 1)
-        from = Math.max(r[1] - 10, 1);
-    }
+    let from = 1;
+
+    let u1 = si.first_unread_article();
+    if (u1) from = Math.max(u1 - 10, 1);
     to = Math.min(from + 99, to);
     await this.load(newsgroup, from, to);
     this.show();
@@ -70,7 +68,7 @@ export class TitlesPane extends ToolbarPane {
     this.threads.sort((a, b) => Number(a.article_id) - Number(b.article_id));
     this.newsgroup = newsgroup;
     this.loaded_titles.add_range(from, to);
-    this.redisplay(bClear);
+    this.redisplay();
   }
 
   html(): string {
@@ -127,12 +125,11 @@ export class TitlesPane extends ToolbarPane {
       return div({ class: 'more-titles' }, b);
   }
 
-  redisplay(resetScroll: boolean = false) {
+  redisplay() {
     let scroll = $(`#${this.id} .titles`).scrollTop();
     $('#' + this.id).html(this.inner_html());
     this.bind();
-    if (!resetScroll)
-      $(`#${this.id} .titles`).scrollTop(scroll || 0);
+    $(`#${this.id} .titles`).scrollTop(scroll || 0);
   }
 
   thread_html(t: ITitle, rule1: string = '', rule2: string = '') {
@@ -151,7 +148,7 @@ export class TitlesPane extends ToolbarPane {
     let opt = { article_id: d.article_id };
     let c: string[] = [];
     let si = this.newsgroup?.subsInfo;
-    if (si && si.read.includes(Number(d.article_id)))
+    if (si && si.is_read(d.article_id))
       c.push('read');
     if (this.cur_article_id == d.article_id)
       c.push('active');
@@ -235,21 +232,20 @@ export class TitlesPane extends ToolbarPane {
 
   disp_thread(bThread: boolean) {
     this.bDispTherad = bThread;
-    this.redisplay(true);
+    this.redisplay();
   }
 
   set_title() {
     let s = "";
     if (this.newsgroup) {
-      let max_id = this.newsgroup.n.max_id;
-      let cUnread = max_id;
       let si = this.newsgroup.subsInfo;
-      if (si) cUnread = Math.max(cUnread - si.read.count(), 0);
+      let cTotal = si.article_count();
+      let cUnread = si.unread_article_count();
 
       s += span({ class: 'newsgroup-name' }, this.newsgroup.n.name);
       s += span({ class: 'number-of-articles' }, '(',
         span({ 'title-i18n': 'unread-articles' }, cUnread), '/',
-        span({ 'title-i18n': 'total-articles' }, max_id), ')');
+        span({ 'title-i18n': 'total-articles' }, cTotal), ')');
       s += span({ class: 'subscription' }, '(',
         span(this.t(si && si.subscribe ? 'subscribe' : 'unsubscribe')),
         ')');
@@ -314,12 +310,11 @@ export class TitlesPane extends ToolbarPane {
     }
 
     let article_num = Number(article_id);
-    if (this.newsgroup.subsInfo) {
-      let readset = this.newsgroup.subsInfo.read;
-      while (readset.includes(article_num)) article_num++;
-      if (article_num > this.newsgroup.n.max_id)
-        return false;
-    }
+    let si = this.newsgroup.subsInfo;
+
+    while (si.is_read(article_num)) article_num++;
+    if (article_num > this.newsgroup.n.max_id)
+      return false;
 
     if (cur && $(cur).hasClass('more-titles')) {
       let btn = cur.children[0];

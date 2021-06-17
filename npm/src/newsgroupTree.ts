@@ -246,12 +246,10 @@ export class NewsgroupTree {
 
     if (this.ng) {
       if (this.noChild()) {
-        this.article_num = this.ng.n.max_id;
-        this.unread_article_num = 0;
-        if (this.ng.subsInfo && this.ng.subsInfo.subscribe) {
+        this.article_num = this.ng.subsInfo.article_count();
+        this.unread_article_num = this.ng.subsInfo.unread_article_count();
+        if (this.ng.subsInfo.subscribe)
           this.subscribed_ng_num = 1;
-          this.unread_article_num = this.article_num - this.ng.subsInfo.read.count();
-        }
       }
     }
     if (this.noChild()) {
@@ -306,16 +304,16 @@ export class NewsgroupTree {
 
   read_all(last: number = 0) {
     if (this.noChild()) {
-      if (this.ng && this.ng.subsInfo)
-        this.ng.subsInfo.read.clear().add_range(1, this.ng.n.max_id - last);
+      if (this.ng)
+        this.ng.subsInfo.read_all();
     } else for (let c of this.children)
       c.read_all(last);
   }
 
   unread_all() {
     if (this.noChild()) {
-      if (this.ng && this.ng.subsInfo)
-        this.ng.subsInfo.read.clear();
+      if (this.ng)
+        this.ng.subsInfo.unread_all();
     } else for (let c of this.children)
       c.unread_all();
   }
@@ -350,6 +348,7 @@ export class NewsgroupTree {
           action: () => {
             this.read_all();
             this.calcAll();
+            this.ng_pane.parent.redisplay();
           }
         },
         unread_all: {
@@ -357,6 +356,7 @@ export class NewsgroupTree {
           action: () => {
             this.unread_all();
             this.calcAll();
+            this.ng_pane.parent.redisplay();
           }
         },
         unread_last_50: {
@@ -369,6 +369,7 @@ export class NewsgroupTree {
               setting.d.articleUnread = n;
               setting.save();
             }
+            this.ng_pane.parent.redisplay();
           }
         },
         cancel: {
@@ -379,12 +380,8 @@ export class NewsgroupTree {
   }
 
   hasArticles(): boolean {
-    if (!this.noChild()) return false;
-    if (!this.ng || !this.ng.subsInfo) return false;
-    if (!this.ng.subsInfo.subscribe) return false;
-    let unread = this.ng.n.max_id - this.ng.subsInfo.read.count();
-    return unread > 0;
+    if (!this.noChild() || !this.ng) return false;
+    return this.ng.subsInfo.unread_article_count() > 0;
   }
-
 }
 
