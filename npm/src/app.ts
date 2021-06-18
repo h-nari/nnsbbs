@@ -20,10 +20,12 @@ let nb = new NnsBbs(i18next);
 window.nnsbbs = nb;
 
 $(window).on('keydown', e => {
-  if (e.key == ' ') {
-    window.nnsbbs.show_next();
-    e.preventDefault();
-    e.stopPropagation();
+  if ($(e.target).prop('tagName') == 'BODY') {
+    if (e.key == ' ') {
+      window.nnsbbs.show_next();
+      e.preventDefault();
+      e.stopPropagation();
+    }
   }
 });
 

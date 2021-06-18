@@ -566,7 +566,6 @@ sub user($self) {
         my $sql = "update user set " . join( ',', @places );
         $sql .= " where id=?";
         push( @params, $id );
-        print STDERR "*** SQL:$sql ***\n";
         $db->execute( $sql, @params );
         $db->commit;
         $self->render( json => { result => 'ok' } );

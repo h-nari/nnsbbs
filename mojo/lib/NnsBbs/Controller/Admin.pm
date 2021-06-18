@@ -400,8 +400,6 @@ sub api_report($self) {
             }
         }
 
-        # print STDERR "*** SQL:$sql\n\n";
-
         my $data;
         if ($count) {
             $data = $db->select_rh( $sql, @param );
