@@ -1,4 +1,4 @@
-import { escape_html, size_str } from "./util";
+import { escape_html, size_str, url_link } from "./util";
 import { div, span, img, tag } from "./tag";
 import { ToolbarPane } from "./pane";
 import NnsBbs from "./nnsbbs";
@@ -48,10 +48,14 @@ export class ArticlePane extends ToolbarPane {
         }
       }
 
+      let content = d.content;
+      content = escape_html(d.content);
+      content = url_link(content);
+
       return this.toolbar.html() +
         div({ class: 'article' },
           div({ class: 'article-header', id: this.id_header }, escape_html(d.header)),
-          div({ class: 'article-body' }, escape_html(d.content)),
+          div({ class: 'article-body' }, content),
           div(attachment),
           div({ class: 'article-end', 'html-i18n': 'end-click-to-next' }, "--- End (click to next)---"));
     } else {
@@ -107,7 +111,7 @@ export class ArticlePane extends ToolbarPane {
     this.article = data;
     this.toolbar.title =
       span({ class: 'id' }, '[' + id + ']') +
-      span({ class: 'author', 'title-i18n':'show-profile' }, escape_html(data.author)) +
+      span({ class: 'author', 'title-i18n': 'show-profile' }, escape_html(data.author)) +
       span({ class: 'date' }, data.date) +
       span({ class: 'title' }, escape_html(data.title));
   }

@@ -1,4 +1,5 @@
 import { IArticle } from "./dbif";
+import { a } from "./tag";
 
 
 export function get_json(path: string, option = {}) {
@@ -99,4 +100,13 @@ export function splitPath(path: string): { parent: string | null, base: string }
   let i = path.indexOf('.');
   if (i < 0) return { parent: null, base: path };
   else return { parent: path.substring(0, i), base: path.substring(i + 1) };
+}
+
+export function url_link(content: string): string {
+  const url_re = new RegExp('https?://([a-zA-Z0-9._+\-,*#%\?/=]|(&amp;))+', 'g');
+  let c2 = content.replace(url_re, (str) => {
+    let url = str.replace('&amp;', '&');
+    return a({ href: url, target: '_blank' }, decodeURI(url));
+  });
+  return c2;
 }
