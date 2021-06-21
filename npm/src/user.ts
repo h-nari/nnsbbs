@@ -286,7 +286,7 @@ export class User {
             if (disp_name == '') return error_dlg('name-is-blank');
             if (content == '') return error_dlg('content-is-blank');
 
-            if (a) reply_to = a.reply_to;
+            if (a) reply_to = a.article_id;
 
             content = 'content-type: text/plain\n\n' + content;
 

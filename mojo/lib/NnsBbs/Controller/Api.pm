@@ -247,10 +247,11 @@ sub profile_write {
 }
 
 sub post_article {
-    my $self          = shift;
-    my $ip            = $self->client_ip;
-    my $newsgroup_id  = $self->param('newsgroup_id');
-    my $article_id    = $self->param('article_id');
+    my $self         = shift;
+    my $ip           = $self->client_ip;
+    my $newsgroup_id = $self->param('newsgroup_id');
+
+    # my $article_id = $self->param('article_id');
     my $title         = $self->param('title');
     my $user_id       = $self->param('user_id');
     my $disp_name     = $self->param('disp_name');
@@ -275,13 +276,11 @@ sub post_article {
 
         die "no write permission" if ( !$moderator && $level < $wpl );
 
-        unless ($article_id) {
-            $sql = "select max_id from newsgroup where id=? for update";
-            my ($max_id) = $db->select_ra( $sql, $newsgroup_id );
-            $article_id = $max_id + 1;
-            $sql = "update newsgroup set max_id=?,posted_at=now() where id=?";
-            $db->execute( $sql, $article_id, $newsgroup_id );
-        }
+        $sql = "select max_id from newsgroup where id=? for update";
+        my ($max_id) = $db->select_ra( $sql, $newsgroup_id );
+        my $article_id = $max_id + 1;
+        $sql = "update newsgroup set max_id=?,posted_at=now() where id=?";
+        $db->execute( $sql, $article_id, $newsgroup_id );
 
         $sql = "insert into article";
         $sql .= "(newsgroup_id,id,title,reply_to,";
