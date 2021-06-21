@@ -95,9 +95,20 @@
         }
 
         .reaction {
+          font-size: smaller;
+          font-weight: bold;
           .icon {
-            color: green;
+            color: gray;
           }
+        }
+        .reaction.good .icon {
+          color: red;
+        }
+        .reaction.i-dont-think-so .icon {
+          color: blue;
+        }
+        .reaction.i-dont-understand .icon {
+          color: green;
         }
       }
       > div.read {
@@ -109,8 +120,11 @@
       > div.active {
         background-color: #007bff;
         color: white;
+        .reaction .icon {
+          color: white !important;
+        }
       }
-      > div.deleted  {
+      > div.deleted {
         text-decoration: line-through double;
       }
       .more-titles {

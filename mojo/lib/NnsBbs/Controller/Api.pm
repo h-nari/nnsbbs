@@ -439,7 +439,7 @@ sub reaction($self) {
             if ( $type_id >= 0 ) {
                 $sql = "insert into reaction(newsgroup_id,article_id";
                 $sql .= ",user_id,type_id)";
-                $sql .= "values(?,?,?,?,?)";
+                $sql .= "values(?,?,?,?)";
                 $db->execute( $sql, $n_id, $a_id, $user_id, $type_id );
             }
             $db->commit;

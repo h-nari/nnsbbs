@@ -11,7 +11,7 @@ create table reaction_type (
 insert into reaction_type(id,name,icon) values 
 (1, 'good',             'hand-thumbs-up-fill'),
 (2, 'i-dont-think-so',  'hand-thumbs-down-fill'),
-(3, 'i-dont-understand','question');
+(3, 'i-dont-understand','question-circle-fill');
 
 create table reaction (
   user_id      varchar(255) not null,
