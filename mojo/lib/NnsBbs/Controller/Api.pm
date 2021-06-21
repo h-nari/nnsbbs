@@ -37,7 +37,6 @@ sub newsgroup ($self) {
         my $dlist = $ng2dlist->{ $n->{id} } || [];
         $n->{'deleted_articles'} = $dlist;
     }
-    print Dumper $ng_list;
     $self->render( json => $ng_list );
 }
 
