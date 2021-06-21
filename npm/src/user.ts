@@ -205,14 +205,18 @@ export class User {
                 this.parent.topBar.check_login_status();
               });
             let membership_id = $('#p-membership').val() as string;
-            if (membership_id != d.membership_id)
+            if (membership_id != d.membership_id){
               api_profile_write({ user_id, membership_id });
+              this.user.membership_id = membership_id;
+            }
             let profile = $('#p-profile').val() as string;
             if (profile != d.profile)
               api_profile_write({ user_id, profile });
             let signature = $('#p-signature').val() as string;
-            if (signature != d.signature)
+            if (signature != d.signature){
               api_profile_write({ user_id, signature });
+              this.user.signature = signature;
+            }
           }
         },
         close: {
@@ -269,7 +273,7 @@ export class User {
       div({ class: 'attachment-area' }));
     $.confirm({
       title: i18next.t('post-article'),
-      columnClass: 'large',
+      columnClass: 'xlarge',
       type: 'orange',
       content: c,
       buttons: {
