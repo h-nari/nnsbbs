@@ -248,7 +248,7 @@ export function api_reaction_write(newsgroup_id: string, article_id: string, use
 }
 export interface IReactionUser {
   result: 'ok' | 'ng';
-  type_id: number;
+  type_id: number | null;
 }
 export function api_reaction_user(newsgroup_id: string, article_id: string, user_id: string) {
   return get_json('/api/reaction', { method: 'post', data: { newsgroup_id, article_id, user_id } }) as Promise<IReactionUser>;

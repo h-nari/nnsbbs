@@ -238,7 +238,7 @@ export default class NnsBbs {
                   icon: ra.icon,
                   icon_class: 'response',
                   html_i18n: ra.name,
-                  action: () => { this.add_reaction(ra.id); }
+                  action: () => { this.add_reaction(ra.id, a.type_id); }
                 }));
               }
               reaction_menu.add(new Menu({
@@ -246,7 +246,7 @@ export default class NnsBbs {
                 checked: !a.type_id,
                 icon: 'x',
                 html_i18n: 'no-reaction',
-                action: () => { this.add_reaction(-1); }
+                action: () => { this.add_reaction(null, a.type_id); }
               }));
             }
             reaction_menu.expand(e);
@@ -402,14 +402,16 @@ export default class NnsBbs {
     this.redisplay();
   }
 
-  async add_reaction(type_id: number) {
+  async add_reaction(type_id: number | null, old_type_id: number | null) {
     let article = this.article_pane.article;
-    if (article && this.user.user) {
+    if (article && this.user.user && type_id != old_type_id) {
       let n_id = article.newsgroup_id;
       let a_id = article.article_id;
       let u_id = this.user.user.id;
 
-      await api_reaction_write(n_id, a_id, u_id, type_id);
+      await api_reaction_write(n_id, a_id, u_id, type_id || -1);
+      this.titles_pane.add_reaction(a_id, type_id, 1);
+      this.titles_pane.add_reaction(a_id, old_type_id, -1);
       this.redisplay();
     }
   }

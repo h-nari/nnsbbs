@@ -159,8 +159,10 @@ export class TitlesPane extends ToolbarPane {
     let reaction_type = this.parent.reaction_type;
     if (d.reaction && reaction_type) {
       for (let t of Object.keys(d.reaction).sort()) {
-        let r = reaction_type[t];
-        reactions += div({ class: 'reaction ' + r.name, 'title-i18n': r.name }, icon(r.icon, 'icon') + d.reaction[t]);
+        if (d.reaction[t] > 0) {
+          let r = reaction_type[t];
+          reactions += div({ class: 'reaction ' + r.name, 'title-i18n': r.name }, icon(r.icon, 'icon'), d.reaction[t]);
+        }
       }
     }
     let s = div(opt,
@@ -343,5 +345,13 @@ export class TitlesPane extends ToolbarPane {
     $(line).addClass('read');
     this.set_title();
     this.toolbar.redisplay();
+  }
+
+  add_reaction(article_id: string, type_id: number | null, n: number) {
+    if (type_id && this.id2title[article_id]) {
+      let ra = this.id2title[article_id].reaction;
+      if (!(type_id in ra)) ra[type_id] = 0;
+      ra[type_id] += n;
+    }
   }
 }
