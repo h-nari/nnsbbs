@@ -23,25 +23,11 @@ export class TopBar {
 
   bind() {
     this.menu_login.bind();
-    this.check_login_status();
-  }
-
-  check_login_status() {
-    return new Promise((resolve, reject) => {
-      api_session().then(d => {
-        if (d.login) {
-          this.parent.user.user = d.user;
-          this.parent.onLogin();
-          // this.set_login_menu(d.user.disp_name);
-          resolve(true);
-        }
-        else {
-          this.parent.user.user = undefined;
-          this.parent.onLogout();
-          resolve(false);
-        }
-      });
-    });
+    let user = this.parent.user.user;
+    if (user)
+      this.set_login_menu(user.disp_name);
+    else
+      this.set_logout_menu();
   }
 
   set_login_menu(username: string) {

@@ -14,10 +14,11 @@ export class User {
   public parent: NnsBbs;
   public user: IUser | undefined;
   public setting = new Setting(this);
-  public membership: IMembership | null = null;
+  public membership: IMembership;
 
-  constructor(parent: NnsBbs) {
+  constructor(parent: NnsBbs, membership:IMembership) {
     this.parent = parent;
+    this.membership = membership;
   }
 
   login_dlg() {
@@ -201,9 +202,7 @@ export class User {
             let user_id = this.user.id;
             let disp_name = $('#p-name').val() as string;
             if (disp_name != d.disp_name)
-              api_profile_write({ user_id, disp_name }).then(() => {
-                this.parent.topBar.check_login_status();
-              });
+              api_profile_write({ user_id, disp_name });
             let membership_id = $('#p-membership').val() as string;
             if (membership_id != d.membership_id){
               api_profile_write({ user_id, membership_id });

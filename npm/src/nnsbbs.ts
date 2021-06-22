@@ -10,16 +10,23 @@ import { i18n } from "i18next";
 import { UserAdmin } from "./userAdmin";
 import { NewsgroupAdmin } from "./newsgroupAdmin";
 import { UserInfo } from "./userInfo";
-import { api_reaction_type, api_reaction_user, api_reaction_write, api_report, api_report_type, IReactionType, IReport } from "./dbif";
+import { api_reaction_type, api_reaction_user, api_reaction_write, api_report, api_report_type, IMembership, IReactionType, IReport, IUser } from "./dbif";
 import { ReadSet } from "./readSet";
 import { Menu } from "./menu";
 import { div, label, option, select, span, tag } from "./tag";
 import { ReportManaget } from "./reportManager";
 import { ReportPage } from "./reportPage";
 
+export interface NnsBbsInitData {
+  login: number;
+  user: IUser;
+  reaction_type: IReactionType;
+  membership: IMembership;
+};
+
 export default class NnsBbs {
   public topBar = new TopBar(this);
-  public user = new User(this);
+  public user : User;
   public userAdmin = new UserAdmin(this);
   public userInfo = new UserInfo(this);
   public newsgroupAdmin = new NewsgroupAdmin(this);
@@ -30,10 +37,14 @@ export default class NnsBbs {
   private ng_pane = new NewsgroupsPane('newsgroup', this);
   private titles_pane = new TitlesPane('titles', this);
   private article_pane = new ArticlePane('article', this);
-  public reaction_type: IReactionType | null = null;
+  public reaction_type: IReactionType;
 
-  constructor(i18next: i18n) {
+  constructor(i18next: i18n, init_data: NnsBbsInitData) {
     this.i18next = i18next;
+    this.user = new User(this, init_data.membership);
+    if (init_data.login)
+      this.user.user = init_data.user;
+    this.reaction_type = init_data.reaction_type;
     this.gm.add(this.ng_pane, this.titles_pane, this.article_pane);
     this.ng_pane.expansion_ratio = 1;
     this.titles_pane.expansion_ratio = 2;
@@ -284,7 +295,6 @@ export default class NnsBbs {
   // Called from the built-in script of topPage
   // Read and display a list of newsgroups
   async top_page(newsgroup: string = '', article_id: string = '') {
-    this.reaction_type = (await api_reaction_type()).data;
     await this.ng_pane.redisplay(true);
     if (newsgroup == "") {
       this.titles_pane.close();

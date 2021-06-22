@@ -11,13 +11,22 @@ declare global {
   }
 }
 
+declare var init_data : any;
+
 i18next.init({
   lng: 'jp',
   debug: true,
   resources: { en, jp }
 });
-let nb = new NnsBbs(i18next);
+let nb = new NnsBbs(i18next, init_data);
 window.nnsbbs = nb;
+
+$(()=>{
+  var tb = window.nnsbbs.topBar;
+  $('#whole-page').prepend(tb.html());
+    tb.bind(); 
+});
+
 
 $(window).on('keydown', e => {
   if ($(e.target).prop('tagName') == 'BODY') {

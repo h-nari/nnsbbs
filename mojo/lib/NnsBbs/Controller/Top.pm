@@ -2,6 +2,7 @@ package NnsBbs::Controller::Top;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use NnsBbs::Db;
 use NnsBbs::Util qw/access_level get_theme/;
+use JSON;
 use Data::Dumper;
 
 sub show ($self) {
@@ -11,11 +12,15 @@ sub show ($self) {
 sub bbs ($self) {
     my $newsgroup = $self->param('newsgroup') || "";
     my $id        = $self->param('id')        || "";
+    my $db        = NnsBbs::Db::new($self);
 
     my $s = "<script>\n";
     $s .= "\$(()=>{\n";
     $s .= sprintf( '  nnsbbs.top_page("%s","%s");', $newsgroup, $id ) . "\n";
     $s .= "});\n";
+    $s .= "var init_data = "
+      . to_json( $db->init_data( $self->session('id') ) ) . "\n";
+    $s .= "console.log('init_data:', init_data);\n";
     $s .= "</script>\n";
 
     $self->stash( script_part => $s );

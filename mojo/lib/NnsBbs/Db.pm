@@ -74,10 +74,43 @@ sub select_hh {
     return $sth->fetchall_hashref($key_field);
 }
 
-
 sub DESTROY {
     my $self = shift;
     $self->{conn}->disconnect();
+}
+
+sub init_data {
+    my $db         = shift;
+    my $session_id = shift;
+    my $data       = {};
+    $data->{membership} =
+      $db->select_hh( "select * from membership order by id", 'id' );
+    $data->{reaction_type} =
+      $db->select_hh( 'select id,name,icon from reaction_type', 'id' );
+    $data->{login} = 0;
+    if ($session_id) {
+        $db->update_session;
+        my $sql = "select disp_name, u.id as id";
+        $sql .= ",membership_id,signature,moderator,theme,setting";
+        $sql .= " from user as u,session as s";
+        $sql .= " where u.id = s.user_id and s.id=?";
+        my $rh = $db->select_rh( $sql, $session_id );
+        if ($rh) {
+            $data->{user}  = $rh;
+            $data->{login} = 1;
+        }
+    }
+
+    return $data;
+}
+
+sub update_session {
+    my $db  = shift;
+    my $sql = "delete from session";
+    $sql .= " where last_access  < subtime(now(),'24:00:00')";
+    $sql .= " or created_at < subtime(now(), '24:00:00')";
+    $db->execute($sql);
+    $db->commit;
 }
 
 1;

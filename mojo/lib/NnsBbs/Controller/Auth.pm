@@ -211,7 +211,7 @@ sub api_session {
 
     if ($session_id) {
         my $db = NnsBbs::Db::new($self);
-        &update_session($db);
+        $db->update_session;
         my $sql = "select disp_name, u.id as id";
         $sql .= ",membership_id,signature,moderator,theme,setting";
         $sql .= " from user as u,session as s";
@@ -230,7 +230,7 @@ sub new_session {
     my $db      = shift;
     my $user_id = shift;
 
-    &update_session($db);
+    $db->update_session;
     my $sql = "select count(*) from session where id=?";
     my $id;
     while (1) {
@@ -244,16 +244,6 @@ sub new_session {
     $db->execute( $sql, $id, $user_id );
     $db->commit;
     $self->session( id => $id, expiration => 3600 * 24 * 7 );
-}
-
-# delete expired session information .
-sub update_session {
-    my $db  = shift;
-    my $sql = "delete from session";
-    $sql .= " where last_access  < subtime(now(),'24:00:00')";
-    $sql .= " or created_at < subtime(now(), '24:00:00')";
-    $db->execute($sql);
-    $db->commit;
 }
 
 1;

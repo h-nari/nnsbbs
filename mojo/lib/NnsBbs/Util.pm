@@ -11,7 +11,7 @@ sub access_level {
 
     my $session_id = $c->session('id');
     return ( 0, 0, 0 ) unless $session_id;
-    NnsBbs::Controller::Auth::update_session($db);
+    $db->update_session;
     my $sql = "select u.membership_id, moderator, admin, u.id";
     $sql .= " from user as u,session as s";
     $sql .= " where u.id = s.user_id and s.id=?";
