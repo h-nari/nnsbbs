@@ -16,7 +16,7 @@ export class User {
   public setting = new Setting(this);
   public membership: IMembership;
 
-  constructor(parent: NnsBbs, membership:IMembership) {
+  constructor(parent: NnsBbs, membership: IMembership) {
     this.parent = parent;
     this.membership = membership;
   }
@@ -204,7 +204,7 @@ export class User {
             if (disp_name != d.disp_name)
               api_profile_write({ user_id, disp_name });
             let membership_id = $('#p-membership').val() as string;
-            if (membership_id != d.membership_id){
+            if (membership_id != d.membership_id) {
               api_profile_write({ user_id, membership_id });
               this.user.membership_id = membership_id;
             }
@@ -212,7 +212,7 @@ export class User {
             if (profile != d.profile)
               api_profile_write({ user_id, profile });
             let signature = $('#p-signature').val() as string;
-            if (signature != d.signature){
+            if (signature != d.signature) {
               api_profile_write({ user_id, signature });
               this.user.signature = signature;
             }
@@ -250,7 +250,12 @@ export class User {
     if (Number(this.user.membership_id) < n.n.wpl) {
       console.log('membership_id:', this.user.membership_id, 'wpl:', n.n.wpl);
       let i18next = this.parent.i18next;
-      $.alert(i18next.t('no-permission-to-post'));
+      $.alert({
+        title: '',
+        type: 'orange',
+        columnClass: 'medium',
+        content: i18next.t('no-permission-to-post')
+      });
       return;
     }
 
