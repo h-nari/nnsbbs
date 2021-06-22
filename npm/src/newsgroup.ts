@@ -170,8 +170,6 @@ export class NewsgroupsPane extends ToolbarPane {
     $('#' + this.id).html(this.inner_html());
     this.bind();
     $(`#${this.id} .newsgroup`).scrollTop(scroll || 0);
-    if (this.curNode)
-      this.select_newsgroup(this.curNode.path);
   }
 
   async select_newsgroup(path: string) {
@@ -189,19 +187,17 @@ export class NewsgroupsPane extends ToolbarPane {
       const scrollee = scroller + " .ng-tree";
       const line = scrollee + ` .sub-tree[path="${path}"] .ng-node`;
       $(scrollee + ' .ng-node').removeClass('active');
-      if ($(line).length < 1) {
-        console.log('newsgroup:', path, ' not found');
-        return;
+      if ($(line).length > 0) {
+        $(line).addClass('active');
+        let y = $(line).position().top;
+        let sy = $(scroller).scrollTop() || 0;
+        let sh = $(scroller).height() || 0;
+        let lh = $(line).height() || 0;
+        if (y < 0)
+          $(scroller).scrollTop(sy + y - (sh - lh) / 2);
+        else if (y + lh > sh)
+          $(scroller).scrollTop(sy + y - (sh - lh) / 2);
       }
-      $(line).addClass('active');
-      let y = $(line).position().top;
-      let sy = $(scroller).scrollTop() || 0;
-      let sh = $(scroller).height() || 0;
-      let lh = $(line).height() || 0;
-      if (y < 0)
-        $(scroller).scrollTop(sy + y - (sh - lh) / 2);
-      else if (y + lh > sh)
-        $(scroller).scrollTop(sy + y - (sh - lh) / 2);
     }
     return node;
   }
@@ -233,7 +229,7 @@ export class NewsgroupsPane extends ToolbarPane {
     for (let ng of this.newsgroups) {
       let nid = ng.n.id;
       if (nid in h)
-        ng.subsInfo = new SubsInfo(nid,ng.n.max_id, ng.n.deleted_articles, h[nid]);
+        ng.subsInfo = new SubsInfo(nid, ng.n.max_id, ng.n.deleted_articles, h[nid]);
       this.savedSubsString[nid] = JSON.stringify(ng.subsInfo.subsElem());
     }
     this.root.sumUp(n => n.calc());
