@@ -6,10 +6,10 @@ import { ReadSet } from "./readSet";
 export class SubsInfo {
   public newsgroup_id: string;
   public subscribe: boolean;
-  private readset: ReadSet;
+  public readset: ReadSet;
   public update: boolean | undefined;
-  private max_id: number;
-  private deleted_articles: number[]
+  public max_id: number;
+  public deleted_articles: number[]
 
   constructor(newsgroup_id: string, max_id: number, deleted_articles: number[], h: ISubsElem | undefined = undefined) {
     if (h) {
@@ -41,11 +41,13 @@ export class SubsInfo {
     this.readset.add_range(Number(i))
   }
 
-  read_all() {
-    if (this.max_id > 0)
-      this.readset.add_range(1, this.max_id);
-    else
-      this.readset.clear();
+  read_all(last: number = 0) {
+    let last_id = this.max_id - last;
+    this.readset.clear();
+    if (last_id > 0)
+      this.readset.add_range(1, last_id);
+    for (let i of this.deleted_articles) 
+      this.read(i);
   }
 
   unread_all() {

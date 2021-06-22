@@ -26,7 +26,7 @@ export interface NnsBbsInitData {
 
 export default class NnsBbs {
   public topBar = new TopBar(this);
-  public user : User;
+  public user: User;
   public userAdmin = new UserAdmin(this);
   public userInfo = new UserInfo(this);
   public newsgroupAdmin = new NewsgroupAdmin(this);
@@ -42,8 +42,10 @@ export default class NnsBbs {
   constructor(i18next: i18n, init_data: NnsBbsInitData) {
     this.i18next = i18next;
     this.user = new User(this, init_data.membership);
-    if (init_data.login)
+    if (init_data.login) {
       this.user.user = init_data.user;
+      this.user.setting.load(init_data.user.setting);
+    }
     this.reaction_type = init_data.reaction_type;
     this.gm.add(this.ng_pane, this.titles_pane, this.article_pane);
     this.ng_pane.expansion_ratio = 1;

@@ -103,7 +103,7 @@ export function splitPath(path: string): { parent: string | null, base: string }
 }
 
 export function url_link(content: string): string {
-  const url_re = new RegExp('https?://([a-zA-Z0-9._+\-,*#%\?/=]|(&amp;))+', 'g');
+  const url_re = new RegExp('https?://([-a-zA-Z0-9._+\-,*#%\?/=~:@]|(&amp;))+', 'g');
   let c2 = content.replace(url_re, (str) => {
     let url = str.replace('&amp;', '&');
     return a({ href: url, target: '_blank' }, decodeURI(url));

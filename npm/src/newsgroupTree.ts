@@ -304,8 +304,8 @@ export class NewsgroupTree {
 
   read_all(last: number = 0) {
     if (this.noChild()) {
-      if (this.ng)
-        this.ng.subsInfo.read_all();
+      if (this.ng) 
+        this.ng.subsInfo.read_all(last);
     } else for (let c of this.children)
       c.read_all(last);
   }
@@ -334,7 +334,7 @@ export class NewsgroupTree {
     c = div({ class: 'd-flex' }, c,
       span({ style: 'flex-grow: 10;' }),
       span({ class: 'label' }, this.t('specified-number')),
-      input({ class: 'specified-number', type: 'number', value: setting.d.articleUnread, width: 3 })
+      input({ class: 'specified-number', type: 'number', min: 1, value: setting.d.articleUnread, width: 3 })
     )
 
     $.confirm({
@@ -348,6 +348,7 @@ export class NewsgroupTree {
           action: () => {
             this.read_all();
             this.calcAll();
+            this.ng_pane.saveSubsInfo();
             this.ng_pane.parent.redisplay();
           }
         },
@@ -356,6 +357,7 @@ export class NewsgroupTree {
           action: () => {
             this.unread_all();
             this.calcAll();
+            this.ng_pane.saveSubsInfo();
             this.ng_pane.parent.redisplay();
           }
         },
@@ -363,12 +365,15 @@ export class NewsgroupTree {
           text: this.t('make-unread-last-n'),
           action: () => {
             let n = $('.read-info-dlg .specified-number').val() as number;
+            console.log('n:', n);
             this.read_all(n);
             this.calcAll();
             if (n != setting.d.articleUnread) {
               setting.d.articleUnread = n;
               setting.save();
             }
+            console.log('saveSubsInfo');
+            this.ng_pane.saveSubsInfo();
             this.ng_pane.parent.redisplay();
           }
         },
