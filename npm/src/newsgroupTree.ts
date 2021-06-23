@@ -210,11 +210,18 @@ export class NewsgroupTree {
   bind() {
     this.menu.bind();
     $(`.ng-tree .ng-node[path="${this.path}"]`).on('click', e => {
-      this.ng_pane.curNode = this;
-      if (this.ng_pane.clickCb)
-        this.ng_pane.clickCb(this.path);
+      if (this.ng_pane.curNode == this) {
+        if (!this.noChild())
+          this.fold = !this.fold;
+      } else {
+        this.ng_pane.curNode = this;
+        if (this.ng_pane.clickCb)
+          this.ng_pane.clickCb(this.path);
+      }
       this.ng_pane.redisplay();
     });
+
+
 
     $(`.ng-tree .ng-node[path="${this.path}"]  .btn-fold`).on('click', e => {
       if (!this.noChild())
