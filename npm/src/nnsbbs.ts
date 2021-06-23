@@ -331,8 +331,9 @@ export default class NnsBbs {
     await this.article_pane.open(newsgroup_id, article_id);
     this.article_pane.redisplay();
     await this.titles_pane.select_article(article_id);
-    this.titles_pane.scroll_to_show_selected_line(true);
     this.article_pane.show();
+    this.ng_pane.scroll_to_show_selected_line();
+    this.titles_pane.scroll_to_show_selected_line(true);
 
     if (this.titles_pane.newsgroup) {
       let subsInfo = this.titles_pane.newsgroup.subsInfo;

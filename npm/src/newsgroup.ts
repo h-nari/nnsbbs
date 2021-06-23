@@ -264,17 +264,6 @@ export class NewsgroupsPane extends ToolbarPane {
       localStorage.setItem('nnsbbs_subsInfo', JSON.stringify(h));
     }
   }
-  /*
-    getSubsInfo(name: string): ISubsInfo | null {
-      let ng = this.name2newsgroup(name);
-      if (ng)
-        return ng.subsInfo;
-      else {
-        console.log(`newsgroup: ${name} not found`);
-        return null;
-      }
-    }
-  */
 
   scrollToNextSubscribedNewsgroup(bFromTop: boolean = false): boolean {
     let node: NewsgroupTree | undefined = this.curNode;
@@ -292,6 +281,27 @@ export class NewsgroupsPane extends ToolbarPane {
     return false;
   }
 
+  scroll_to_show_selected_line() {
+    let path = this.curNode?.path;
+    if (!path) return;
+
+    const scroller = `#${this.id} .newsgroup`;
+    const scrollee = scroller + " .ng-tree";
+    const line = scrollee + ` .sub-tree[path="${path}"] .ng-node`;
+    $(scrollee + ' .ng-node').removeClass('active');
+    if ($(line).length > 0) {
+      $(line).addClass('active');
+      let y = $(line).position().top;
+      let sy = $(scroller).scrollTop() || 0;
+      let sh = $(scroller).height() || 0;
+      let lh = $(line).height() || 0;
+      console.log('y:', y, 'sy:', sy, 'sh:', sh, 'lh:', lh);
+      if (y < 0)
+        $(scroller).scrollTop(sy + y - (sh - lh) / 2);
+      else if (y + lh > sh)
+        $(scroller).scrollTop(sy + y - (sh - lh) / 2);
+    }
+  }
 
   update_subsInfo(path: string) {
     let node = this.root.findNewsgroup(path);
