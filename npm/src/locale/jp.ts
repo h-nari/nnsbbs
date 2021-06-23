@@ -2,8 +2,9 @@ import { a, div } from "../tag";
 
 export const jp = {
   translation: {
-    "show-all-newsgroups": "全ての掲示板を表示",
-    "only-subscribed-newsgroups": "購読した掲示板のみ表示",
+    'show-all-newsgroups': '全ての掲示板を表示',
+    'only-subscribed-newsgroups': '購読した掲示板のみ表示',
+    'show-unsubscribed-newsgroups':'未購読の掲示板も表示',
     'close-titles-and-article-pane': 'タイトル・記事領域を閉じる',
     'thread-display': 'スレッド表示',
     'time-order-display': '投稿順表示',

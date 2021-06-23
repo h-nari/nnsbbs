@@ -53,25 +53,11 @@ export default class NnsBbs {
     this.article_pane.expansion_ratio = 4;
 
     // buttons in newsgroup pane
-    this.ng_pane.toolbar.add_menu(new Menu({
-      icon: 'check-all',
-      explain: 'show-all-newsgroups',
-      action: () => {
-        this.ng_pane.bShowAll = true;
-        this.redisplay();
-      }
-    })).add_menu(new Menu({
-      icon: 'check',
-      explain: 'only-subscribed-newsgroups',
-      action: () => {
-        this.ng_pane.bShowAll = false;
-        this.redisplay();
-      }
-    })).add_menu(new Menu({
+    this.ng_pane.toolbar.add_menu({
       icon: 'play-fill',
       explain: 'show-next-unread-article',
       action: () => { this.show_next(); }
-    }));
+    });
 
 
     // Buttons in title pane

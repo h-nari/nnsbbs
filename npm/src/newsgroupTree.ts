@@ -150,7 +150,12 @@ export class NewsgroupTree {
   }
 
   sub_html(): string {
-    return this.children.map(c => c.html()).join('');
+    let s = '';
+    for (let c of this.children) {
+      if (c.subscribed_ng_num > 0 || this.ng_pane.bShowAll)
+        s += c.html();
+    }
+    return s;
   }
 
   innerHtml(): string {
@@ -174,11 +179,10 @@ export class NewsgroupTree {
       fold_icon = span({ class: 'fold-icon btn-fold ' + (this.fold ? 'bi-chevron-right' : 'bi-chevron-down') });
       if (user) {
         ng_num = span({ class: 'ng-num' },
-          '(',
-          span({ 'title-i18n': 'no-of-subscribed-newsgroups' }, this.subscribed_ng_num),
+          this.t('num-subscribed'),
+          span({ class: 'subscribe', 'title-i18n': 'no-of-subscribed-newsgroups' }, this.subscribed_ng_num),
           '/',
-          span({ 'title-i18n': 'no-of-newsgroups' }, this.ng_num),
-          ')');
+          span({ 'title-i18n': 'no-of-newsgroups' }, this.ng_num));
       }
     }
     article_num = span({ class: 'article-num' },
@@ -304,7 +308,7 @@ export class NewsgroupTree {
 
   read_all(last: number = 0) {
     if (this.noChild()) {
-      if (this.ng) 
+      if (this.ng)
         this.ng.subsInfo.read_all(last);
     } else for (let c of this.children)
       c.read_all(last);

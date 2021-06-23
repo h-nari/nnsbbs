@@ -2,7 +2,7 @@ import { div, button, span } from "./tag";
 import { ToolbarPane } from './pane';
 import { ReadSet } from "./readSet";
 import NnsBbs from "./nnsbbs";
-import { TNewsgroup, api_subsInfo_read, ISubsHash, ISubsElem, api_subsInfo_write, api_newsgroup } from "./dbif";
+import { TNewsgroup, api_subsInfo_read, ISubsHash, ISubsElem, api_subsInfo_write, api_newsgroup, api_theme_list } from "./dbif";
 import { NewsgroupTree } from "./newsgroupTree";
 import { Menu } from "./menu";
 import { set_i18n } from "./util";
@@ -46,13 +46,19 @@ export class NewsgroupsPane extends ToolbarPane {
     this.menu.opt.action = (e, m) => {
       m.clear();
       m.add({
+        name: this.t('show-unsubscribed-newsgroups'),
+        with_check: true,
+        checked: this.bShowAll,
+        action: () => { this.bShowAll = !this.bShowAll; this.redisplay(); }
+      }).addSeparator();
+
+      m.add({
         name: this.t('fold-all'),
         action: () => {
           this.root.forEach(n => { n.fold = true; });
           this.redisplay();
         }
-      });
-      m.add({
+      }).add({
         name: this.t('unfold-all'),
         action: () => {
           this.root.forEach(n => { n.fold = false; });
@@ -121,7 +127,7 @@ export class NewsgroupsPane extends ToolbarPane {
           div({ 'html-i18n': 'no-subscribed-newsgroup' }),
           div(button({
             id: this.id + '_showall',
-            class: 'btn btn-primary',
+            class: 'btn btn-primary btn-show-all-newsgroup',
             type: 'button',
             'html-i18n': 'show-all-newsgroups'
           }))));
@@ -133,6 +139,10 @@ export class NewsgroupsPane extends ToolbarPane {
   bind() {
     super.bind();
     this.root.bind();
+    $('.btn-show-all-newsgroup').on('click', () => {
+      this.bShowAll = true;
+      this.redisplay();
+    });
     set_i18n('#' + this.id);
   }
 
