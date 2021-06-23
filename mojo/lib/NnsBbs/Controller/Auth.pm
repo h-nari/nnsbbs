@@ -20,9 +20,14 @@ sub mail_auth($self) {
     my $sql = "select action from mail_auth where id=?";
     my $ah  = $db->select_ah( $sql, $id );
     my $len = @$ah + 0;
+
+    my $s = "var init_data = "
+      . to_json( $db->init_data( $self->session('id') ) ) . "\n";
+    $s .= "console.log('init_data:', init_data);\n";
+
     if ( $len == 0 ) {
         $self->stash(
-            script_part => '',
+            script_part => $s,
             title       => 'NNSBBS',
             title2      => $self->l('id.is.not.registered'),
             msg         => $self->l(
@@ -41,7 +46,7 @@ sub mail_auth($self) {
         # $db->commit;
         $self->stash(
             bReg        => $bReg,
-            script_part => '',
+            script_part => $s,
             id          => $id,
             title       => 'NNSBBS',
             title2      => $self->l(
@@ -104,6 +109,10 @@ sub register($self) {
         push( @errors, $self->l('password.is.not.same') );
     }
 
+    my $s = "var init_data = "
+      . to_json( $db->init_data( $self->session('id') ) ) . "\n";
+    $s .= "console.log('init_data:', init_data);\n";
+
     if ( @errors > 0 ) {
         my $msg = "";
         for my $e (@errors) {
@@ -112,7 +121,7 @@ sub register($self) {
         $msg = "<div class='error'><ul>$msg</ul></div>\n";
 
         $self->stash(
-            script_part => '',
+            script_part => $s,
             id          => $id,
             title       => $self->l('error.in.registration'),
             msg         => $msg,
@@ -136,7 +145,7 @@ sub register($self) {
         $sql .= "values(?,?,?,?)";
         $db->execute( $sql, $user_id, $email, $disp_name, $pwd );
         $self->stash(
-            script_part => '',
+            script_part => $s,
             title       => 'NNSBBS',
             title2      => $self->l('user.registration.complete'),
             msg         => $self->l('enjoy.bbs')
@@ -149,7 +158,7 @@ sub register($self) {
         $sql = "update user set password=? where mail=?";
         $db->execute( $sql, $pwd, $email );
         $self->stash(
-            script_part => '',
+            script_part => $s,
             title       => 'NNSBBS',
             title2      => $self->l('password.reset.complete'),
             msg         => $self->l('enjoy.bbs')

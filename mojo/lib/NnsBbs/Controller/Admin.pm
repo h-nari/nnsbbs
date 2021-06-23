@@ -16,6 +16,9 @@ sub user_list ($self) {
         $s .= "\$('#main').html(ua.html());\n";
         $s .= "ua.redisplay(true);\n";
         $s .= " });\n";
+        $s .= "var init_data = "
+          . to_json( $db->init_data( $self->session('id') ) ) . "\n";
+        $s .= "console.log('init_data:', init_data);\n";
         $s .= "</script>\n";
         $self->stash(
             script_part => $s,
@@ -40,6 +43,9 @@ sub user ($self) {
         $s .= "ui.setUserId('$id');\n";
         $s .= "ui.redisplay(true);\n";
         $s .= " });\n";
+        $s .= "var init_data = "
+          . to_json( $db->init_data( $self->session('id') ) ) . "\n";
+        $s .= "console.log('init_data:', init_data);\n";
         $s .= "</script>\n";
         $self->stash(
             script_part => $s,
@@ -64,6 +70,9 @@ sub newsgroup($self) {
         $s .= "\$('#main').html(na.html());\n";
         $s .= "na.redisplay(true);";
         $s .= " });\n";
+        $s .= "var init_data = "
+          . to_json( $db->init_data( $self->session('id') ) ) . "\n";
+        $s .= "console.log('init_data:', init_data);\n";
         $s .= "</script>\n";
         $self->stash(
             script_part => $s,
@@ -295,6 +304,9 @@ sub report ($self) {
             $s .= "  rm.open();\n";
         }
         $s .= "});\n";
+        $s .= "var init_data = "
+          . to_json( $db->init_data( $self->session('id') ) ) . "\n";
+        $s .= "console.log('init_data:', init_data);\n";
         $s .= "</script>\n";
         $self->stash(
             script_part => $s,
