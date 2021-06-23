@@ -4,7 +4,7 @@ export const jp = {
   translation: {
     'show-all-newsgroups': '全ての掲示板を表示',
     'only-subscribed-newsgroups': '購読した掲示板のみ表示',
-    'show-unsubscribed-newsgroups':'未購読の掲示板も表示',
+    'show-unsubscribed-newsgroups': '未購読の掲示板も表示',
     'close-titles-and-article-pane': 'タイトル・記事領域を閉じる',
     'thread-display': 'スレッド表示',
     'time-order-display': '投稿順表示',
@@ -206,11 +206,12 @@ export const jp = {
         'こちらのページ'), 'を御覧ください')
     ),
     'db-check-and-repair': 'データベースのチェックと修復',
-    'no-db-error-found':'データベースにエラーは見つかりませんでした',
-    'n-db-error-found':'データベースに{{n}}個のエラーが見つかりました',
-    'repair-db':'データベースを修復する',
-    'n-db-errors-repaired':'データベースの{{n}}個のエラーが修復されました',
-    'num-subscribed':'購読数',
-    'num-unread':'未読記事数'
+    'no-db-error-found': 'データベースにエラーは見つかりませんでした',
+    'n-db-error-found': 'データベースに{{n}}個のエラーが見つかりました',
+    'repair-db': 'データベースを修復する',
+    'n-db-errors-repaired': 'データベースの{{n}}個のエラーが修復されました',
+    'num-subscribed': '購読数',
+    'num-unread': '未読記事数',
+    'this-article-cannot-be-displayed-because-it-has-been-disabled': 'この記事は表示禁止になっているので表示できません'
   }
 };

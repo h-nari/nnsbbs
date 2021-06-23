@@ -325,7 +325,7 @@ export default class NnsBbs {
   async select_article(newsgroup_id: string, article_id: string) {
     let cur_title = this.titles_pane.cur_title();
     if (cur_title && cur_title.bDeleted && !this.user.setting.d.showDeletedArticle) {
-      this.article_pane.close();
+      $.alert(this.i18next.t('this-article-cannot-be-displayed-because-it-has-been-disabled'))
       return;
     }
     await this.article_pane.open(newsgroup_id, article_id);
