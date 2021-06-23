@@ -110,6 +110,8 @@ export class NewsgroupsPane extends ToolbarPane {
         if (n0) n.fold = n0.fold;
       });
     }
+    for (let c of this.root.children)
+      c.fold = false;
   }
 
   html(): string {

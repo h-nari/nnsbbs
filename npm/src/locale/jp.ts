@@ -212,6 +212,7 @@ export const jp = {
     'n-db-errors-repaired': 'データベースの{{n}}個のエラーが修復されました',
     'num-subscribed': '購読数',
     'num-unread': '未読記事数',
+    'num-newsgroups': '掲示板数',
     'this-article-cannot-be-displayed-because-it-has-been-disabled': 'この記事は表示禁止になっているので表示できません'
   }
 };

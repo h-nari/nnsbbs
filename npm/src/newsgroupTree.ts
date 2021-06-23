@@ -178,12 +178,14 @@ export class NewsgroupTree {
     } else {
       fold_icon = span({ class: 'fold-icon btn-fold ' + (this.fold ? 'bi-chevron-right' : 'bi-chevron-down') });
       if (user) {
-        ng_num = span({ class: 'ng-num' },
-          this.t('num-subscribed'),
-          span({ class: 'subscribe', 'title-i18n': 'no-of-subscribed-newsgroups' }, this.subscribed_ng_num),
-          '/',
-          span({ 'title-i18n': 'no-of-newsgroups' }, this.ng_num));
+        ng_num = span({ class: 'title' }, this.t('num-subscribed'));
+        ng_num += span({ class: 'subscribe', 'title-i18n': 'no-of-subscribed-newsgroups' }, this.subscribed_ng_num);
+        ng_num += '/';
+      } else {
+        ng_num = span({ class: 'title' }, this.t('num-newsgroups'));
       }
+      ng_num += span({ 'title-i18n': 'no-of-newsgroups' }, this.ng_num);
+      ng_num = span({ class: 'ng-num' }, ng_num);
     }
     article_num = span({ class: 'article-num' },
       i18next.t('no-of-articles'),
