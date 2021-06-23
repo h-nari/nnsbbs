@@ -45,50 +45,45 @@ export class NewsgroupsPane extends ToolbarPane {
     this.toolbar.add_menu(this.menu);
     this.menu.opt.action = (e, m) => {
       m.clear();
-      m.add(new Menu({
+      m.add({
         name: this.t('fold-all'),
         action: () => {
           this.root.forEach(n => { n.fold = true; });
           this.redisplay();
         }
-      }));
-      m.add(new Menu({
+      });
+      m.add({
         name: this.t('unfold-all'),
         action: () => {
           this.root.forEach(n => { n.fold = false; });
           this.redisplay();
         }
-      }));
+      });
 
       if (this.parent.user.user) {
         m.addSeparator();
-        m.add(new Menu({
+        m.add({
           name: i18next.t('subscribe-all'),
           action: async (e, m) => { this.root.set_tree_subscribe(true); }
-        })).add(new Menu({
+        }).add({
           name: i18next.t('unsubscribe-all'),
           action: async (e, m) => { this.root.set_tree_subscribe(false); }
-        }));
+        });
 
         m.addSeparator();
-        m.add(new Menu({
+        m.add({
           name: i18next.t('read-info-management'),
           action: (e, m) => { this.root.read_info_dlg() }
-        }));
+        });
       }
       m.expand(e);
     };
 
-    this.toolbar.add_menu(new Menu({
+    this.toolbar.add_menu({
       icon: 'arrow-clockwise',
-      explain: 'reload'
-    }));
-
-    if (false) {
-      setInterval(() => {
-        this.saveSubsInfo();
-      }, 5000);
-    }
+      explain: 'reload',
+      link: window.nnsbbs_baseURL
+    });
   }
 
   setNewsgroups(data: TNewsgroup[]) {

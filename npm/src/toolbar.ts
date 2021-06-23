@@ -1,4 +1,4 @@
-import { Menu } from "./menu";
+import { Menu, MenuOption } from "./menu";
 import { div, span, tag, label, input, button, ul, li, a } from "./tag";
 
 type IToggleCB = (bOpen: boolean) => void;
@@ -48,8 +48,11 @@ export class ToolBar {
       btn.bind();
   }
 
-  add_menu(menu: Menu) {
-    this.menus.unshift(menu);
+  add_menu(menu: Menu | MenuOption) {
+    if (menu instanceof Menu)
+      this.menus.unshift(menu);
+    else
+      this.menus.unshift(new Menu(menu));
     return this;
   }
 

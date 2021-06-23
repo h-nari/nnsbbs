@@ -5,7 +5,7 @@ var sn = 0;
 
 type MenuAction = (e: JQuery.ClickEvent, menu: Menu) => void;
 
-interface MenuOption {
+export interface MenuOption {
   icon?: string;
   icon_class?: string;
   name?: string;
@@ -104,8 +104,11 @@ export class Menu {
 
 
 
-  add(m: Menu) {
-    this.subMenu.push(m);
+  add(m: Menu | MenuOption) {
+    if (m instanceof Menu)
+      this.subMenu.push(m);
+    else
+      this.subMenu.push(new Menu(m));
     return this;
   }
 
