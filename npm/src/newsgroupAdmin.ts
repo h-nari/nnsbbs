@@ -22,7 +22,7 @@ export class NewsgroupAdmin {
   private savedData: string = '{}';
   public menu: Menu;
   public bShowDeleted: boolean = false;
-  private membership: IMembership | null = null;
+  // private membership: IMembership | null = null;
 
   constructor(parent: NnsBbs) {
     this.parent = parent;
@@ -138,7 +138,7 @@ export class NewsgroupAdmin {
   async redisplay(bFromDB: boolean = false) {
     if (bFromDB) {
       this.newsgroups = await get_json('/admin/api/newsgroup') as INewsgroupAdmin[];
-      this.membership = await get_json('/api/membership') as IMembership;
+      // this.membership = await get_json('/api/membership') as IMembership;
       let old_root = this.root;
       this.root = new NewsgroupAdminTree(this, '', '');
       for (let n of this.newsgroups)
@@ -167,13 +167,15 @@ export class NewsgroupAdmin {
     const i18next = this.parent.i18next;
     if (this.curNode) {
       let c = this.curNode;
+      let postable = c.newsgroup ? c.newsgroup.bLocked == 0 : false
       return div({ class: 'newsgroup-detail' },
         tag('form',
           form_row(i18next.t('newsgroup'), 3, span({ class: 'path' }, c.path)),
           form_row('', 3,
-            form_check('ng-bLocked', i18next.t('submissions-are-not-allowed'), c.newsgroup ? c.newsgroup.bLocked != 0 : true)),
-          form_row(i18next.t('access-control'), 3, button({ class: 'form-row btn-permission', type: 'button' },
-            this.permission_html('Read:', 'rpl'), this.permission_html('Write:', 'wpl'))),
+            form_check('ng-bLocked', i18next.t('submissions-are-not-allowed'), !postable)),
+          postable ?
+            form_row(i18next.t('access-control'), 3, button({ class: 'form-row btn-permission', type: 'button' },
+              this.permission_html('Read:', 'rpl'), this.permission_html('Write:', 'wpl'))) : '',
           div({ class: 'form-group' },
             label({ class: 'form-label' }, i18next.t('newsgroup-description') as string),
             tag('textarea', { class: 'form-control', id: 'ng-comment', rows: 10 }, c.newsgroup ? c.newsgroup.comment : '')),
@@ -190,8 +192,9 @@ export class NewsgroupAdmin {
     let val = '';
     if (this.curNode && this.curNode.newsgroup)
       val = String(this.curNode.newsgroup[field]);
+    let m = this.parent.user.membership;
     return span({ class: 'permission' }, span(title), span('&ge;'),
-      span(this.membership ? this.membership[val].name : ''))
+      span(m[val] ? m[val].name : ''))
   }
 
   newsgroup_data(): object {
@@ -380,8 +383,9 @@ export class NewsgroupAdmin {
 
   permission_select(label_str: string, class_str: string, val: number): string {
     let opt = '';
-    for (let i in this.membership) {
-      let m = this.membership[i];
+    let membership = this.parent.user.membership;
+    for (let i in membership) {
+      let m = membership[i];
       opt += option({ value: i, selected: selected(i == String(val)) },
         span('&ge;'), span(m.name));
     }
