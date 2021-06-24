@@ -89,6 +89,10 @@ export class NewsgroupsPane extends ToolbarPane {
       icon: 'arrow-clockwise',
       explain: 'reload',
       link: window.nnsbbs_baseURL
+    }).add_menu({
+      icon: 'chevron-bar-contract',
+      explain: 'scroll-to-show-selected-newsgroup',
+      action: (e, m) => { this.scroll_to_show_selected_line(); }
     });
   }
 
