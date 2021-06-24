@@ -92,7 +92,9 @@ export function set_i18n(selector: string = '') {
     $(this).attr('title', val);
   });
   $(selector + ' [title]').tooltip({
-    delay: 500
+    delay: 500,
+    container: 'body',
+    boundary: 'window',
   });
 }
 
