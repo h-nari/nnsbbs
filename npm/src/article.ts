@@ -128,6 +128,19 @@ export class ArticlePane extends ToolbarPane {
     this.setHeaderDisp(!this.bDispHeader);
   }
 
+  set_scroll(v: number | 'top' | 'bottom') {
+    let n: number
+    if (v == 'top')
+      n = 0;
+    else if (v == 'bottom') {
+      let sy = $(scroller).scrollTop() || 0;
+      let h = $(scroller).height() || 0;
+      n = h - sy;
+    } else
+      n = v;
+    $(scroller).scrollTop(n);
+  }
+
   scrolled_to_end() {
     let sy = $(scroller).scrollTop() || 0;
     let h = $(scroller).height() || 0;

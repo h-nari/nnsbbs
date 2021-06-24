@@ -212,6 +212,15 @@ export default class NnsBbs {
       }
     });
     this.article_pane.toolbar.add_menu(article_menu);
+    this.article_pane.toolbar.add_menu({
+      icon: 'align-bottom',
+      explain: 'scroll-to-end-of-article',
+      action: () => { this.article_pane.set_scroll('bottom'); }
+    }).add_menu({
+      icon: 'align-top',
+      explain: 'scroll-to-beginning-of-artile',
+      action: () => { this.article_pane.set_scroll('top'); }
+    });
 
     var reaction_menu = new Menu({
       icon: 'person-plus',
