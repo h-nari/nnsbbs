@@ -42,9 +42,7 @@ export interface ITitle {
   title: string;
   children?: ITitle[];
   bDeleted: number;
-  reaction: {
-    [type_id: string]: number;
-  }
+  reaction?: { [type_id: string]: number; };
 };
 export function api_titles(newsgroup_id: string, from: number, to: number, bShowDeleted: boolean = false) {
   return get_json('/api/titles', { data: { newsgroup_id, from, to, bShowDeleted: bShowDeleted ? 1 : 0 } }) as Promise<ITitle[]>;

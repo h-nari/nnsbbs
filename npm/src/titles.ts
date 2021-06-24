@@ -350,6 +350,7 @@ export class TitlesPane extends ToolbarPane {
   add_reaction(article_id: string, type_id: number | null, n: number) {
     if (type_id && this.id2title[article_id]) {
       let ra = this.id2title[article_id].reaction;
+      if (!ra) ra = this.id2title[article_id].reaction = {};
       if (!(type_id in ra)) ra[type_id] = 0;
       ra[type_id] += n;
     }
