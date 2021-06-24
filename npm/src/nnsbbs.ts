@@ -312,6 +312,7 @@ export default class NnsBbs {
       await this.titles_pane.scrollToNextUnread();
       this.titles_pane.show();
       this.article_pane.close();
+      this.ng_pane.scroll_to_show_selected_line();
       this.redisplay();
 
     } else {

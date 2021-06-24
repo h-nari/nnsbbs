@@ -297,7 +297,6 @@ export class NewsgroupsPane extends ToolbarPane {
       let sy = $(scroller).scrollTop() || 0;
       let sh = $(scroller).height() || 0;
       let lh = $(line).height() || 0;
-      console.log('y:', y, 'sy:', sy, 'sh:', sh, 'lh:', lh);
       if (y < 0)
         $(scroller).scrollTop(sy + y - (sh - lh) / 2);
       else if (y + lh > sh)
