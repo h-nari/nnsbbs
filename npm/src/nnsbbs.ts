@@ -174,39 +174,39 @@ export default class NnsBbs {
       icon: 'three-dots',
       action: (e, menu) => {
         menu.clear();
-        menu.add(new Menu({
+        menu.add({
           icon: 'card-heading',
           name: i18next.t('toggle-article-header'),
           action: () => {
             this.article_pane.toggle_header()
           }
-        })).add(new Menu({
+        }).add({
           icon: 'reply-fill',
           name: i18next.t('reply-to-article'),
           action: () => {
             if (this.titles_pane.newsgroup && this.article_pane.article)
               this.user.post_article_dlg(this.titles_pane.newsgroup, this.article_pane.article);
           }
-        })).add(new Menu({
+        }).add({
           icon: 'exclamation-diamond',
           name: i18next.t('report'),
           action: () => {
             this.report_dlg();
           }
-        }));
+        });
         let newsgroup = this.titles_pane.newsgroup;
         let article = this.article_pane.article;
         let user = this.user.user;
         if (newsgroup && article && user && user.moderator) {
           menu.addSeparator();
-          menu.add(new Menu({
+          menu.add({
             icon: 'x-square-fill',
             name: i18next.t('ban-article'),
             action: () => {
               if (newsgroup && article)
                 this.user.ban_article_dlg(newsgroup, article);
             }
-          }));
+          });
         }
         menu.expand(e);
       }
@@ -254,6 +254,14 @@ export default class NnsBbs {
       }
     });
     this.article_pane.toolbar.add_menu(reaction_menu);
+    this.article_pane.toolbar.add_menu({
+      icon: 'reply-fill',
+      explain: 'reply-to-article',
+      action: () => {
+        if (this.titles_pane.newsgroup && this.article_pane.article)
+          this.user.post_article_dlg(this.titles_pane.newsgroup, this.article_pane.article);
+      }
+    })
   }
 
   html(): string {
