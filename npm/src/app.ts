@@ -11,7 +11,7 @@ declare global {
   }
 }
 
-declare var init_data : any;
+declare var init_data: any;
 
 i18next.init({
   lng: 'jp',
@@ -21,10 +21,10 @@ i18next.init({
 let nb = new NnsBbs(i18next, init_data);
 window.nnsbbs = nb;
 
-$(()=>{
+$(() => {
   var tb = window.nnsbbs.topBar;
   $('#whole-page').prepend(tb.html());
-    tb.bind(); 
+  tb.bind();
 });
 
 
@@ -52,3 +52,14 @@ window.onerror = function (message, source, lineno, colno, error) {
     )
   })
 }
+window.addEventListener('unhandledrejection', function (ev) {
+  $.alert({
+    title: 'Unhandled Rejection Error',
+    type: 'red',
+    columnClass: 'xlarge',
+    content: div({ class: 'unhandled-rejection-dlg' },
+      div({ class: 'message' }, ev.reason.message),
+      div({ class: 'stack' }, ev.reason.stack)
+    )
+  })
+});
