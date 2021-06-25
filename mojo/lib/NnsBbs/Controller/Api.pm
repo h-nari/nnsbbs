@@ -74,20 +74,19 @@ sub titles($self) {
         my $data = $db->select_ah( $sql, @params );
 
         $sql = "select article_id,count(*) as count,type_id";
-        $sql .= " from article as a,reaction as r";
-        $sql .= " where a.newsgroup_id=r.newsgroup_id";
-        $sql .= " and a.id=r.article_id";
-        $sql .= " and a.newsgroup_id = ?";
-        $sql .= " group by a.id,type_id";
+        $sql .= " from reaction";
+        $sql .= " where newsgroup_id = ?";
         @params = ($newsgroup_id);
         if ($from) {
-            $sql .= " and id >= ?";
+            $sql .= " and article_id >= ?";
             push @params, $from;
         }
         if ($to) {
-            $sql .= "and id <= ?";
+            $sql .= "and article_id <= ?";
             push @params, $to;
         }
+        $sql .= " group by article_id,type_id";
+
         my $ah  = $db->select_ah( $sql, @params );
         my $arh = {};
         for my $ra (@$ah) {
