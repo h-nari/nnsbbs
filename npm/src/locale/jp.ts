@@ -217,6 +217,7 @@ export const jp = {
     'scroll-to-show-selected-newsgroup':'選択された掲示板が表示されるようにスクロール',
     'scroll-to-beginning-of-article':'記事の先頭にスクロール',
     'scroll-to-end-of-article':'記事の最後にスクロール',
-    'bbs':'掲示板'
+    'bbs':'掲示板',
+    'has-attached-file':'添付画像,ファイル有り'
   }
 };

@@ -73,6 +73,8 @@ sub titles($self) {
         $sql .= " order by id";
         my $data = $db->select_ah( $sql, @params );
 
+        # gather reaction data
+
         $sql = "select article_id,count(*) as count,type_id";
         $sql .= " from reaction";
         $sql .= " where newsgroup_id = ?";
@@ -94,9 +96,26 @@ sub titles($self) {
             $arh->{$a_id} = {} unless $arh->{$a_id};
             $arh->{$a_id}->{ $ra->{type_id} } = $ra->{count};
         }
+
+        # gater attach file count
+
+        $sql = "select article_id,count(*) as count";
+        $sql .= " from attachment";
+        $sql .= " where newsgroup_id = ?";
+        $sql .= " and article_id >= ?" if $from;
+        $sql .= " and article_id <= ?" if $to;
+        $sql .= " group by article_id";
+        my $aid2attach =
+          $db->select_hh( $sql, 'article_id', @params );    # reuse @params
+
+        # compiling data
+
         for my $t (@$data) {
-            $t->{reaction} = $arh->{ $t->{article_id} }
-              if $arh->{ $t->{article_id} };
+            my $aid = $t->{article_id};
+            $t->{reaction} = $arh->{$aid} if $arh->{$aid};
+            my $attach = $aid2attach->{$aid};
+            $t->{attached_file} =
+              $attach && $attach->{count} ? $attach->{count} : 0;
             if ( $t->{bDeleted} && !$bShowDeleted ) {
                 print STDERR "deleted article\n";
                 $t->{title}     = '==== Deleted Article ====';

@@ -165,12 +165,14 @@ export class TitlesPane extends ToolbarPane {
         }
       }
     }
+    let attached_file = d.attached_file > 0 ? span({ class: 'attached-file', 'title-i18n':'has-attached-file' }, icon('paperclip')) : '';
     let s = div(opt,
       div({ class: 'article-rule' }, rule),
       div({ class: 'article-id' }, d.article_id),
       div({ class: 'article-from', user_id: d.user_id }, escape_html(d.disp_name)),
       div({ class: 'article-time' }, d.date),
       div({ class: 'article-title' }, escape_html(d.title)),
+      attached_file,
       reactions
     );
     return s;
