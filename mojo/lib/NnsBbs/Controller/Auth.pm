@@ -22,7 +22,7 @@ sub mail_auth($self) {
     my $len = @$ah + 0;
 
     my $s = "var init_data = "
-      . to_json( $db->init_data( $self->session('id') ) ) . "\n";
+      . to_json( $db->init_data( $self) ) . "\n";
     $s .= "console.log('init_data:', init_data);\n";
 
     if ( $len == 0 ) {
@@ -110,7 +110,7 @@ sub register($self) {
     }
 
     my $s = "var init_data = "
-      . to_json( $db->init_data( $self->session('id') ) ) . "\n";
+      . to_json( $db->init_data( $self) ) . "\n";
     $s .= "console.log('init_data:', init_data);\n";
 
     if ( @errors > 0 ) {

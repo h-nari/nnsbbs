@@ -22,6 +22,7 @@ export interface NnsBbsInitData {
   user: IUser;
   reaction_type: IReactionType;
   membership: IMembership;
+  version: string;
 };
 
 export default class NnsBbs {
@@ -34,10 +35,11 @@ export default class NnsBbs {
   public reportPage = new ReportPage(this);
   public gm = new GeometryManager('main');
   public i18next: i18n;
+  public version:string;
+  public reaction_type: IReactionType;
   private ng_pane = new NewsgroupsPane('newsgroup', this);
   private titles_pane = new TitlesPane('titles', this);
   private article_pane = new ArticlePane('article', this);
-  public reaction_type: IReactionType;
 
   constructor(i18next: i18n, init_data: NnsBbsInitData) {
     this.i18next = i18next;
@@ -47,6 +49,7 @@ export default class NnsBbs {
       this.user.setting.load(init_data.user.setting);
     }
     this.reaction_type = init_data.reaction_type;
+    this.version = init_data.version;
     this.gm.add(this.ng_pane, this.titles_pane, this.article_pane);
     this.ng_pane.expansion_ratio = 1;
     this.titles_pane.expansion_ratio = 2;

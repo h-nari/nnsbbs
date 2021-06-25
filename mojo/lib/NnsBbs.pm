@@ -29,6 +29,9 @@ sub startup ($self) {
             return $c->l($str_id);
         }
     );
+    my $ver = `/usr/bin/git describe`;
+    chop($ver);
+    $self->{npm_version} = $ver;
 
     # Router
     my $r = $self->routes;

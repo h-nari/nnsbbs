@@ -17,7 +17,7 @@ sub user_list ($self) {
         $s .= "ua.redisplay(true);\n";
         $s .= " });\n";
         $s .= "var init_data = "
-          . to_json( $db->init_data( $self->session('id') ) ) . "\n";
+          . to_json( $db->init_data( $self) ) . "\n";
         $s .= "console.log('init_data:', init_data);\n";
         $s .= "</script>\n";
         $self->stash(
@@ -44,7 +44,7 @@ sub user ($self) {
         $s .= "ui.redisplay(true);\n";
         $s .= " });\n";
         $s .= "var init_data = "
-          . to_json( $db->init_data( $self->session('id') ) ) . "\n";
+          . to_json( $db->init_data( $self) ) . "\n";
         $s .= "console.log('init_data:', init_data);\n";
         $s .= "</script>\n";
         $self->stash(
@@ -71,7 +71,7 @@ sub newsgroup($self) {
         $s .= "na.redisplay(true);";
         $s .= " });\n";
         $s .= "var init_data = "
-          . to_json( $db->init_data( $self->session('id') ) ) . "\n";
+          . to_json( $db->init_data( $self ) ) . "\n";
         $s .= "console.log('init_data:', init_data);\n";
         $s .= "</script>\n";
         $self->stash(
@@ -305,7 +305,7 @@ sub report ($self) {
         }
         $s .= "});\n";
         $s .= "var init_data = "
-          . to_json( $db->init_data( $self->session('id') ) ) . "\n";
+          . to_json( $db->init_data( $self) ) . "\n";
         $s .= "console.log('init_data:', init_data);\n";
         $s .= "</script>\n";
         $self->stash(

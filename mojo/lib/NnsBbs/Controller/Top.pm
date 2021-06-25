@@ -10,7 +10,7 @@ sub show ($self) {
 
     my $s = "<script>\n";
     $s .= "var init_data = "
-      . to_json( $db->init_data( $self->session('id') ) ) . "\n";
+      . to_json( $db->init_data( $self ) ) . "\n";
     $s .= "console.log('init_data:', init_data);\n";
     $s .= "</script>\n";
     $self->stash( script_part => $s );
@@ -27,7 +27,7 @@ sub bbs ($self) {
     $s .= sprintf( '  nnsbbs.top_page("%s","%s");', $newsgroup, $id ) . "\n";
     $s .= "});\n";
     $s .= "var init_data = "
-      . to_json( $db->init_data( $self->session('id') ) ) . "\n";
+      . to_json( $db->init_data( $self ) ) . "\n";
     $s .= "console.log('init_data:', init_data);\n";
     $s .= "</script>\n";
 

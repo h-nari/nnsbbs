@@ -81,7 +81,8 @@ sub DESTROY {
 
 sub init_data {
     my $db         = shift;
-    my $session_id = shift;
+    my $controller = shift;
+    my $session_id = $controller->session('id');
     my $data       = {};
     $data->{membership} =
       $db->select_hh( "select * from membership order by id", 'id' );
@@ -100,7 +101,7 @@ sub init_data {
             $data->{login} = 1;
         }
     }
-
+    $data->{version} = $controller->app->{npm_version};
     return $data;
 }
 

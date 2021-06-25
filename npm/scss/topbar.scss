@@ -16,3 +16,16 @@
     font-size: xx-small;
   }
 }
+
+.about-dlg {
+  > div {
+    margin: 8px;
+    .label {
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    .fullname {
+      font-style: italic;
+    }
+  }
+}

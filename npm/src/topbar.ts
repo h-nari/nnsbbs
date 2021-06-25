@@ -44,34 +44,39 @@ export class TopBar {
     m.opt.right_icon_class = 'right-icon';
     $('#' + m.id).html(m.html());
     m.clear();
-    m.add(new Menu({
+    m.add({
       name: i18next.t('logout'),
       action: () => { this.parent.user.logout_dlg(); }
-    }));
+    });
     m.addSeparator();
-    m.add(new Menu({
+    m.add({
       name: i18next.t('Profile'),
       action: () => { this.parent.user.profile_dlg(); }
-    }));
-    m.add(new Menu({
+    });
+    m.add({
       name: i18next.t('setting'),
       action: () => { this.parent.user.setting_dlg(); }
-    }));
+    });
     if (this.parent.user.user?.moderator) {
       this.bModerator = true;
       m.addSeparator();
-      m.add(new Menu({ name: i18next.t('user-manager'), link: '/admin/user' }));
-      m.add(new Menu({ name: i18next.t('newsgroup-manager'), link: '/admin/newsgroup' }));
+      m.add({ name: i18next.t('user-manager'), link: '/admin/user' });
+      m.add({ name: i18next.t('newsgroup-manager'), link: '/admin/newsgroup' });
       this.menu_report_manager = new Menu({ name: i18next.t('report-manager'), link: '/admin/report' });
       m.add(this.menu_report_manager);
       m.addSeparator();
-      m.add(new Menu({
+      m.add({
         name: i18next.t('db-check-and-repair'),
         action: () => { this.parent.newsgroupAdmin.db_check_and_repair_dlg(); }
-      }));
+      });
     } else {
       this.bModerator = false;
     }
+    m.addSeparator();
+    m.add({
+      name: i18next.t('about-this-program'),
+      action: () => { this.about_dlg(); }
+    });
     this.update_badge();
   }
 
@@ -86,11 +91,16 @@ export class TopBar {
     this.menu_login.add(new Menu({
       name: i18next.t('login'),
       action: () => { this.parent.user.login_dlg(); }
-    })).add(new Menu({
+    })).add({
       name: i18next.t('User Registration'),
       action: () => { this.parent.user.user_registration_dlg('MAIL_AUTH'); }
-    }));
+    });
     this.bModerator = false;
+    m.addSeparator();
+    m.add({
+      name: i18next.t('about-this-program'),
+      action: () => { this.about_dlg(); }
+    });
     this.update_badge();
   }
 
@@ -109,5 +119,18 @@ export class TopBar {
       this.menu_report_manager.opt.badge = badge;
       this.menu_report_manager.redisplay();
     }
+  }
+
+  about_dlg() {
+    $.alert({
+      title: this.parent.i18next.t('about-this-program'),
+      type: 'green',
+      columnClass: 'medium',
+      content: div({ class: 'about-dlg' },
+        div(span({ class: 'label' }, 'NnsBbs:'), span({ class: 'fullname' }, 'NetNews Styleed Bulletin Board System')),
+        div(span({ class: 'label' }, 'Github:'), a({ href: 'https://github.com/h-nari/nnsbbs' }, 'https://github.com/h-nari/nnsbbs')),
+        div(span({ class: 'label' }, 'version:'), span({ class: 'version' }, this.parent.version))
+      )
+    })
   }
 }
