@@ -421,7 +421,15 @@ export class User {
       content: div({ class: 'user-setting overflow-hidden' },
         div({ class: 'row' },
           div({ class: 'col title', i18n: 'theme' }), div({ class: 'col value' }, c))),
-      onOpen: () => { set_i18n('.user-setting'); },
+      onOpen: () => {
+        set_i18n('.user-setting');
+        $('.user-setting .theme').on('change', e => {
+          let theme = $(e.currentTarget).val();
+          let url = window.nnsbbs_baseURL + "theme/theme-" + theme + ".css";
+          console.log('change theme:', theme, 'url:', url);
+          $('head link.theme ').attr('href', url)
+        });
+      },
       buttons: {
         write: {
           text: i18next.t('write'),
