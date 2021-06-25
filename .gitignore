@@ -5,3 +5,4 @@ mojo/public/app.css
 mojo/public/style.css
 mojo/public/app.css.map
 mojo/public/style.css.map
+mojo/templates/top/index.html.ep
