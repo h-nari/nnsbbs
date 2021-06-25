@@ -1,4 +1,4 @@
-import { a, div, tag, icon, label, select, option, selected } from './tag';
+import { a, div, tag, icon, label, select, option, selected, span } from './tag';
 import { Menu } from './menu';
 import { escape_html, get_json } from './util';
 import NnsBbs from './nnsbbs';
@@ -15,9 +15,15 @@ export class TopBar {
     this.parent = parent;
   }
 
+  t(id: string) {
+    return this.parent.i18next.t(id);
+  }
+
   html(): string {
     return tag('nav', { id: this.id, class: 'topbar' },
       a({ href: window.nnsbbs_baseURL }, 'NNSBBS'),
+      a({ href: window.nnsbbs_baseURL + 'bbs' }, this.t('bbs')),
+      span({ style: 'flex-grow: 10;' }),
       this.menu_login.html())
   }
 

@@ -4,13 +4,11 @@
   display: flex;
   width: 100%;
   margin: 1px;
-  > a {
+  a {
     font-size: large;
     font-weight: bold;
     padding: 0.375rem 0.25rem;
     margin-left: 5px;
-    // display: inline-block;
-    flex-grow: 10;
   }
 
   .right-icon {
