@@ -215,7 +215,7 @@ export const jp = {
     'num-newsgroups': '掲示板数',
     'this-article-cannot-be-displayed-because-it-has-been-disabled': 'この記事は表示禁止になっているので表示できません',
     'scroll-to-show-selected-newsgroup':'選択された掲示板が表示されるようにスクロール',
-    'move-to-beginning-of-article':'記事の先頭にスクロール',
-    'move-to-end-of-article':'記事の最後にスクロール'
+    'scroll-to-beginning-of-article':'記事の先頭にスクロール',
+    'scroll-to-end-of-article':'記事の最後にスクロール'
   }
 };

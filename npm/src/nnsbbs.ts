@@ -218,7 +218,7 @@ export default class NnsBbs {
       action: () => { this.article_pane.set_scroll('bottom'); }
     }).add_menu({
       icon: 'align-top',
-      explain: 'scroll-to-beginning-of-artile',
+      explain: 'scroll-to-beginning-of-article',
       action: () => { this.article_pane.set_scroll('top'); }
     });
 
