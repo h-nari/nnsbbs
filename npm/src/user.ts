@@ -269,12 +269,16 @@ export class User {
       content = this.user.signature;
     }
 
-
     let c = tag('form', { class: 'post-article' },
+      div({ class: 'row my-2' },
+        label({ class: 'col-2' }, i18next.t('newsgroup')),
+        div({ class: 'col-8 font-weight-bold' }, n.n.name),
+        div({ class: 'col-2' }, button({ class: 'btn btn-info btn-about-newsgroup w-100' }, i18next.t('newsgroup-description')))),
       form_input('post-name', i18next.t('disp-name'), { value: this.user.disp_name }),
       form_input('post-title', i18next.t('subject'), { value: title }),
       form_post_textarea('post-content', i18next.t('body'), a, { value: content, rows: 10 }),
       div({ class: 'attachment-area' }));
+
     $.confirm({
       title: i18next.t('post-article'),
       columnClass: 'xlarge',
@@ -331,6 +335,12 @@ export class User {
             attachment_list.push(...list);
             redisplay_func();
           });
+        });
+        $('.btn-about-newsgroup').on('click', e => {
+          if (this.parent.ng_pane.curNode)
+            this.parent.ng_pane.curNode.about_newsgroup_dlg();
+            e.stopPropagation();
+            e.preventDefault();
         });
         redisplay_func();
         let ta = $('#post-content')[0] as HTMLTextAreaElement;
@@ -507,7 +517,7 @@ function form_input(id: string, label_str: string, opt: IFormGroupOpt) {
 
   return div({ class: 'form-row' },
     label({ for: id, class: 'col col-md-2' }, label_str),
-    div({ class: 'form-group col-md-9' }, input_part, help));
+    div({ class: 'form-group col-md-10' }, input_part, help));
 }
 
 function form_textarea(id: string, label_str: string, opt: IFormGroupOpt) {
@@ -581,8 +591,8 @@ function quote_article(id: string, n: INewsGroup, a: IArticle) {
 
 function error_dlg(msg: string): false {
   $.alert({
-    title: 'post-error',
-    content: msg,
+    title: window.nnsbbs.i18next.t('post-error'),
+    content: window.nnsbbs.i18next.t(msg),
     type: 'red'
   })
   return false;

@@ -92,7 +92,7 @@ export const jp = {
     'fill-in-your-self-introduction': '自己紹介を記入して下さい。ここに書かれた内容は公開されますので注意して下さい。',
     'write': '書込み',
     'close': '閉じる',
-    'subject': '表題',
+    'subject': '件名',
     'body': '本文',
     'post-article': '記事投稿',
     'specify-attachments-images': '添付ファイル/画像の指定',
@@ -219,6 +219,9 @@ export const jp = {
     'scroll-to-end-of-article': '記事の最後にスクロール',
     'bbs': '掲示板',
     'has-attached-file': '添付画像,ファイル有り',
-    'about-this-program': 'このプログラムについて'
+    'about-this-program': 'このプログラムについて',
+    'post-error':'投稿エラー',
+    'title-is-blank':'件名が空欄です',
+    'content-is-blank':'本文が空欄です'
   }
 };

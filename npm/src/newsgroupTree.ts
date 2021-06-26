@@ -245,6 +245,9 @@ export class NewsgroupTree {
       node.ng_pane.redisplay();
     });
 
+    $(`.ng-tree .ng-node[path="${this.path}"] .name`).on('click', e => {
+      this.about_newsgroup_dlg();
+    });
 
     for (let c of this.children)
       c.bind();

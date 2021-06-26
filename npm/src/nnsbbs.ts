@@ -37,9 +37,9 @@ export default class NnsBbs {
   public i18next: i18n;
   public version:string;
   public reaction_type: IReactionType;
-  private ng_pane = new NewsgroupsPane('newsgroup', this);
-  private titles_pane = new TitlesPane('titles', this);
-  private article_pane = new ArticlePane('article', this);
+  public ng_pane = new NewsgroupsPane('newsgroup', this);
+  public titles_pane = new TitlesPane('titles', this);
+  public article_pane = new ArticlePane('article', this);
 
   constructor(i18next: i18n, init_data: NnsBbsInitData) {
     this.i18next = i18next;
