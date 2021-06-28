@@ -83,16 +83,12 @@ sub startup ($self) {
 
 sub _load_config {
     my $self = shift;
-    my $f;
+    my $f    = $self->home->to_string . "/etc/nnsbbs.conf";
 
-    my $env_db = $ENV{'NNSBBS_DB'} || "";
+    my $conf = $ENV{'NNSBBS_CONF'} || "";
 
-    if ( $env_db eq 'fj' ) {
-        $f = $self->home->to_string . "/etc/fj-db.conf";
-    }
-    else {
-        $f = $self->home->to_string . "/etc/db.conf";
-    }
+    $f = $self->home->to_string . "/etc/nnsbbs-" . $conf . ".conf" if $conf;
+
     if ( -f $f ) {
         print STDERR "*** exists: $f \n";
         $self->plugin( 'Config', { 'file' => $f } );

@@ -1,0 +1,7 @@
+
+help:
+	@echo "show Makefile usage"
+	@echo
+
+run:
+	morbo script/nns_bbs
