@@ -316,6 +316,7 @@ export class User {
               fd.append('attach', JSON.stringify(attach));
               let r2 = await api_attachment(fd);
             }
+            this.parent.ng_pane.curNode = undefined;
             this.parent.top_page(n.n.name, r.article_id);
 
           }
