@@ -177,20 +177,24 @@ export class NewsgroupTree {
       }
     } else {
       fold_icon = span({ class: 'fold-icon btn-fold ' + (this.fold ? 'bi-chevron-right' : 'bi-chevron-down') });
-      if (user) {
-        ng_num = span({ class: 'title' }, this.t('num-subscribed'));
-        ng_num += span({ class: 'subscribe', 'title-i18n': 'no-of-subscribed-newsgroups' }, this.subscribed_ng_num);
-        ng_num += '/';
-      } else {
-        ng_num = span({ class: 'title' }, this.t('num-newsgroups'));
+      if (this.fold) {
+        if (user) {
+          ng_num = span({ class: 'title' }, this.t('num-subscribed'));
+          ng_num += span({ class: 'subscribe', 'title-i18n': 'no-of-subscribed-newsgroups' }, this.subscribed_ng_num);
+          ng_num += '/';
+        } else {
+          ng_num = span({ class: 'title' }, this.t('num-newsgroups'));
+        }
+        ng_num += span({ 'title-i18n': 'no-of-newsgroups' }, this.ng_num);
+        ng_num = span({ class: 'ng-num' }, ng_num);
       }
-      ng_num += span({ 'title-i18n': 'no-of-newsgroups' }, this.ng_num);
-      ng_num = span({ class: 'ng-num' }, ng_num);
     }
-    article_num = span({ class: 'article-num' },
-      i18next.t('no-of-articles'),
-      user ? span({ class: 'unread' }, this.unread_article_num) + '/' : '',
-      this.article_num);
+    if (this.article_num > 0) {
+      article_num = span({ class: 'article-num' },
+        i18next.t('no-of-articles'),
+        user ? span({ class: 'unread' }, this.unread_article_num) + '/' : '',
+        this.article_num);
+    }
 
     return div({ path: this.path, class: 'ng-node d-flex' + (this == this.ng_pane.curNode ? ' selected' : '') },
       fold_icon,
@@ -199,7 +203,7 @@ export class NewsgroupTree {
       ng_num,
       span({ style: 'flex-grow:1' }),
       article_num,
-      span({ class: 'posted-at' }, i18next.t('posted-at'), this.posted_at),
+      this.fold ? span({ class: 'posted-at' }, i18next.t('posted-at'), this.posted_at) : '',
       this.menu.html());
   }
 
@@ -316,6 +320,10 @@ export class NewsgroupTree {
 
   noChild(): boolean {
     return this.children.length == 0;
+  }
+
+  hasChild(): boolean {
+    return this.children.length > 0;
   }
 
   read_all(last: number = 0) {
