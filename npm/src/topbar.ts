@@ -1,4 +1,4 @@
-import { a, div, tag, icon, label, select, option, selected, span } from './tag';
+import { a, div, tag, icon, label, select, option, selected, span, li, StrObj } from './tag';
 import { Menu } from './menu';
 import { escape_html, get_json } from './util';
 import NnsBbs from './nnsbbs';
@@ -20,10 +20,15 @@ export class TopBar {
   }
 
   html(): string {
-    return tag('nav', { id: this.id, class: 'topbar' },
-      a({ href: window.nnsbbs_baseURL }, this.parent.bbs_name),
-      a({ href: window.nnsbbs_baseURL }, this.t('top-page')),
-      a({ href: window.nnsbbs_baseURL + 'bbs' }, this.t('bbs')),
+    let a_nav = function (opt: StrObj, arg: string, bActive: boolean = false) {
+      return li({ class: 'nav-item' },
+        a({ class: 'nav-link' + (bActive ? ' active' : '') }, opt, arg));
+    };
+    let path = document.location.pathname;
+    return tag('nav', { id: this.id, class: 'topbar nav nav-tabs' },
+      a_nav({ href: window.nnsbbs_baseURL }, this.parent.bbs_name),
+      a_nav({ href: window.nnsbbs_baseURL }, this.t('top-page'), path == '/'),
+      a_nav({ href: window.nnsbbs_baseURL + 'bbs' }, this.t('bbs'), path == '/bbs'),
       span({ style: 'flex-grow: 10;' }),
       this.menu_login.html())
   }
