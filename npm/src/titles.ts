@@ -77,22 +77,31 @@ export class TitlesPane extends ToolbarPane {
 
   inner_html(): string {
     let s = "";
-    if (this.bDispTherad && this.threads) {
-      for (let t of this.threads) {
-        s += this.thread_html(t, ' ', ' ');
+
+    if (this.titles.length > 0) {
+      if (this.bDispTherad && this.threads) {
+        for (let t of this.threads) {
+          s += this.thread_html(t, ' ', ' ');
+        }
+      } else {
+        for (let id in this.titles) {
+          let d = this.titles[id];
+          s += this.title_html(d);
+        }
       }
+      if (!this.loaded_titles.includes(1))
+        s = this.more_titles('backward') + s;
+      if (this.newsgroup && !this.loaded_titles.includes(this.newsgroup.n.max_id))
+        s += this.more_titles('forward');
+      s = div({ class: 'titles' }, div({ id: this.id_lg, class: 'title-list' }, s));
     } else {
-      for (let id in this.titles) {
-        let d = this.titles[id];
-        s += this.title_html(d);
-      }
+      s = div({ class: 'no-titles' },
+        div(this.t('no-titles-in-this-newsgroup')),
+        div(button({ class: 'btn btn-primary btn-post-article' }, this.t('post-new-article')))
+      );
     }
-    if (!this.loaded_titles.includes(1))
-      s = this.more_titles('backward') + s;
-    if (this.newsgroup && !this.loaded_titles.includes(this.newsgroup.n.max_id))
-      s += this.more_titles('forward');
     this.set_title();
-    return this.toolbar.html() + div({ class: 'titles' }, div({ id: this.id_lg, class: 'title-list' }, s));
+    return this.toolbar.html() + s;
   }
 
   more_titles(dir: 'forward' | 'backward'): string {
@@ -165,7 +174,7 @@ export class TitlesPane extends ToolbarPane {
         }
       }
     }
-    let attached_file = d.attached_file > 0 ? span({ class: 'attached-file', 'title-i18n':'has-attached-file' }, icon('paperclip')) : '';
+    let attached_file = d.attached_file > 0 ? span({ class: 'attached-file', 'title-i18n': 'has-attached-file' }, icon('paperclip')) : '';
     let s = div(opt,
       div({ class: 'article-rule' }, rule),
       div({ class: 'article-id' }, d.article_id),
@@ -180,6 +189,11 @@ export class TitlesPane extends ToolbarPane {
 
   bind() {
     super.bind();
+    $(`#${this.id} .btn-post-article`).on('click', e => {
+      if (this.newsgroup)
+        this.parent.user.post_article_dlg(this.newsgroup);
+    });
+
     $(`#${this.id_lg} >div`).on('click', async ev => {
       let target = ev.currentTarget;
       if (target.attributes['article_id']) {
