@@ -4,6 +4,7 @@ import { get_json } from "./util";
 import { Menu } from "./menu";
 import { admin_api_db_check, admin_api_db_repair } from "./dbif";
 import { NewsgroupAdminTree } from "./newsgroupAdminTree";
+import { timers } from "jquery";
 
 export const newsgroup_pat = /^[^.\s]+(\.[^.\s]+)*$/;
 
@@ -23,7 +24,7 @@ export class NewsgroupAdmin {
   private savedData: string = '{}';
   public menu: Menu;
   public bShowDeleted: boolean = false;
-  
+
   constructor(parent: NnsBbs) {
     this.parent = parent;
     this.menu = new Menu({ icon: 'three-dots' });
@@ -115,7 +116,10 @@ export class NewsgroupAdmin {
       if (await this.saveNeeded())
         await this.save();
       let path = $(e.currentTarget).attr('path') || '';
-      this.curNode = this.root.allocNewsgroup(path);
+      if (this.curNode && this.curNode.path == path)
+        this.curNode.fold = !this.curNode.fold;
+      else
+        this.curNode = this.root.allocNewsgroup(path);
       this.redisplay();
       this.savedData = JSON.stringify(this.newsgroup_data());
     });
@@ -171,8 +175,9 @@ export class NewsgroupAdmin {
       return div({ class: 'newsgroup-detail' },
         tag('form',
           form_row(i18next.t('newsgroup'), 3, span({ class: 'path' }, c.path)),
-          form_row('', 3,
-            form_check('ng-bLocked', i18next.t('submissions-are-not-allowed'), !postable)),
+          !c.hasChild() ?
+            form_row('', 3,
+              form_check('ng-bLocked', i18next.t('submissions-are-not-allowed'), !postable)) : '',
           postable ?
             form_row(i18next.t('access-control'), 3, button({ class: 'form-row btn-permission', type: 'button' },
               this.permission_html('Read:', 'rpl'), this.permission_html('Write:', 'wpl'))) : '',
