@@ -21,7 +21,8 @@ export class TopBar {
 
   html(): string {
     return tag('nav', { id: this.id, class: 'topbar' },
-      a({ href: window.nnsbbs_baseURL }, 'NNSBBS'),
+      a({ href: window.nnsbbs_baseURL }, this.parent.bbs_name),
+      a({ href: window.nnsbbs_baseURL }, this.t('top-page')),
       a({ href: window.nnsbbs_baseURL + 'bbs' }, this.t('bbs')),
       span({ style: 'flex-grow: 10;' }),
       this.menu_login.html())

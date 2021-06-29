@@ -23,6 +23,7 @@ export interface NnsBbsInitData {
   reaction_type: IReactionType;
   membership: IMembership;
   version: string;
+  bbs_name: string;
 };
 
 export default class NnsBbs {
@@ -36,6 +37,7 @@ export default class NnsBbs {
   public gm = new GeometryManager('main');
   public i18next: i18n;
   public version:string;
+  public bbs_name:string;
   public reaction_type: IReactionType;
   public ng_pane = new NewsgroupsPane('newsgroup', this);
   public titles_pane = new TitlesPane('titles', this);
@@ -50,6 +52,7 @@ export default class NnsBbs {
     }
     this.reaction_type = init_data.reaction_type;
     this.version = init_data.version;
+    this.bbs_name = init_data.bbs_name;
     this.gm.add(this.ng_pane, this.titles_pane, this.article_pane);
     this.ng_pane.expansion_ratio = 1;
     this.titles_pane.expansion_ratio = 2;

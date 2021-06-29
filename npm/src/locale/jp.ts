@@ -223,6 +223,7 @@ export const jp = {
     'post-error':'投稿エラー',
     'title-is-blank':'件名が空欄です',
     'content-is-blank':'本文が空欄です',
-    'no-titles-in-this-newsgroup': 'この掲示板には未だ記事が投稿されていません'
+    'no-titles-in-this-newsgroup': 'この掲示板には未だ記事が投稿されていません',
+    'top-page':'トップページ'
   }
 };

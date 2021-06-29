@@ -101,7 +101,8 @@ sub init_data {
             $data->{login} = 1;
         }
     }
-    $data->{version} = $controller->app->{npm_version};
+    $data->{version}  = $controller->app->{npm_version};
+    $data->{bbs_name} = $controller->app->config->{NAME};
     return $data;
 }
 
