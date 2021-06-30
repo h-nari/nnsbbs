@@ -25,10 +25,6 @@ BODY.wait button {
   cursor: wait !important;
 }
 
-#main {
-  background-color: white;
-}
-
 .jconfirm {
   color: black;
   .jconfirm-content {
@@ -67,5 +63,15 @@ BODY.wait button {
     margin-top: 15px;
     font-weight: bold;
     font-size: large;
+  }
+}
+
+.link-button {
+  text-align: center;
+  > a {
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 7px 20px;
+    background-color: lightcyan;
   }
 }

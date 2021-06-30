@@ -1,9 +1,9 @@
 body.nnsbbs {
-  background-color: #fff;
+  background-color: #f88;
 }
 
 #main {
-  background-color: #fff !important;
+  background-color: #fee !important;
 }
 
 #TopBar {
@@ -11,7 +11,7 @@ body.nnsbbs {
 }
 
 .toolbar {
-  background-color: #000 !important;
+  background-color: #444 !important;
 }
 
 button {
