@@ -88,7 +88,7 @@ export class NewsgroupsPane extends ToolbarPane {
     this.toolbar.add_menu({
       icon: 'arrow-clockwise',
       explain: 'reload',
-      link: window.nnsbbs_baseURL
+      link: window.nnsbbs_baseURL + 'bbs'
     }).add_menu({
       icon: 'chevron-bar-contract',
       explain: 'scroll-to-show-selected-newsgroup',
