@@ -3,8 +3,9 @@ use Mojo::Base 'Mojolicious::Controller', -signatures;
 use NnsBbs::Db;
 use Data::Dumper;
 use String::Random;
-use Digest::SHA1 qw(sha1_hex);
-use NnsBbs::Util qw(random_id);
+use Digest::SHA1 qw/sha1_hex/;
+use NnsBbs::Util qw/random_id/;
+use JSON;
 
 sub mail_auth($self) {
     my $path   = $self->req->url->path;
@@ -21,9 +22,10 @@ sub mail_auth($self) {
     my $ah  = $db->select_ah( $sql, $id );
     my $len = @$ah + 0;
 
-    my $s = "var init_data = "
-      . to_json( $db->init_data( $self) ) . "\n";
+    my $s = "<script>";
+    $s .= "var init_data = " . to_json( $db->init_data($self) ) . "\n";
     $s .= "console.log('init_data:', init_data);\n";
+    $s .= "</script>\n";
 
     if ( $len == 0 ) {
         $self->stash(
@@ -39,11 +41,9 @@ sub mail_auth($self) {
         $self->render( template => 'auth/no_id' );
     }
     elsif ( $len == 1 ) {
-        my ($action) = @$ah;
-        my $bReg = $action eq 'MAIL_AUTH';
+        my $action = $ah->[0]->{action};
+        my $bReg   = $action eq 'MAIL_AUTH';
 
-        # $db->execute( "delete from mail_auth where id=?", $id );
-        # $db->commit;
         $self->stash(
             bReg        => $bReg,
             script_part => $s,
@@ -109,9 +109,10 @@ sub register($self) {
         push( @errors, $self->l('password.is.not.same') );
     }
 
-    my $s = "var init_data = "
-      . to_json( $db->init_data( $self) ) . "\n";
+    my $s = "<script>\n";
+    $s .= "var init_data = " . to_json( $db->init_data($self) ) . "\n";
     $s .= "console.log('init_data:', init_data);\n";
+    $s .= "</script>";
 
     if ( @errors > 0 ) {
         my $msg = "";
@@ -121,21 +122,25 @@ sub register($self) {
         $msg = "<div class='error'><ul>$msg</ul></div>\n";
 
         $self->stash(
+            bReg        => $bReg,
             script_part => $s,
             id          => $id,
             title       => $self->l('error.in.registration'),
-            msg         => $msg,
-            email       => $email,
-            disp_name   => $disp_name,
-            pwd1        => $pwd1,
-            pwd2        => $pwd2
+            title2      => $self->l(
+                $bReg ? 'Email.verification.successful' : 'reset.password'
+            ),
+            msg       => $msg,
+            email     => $email,
+            disp_name => $disp_name,
+            pwd1      => $pwd1,
+            pwd2      => $pwd2
         );
         $self->render( template => 'auth/register' );
     }
     elsif ($bReg) {
         my $user_id;
         while (1) {
-            $user_id = random_id(12);
+            $user_id = NnsBbs::Util::random_id(12);
             $sql     = "select count(*) from user where id=?";
             my ($c) = $db->select_ra( $sql, $user_id );
             last if ( $c == 0 );
