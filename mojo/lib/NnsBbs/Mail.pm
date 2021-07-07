@@ -16,15 +16,19 @@ my $SMTP_CONF = {
 };
 
 sub send {
+    my $conf         = shift;
     my $to_addr      = shift;
     my $subject_orig = shift;
     my $content_orig = shift;
+ 
+    my $from = $conf->{FROM} || $SMTP_CONF->{from} ;
+    my $return_path = $conf->{RETURN_PATH} || $SMTP_CONF->{return_path};
 
     my $subject = Encode::encode( 'MIME-Header-ISO_2022_JP', $subject_orig );
     my @header  = (
-        "From: $SMTP_CONF->{from}",
-        "Return-path: $SMTP_CONF->{return_path}",
-        "Replay-To: $SMTP_CONF->{return_path}",
+        "From: $from",
+        "Return-path: $return_path",
+        "Replay-To: $return_path",
         "To: $to_addr",
         "Subject: $subject",
         "Mime-Version: 1.0",

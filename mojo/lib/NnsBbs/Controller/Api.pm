@@ -171,7 +171,7 @@ sub mail_auth($self) {
         die "bad-email-format\n" unless ( $email =~ /[\w.]+@(\w+\.)*\w+/ );
         die "param-action-is-required\n" unless ($action);
         die "action-must-be-MAIL_AUTH-or-PASSWORD_RESET"
-          if $action != 'MAIL_AUTH' && $action != 'PASSWORD_RESET';
+          if $action ne 'MAIL_AUTH' && $action ne 'PASSWORD_RESET';
         my $db    = NnsBbs::Db::new($self);
         my $sql   = "select count(*) as count from user where mail=?";
         my $rh    = $db->select_rh( $sql, $email );
@@ -203,7 +203,7 @@ sub mail_auth($self) {
         $c .= "\n";
         $c .= $self->l('ignore.if.no.idea');
 
-        NnsBbs::Mail::send( $email, $self->l('email.title'), $c );
+        NnsBbs::Mail::send( $self->app->config->{MAIL}, $email, $self->l('email.title'), $c );
 
         $self->render( json => { result => 'ok' } );
     };

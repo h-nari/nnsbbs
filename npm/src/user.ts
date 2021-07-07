@@ -149,7 +149,12 @@ export class User {
                     content: i18next.t(d.mes ? d.mes : 'failed')
                   });
                 } else {
-                  $.alert(i18next.t('sent-url'));
+                  $.alert({
+                    title: '',
+                    type: 'green',
+                    columnClass: 'medium',
+                    content: i18next.t('sent-url')
+                  });
                 }
               }).catch(e => {
                 $.alert(e);
@@ -340,8 +345,8 @@ export class User {
         $('.btn-about-newsgroup').on('click', e => {
           if (this.parent.ng_pane.curNode)
             this.parent.ng_pane.curNode.about_newsgroup_dlg();
-            e.stopPropagation();
-            e.preventDefault();
+          e.stopPropagation();
+          e.preventDefault();
         });
         redisplay_func();
         let ta = $('#post-content')[0] as HTMLTextAreaElement;
