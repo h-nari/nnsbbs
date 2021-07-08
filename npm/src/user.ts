@@ -146,7 +146,7 @@ export class User {
                     title: i18next.t('error'),
                     type: 'red',
                     columnClass: 'medium',
-                    content: i18next.t(d.mes ? d.mes : 'failed')
+                    content: i18next.t(d.mes ? d.mes.trim() : 'failed')
                   });
                 } else {
                   $.alert(i18next.t('sent-url'));
@@ -340,8 +340,8 @@ export class User {
         $('.btn-about-newsgroup').on('click', e => {
           if (this.parent.ng_pane.curNode)
             this.parent.ng_pane.curNode.about_newsgroup_dlg();
-            e.stopPropagation();
-            e.preventDefault();
+          e.stopPropagation();
+          e.preventDefault();
         });
         redisplay_func();
         let ta = $('#post-content')[0] as HTMLTextAreaElement;

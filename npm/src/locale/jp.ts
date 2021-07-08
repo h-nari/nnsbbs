@@ -220,10 +220,10 @@ export const jp = {
     'bbs': '掲示板',
     'has-attached-file': '添付画像,ファイル有り',
     'about-this-program': 'このプログラムについて',
-    'post-error':'投稿エラー',
-    'title-is-blank':'件名が空欄です',
-    'content-is-blank':'本文が空欄です',
+    'post-error': '投稿エラー',
+    'title-is-blank': '件名が空欄です',
+    'content-is-blank': '本文が空欄です',
     'no-titles-in-this-newsgroup': 'この掲示板には未だ記事が投稿されていません',
-    'top-page':'トップページ'
+    'top-page': 'トップページ'
   }
 };
