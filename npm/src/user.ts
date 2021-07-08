@@ -146,7 +146,7 @@ export class User {
                     title: i18next.t('error'),
                     type: 'red',
                     columnClass: 'medium',
-                    content: i18next.t(d.mes ? d.mes : 'failed')
+                    content: i18next.t(d.mes ? d.mes.trim() : 'failed')
                   });
                 } else {
                   $.alert({
