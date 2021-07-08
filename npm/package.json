@@ -4,6 +4,7 @@
   "description": "NetNews styled BBS",
   "main": "index.js",
   "scripts": {
+    "build": "npx webpack",
     "watch": "npx webpack -w",
     "test": "npx mocha --require ts-node/register \"tests/**/*.ts\""
   },
