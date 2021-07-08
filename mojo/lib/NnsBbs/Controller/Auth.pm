@@ -10,6 +10,7 @@ use JSON;
 sub mail_auth($self) {
     my $path   = $self->req->url->path;
     my $bReset = $path =~ m|^/password_reset/|;
+    my $conf   = $self->app->config;
 
     my $id = $self->param('id');
 
@@ -22,7 +23,7 @@ sub mail_auth($self) {
     my $ah  = $db->select_ah( $sql, $id );
     my $len = @$ah + 0;
 
-    my $s = "<script>";
+    my $s = "<script>\n";
     $s .= "var init_data = " . to_json( $db->init_data($self) ) . "\n";
     $s .= "console.log('init_data:', init_data);\n";
     $s .= "</script>\n";
@@ -30,7 +31,7 @@ sub mail_auth($self) {
     if ( $len == 0 ) {
         $self->stash(
             script_part => $s,
-            title       => 'NNSBBS',
+            title       => $conf->{NAME},
             title2      => $self->l('id.is.not.registered'),
             msg         => $self->l(
                 $bReset
@@ -48,7 +49,7 @@ sub mail_auth($self) {
             bReg        => $bReg,
             script_part => $s,
             id          => $id,
-            title       => 'NNSBBS',
+            title       => $conf->{NAME},
             title2      => $self->l(
                 $bReg ? 'Email.verification.successful' : 'reset.password'
             ),
@@ -74,6 +75,7 @@ sub register($self) {
     my $pwd1      = $self->param('password1');
     my $pwd2      = $self->param('password2');
     my $bReg      = $self->param('bReg');
+    my $conf      = $self->app->config;
 
     # check parameters
     my $db     = NnsBbs::Db::new($self);
@@ -112,7 +114,7 @@ sub register($self) {
     my $s = "<script>\n";
     $s .= "var init_data = " . to_json( $db->init_data($self) ) . "\n";
     $s .= "console.log('init_data:', init_data);\n";
-    $s .= "</script>";
+    $s .= "</script>\n";
 
     if ( @errors > 0 ) {
         my $msg = "";
@@ -151,11 +153,12 @@ sub register($self) {
         $db->execute( $sql, $user_id, $email, $disp_name, $pwd );
         $self->stash(
             script_part => $s,
-            title       => 'NNSBBS',
+            title       => $conf->{NAME},
             title2      => $self->l('user.registration.complete'),
             msg         => $self->l('enjoy.bbs')
         );
         $self->render( template => 'auth/user_registered' );
+        $db->execute( "delete from mail_auth where id=?", $id );
         $db->commit;
     }
     else {
@@ -164,11 +167,12 @@ sub register($self) {
         $db->execute( $sql, $pwd, $email );
         $self->stash(
             script_part => $s,
-            title       => 'NNSBBS',
+            title       => $conf->{NAME},
             title2      => $self->l('password.reset.complete'),
             msg         => $self->l('enjoy.bbs')
         );
         $self->render( template => 'auth/user_registered' );
+        $db->execute( "delete from mail_auth where id=?", $id );
         $db->commit;
     }
 }

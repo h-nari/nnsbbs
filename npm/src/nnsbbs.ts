@@ -77,7 +77,7 @@ export default class NnsBbs {
           window.history.pushState(null, '', '/bbs/' + this.ng_pane.curNode.path);
         else
           window.history.pushState(null, '', '/bbs');
-        document.title = 'nnsbbs';
+        document.title = init_data.bbs_name;
       }
     })).add_menu(new Menu({
       icon: 'three-dots',

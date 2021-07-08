@@ -52,7 +52,7 @@ our %Lexicon = (
     'user.registration'          => 'ユーザ登録',
     'user.registration.complete' => 'ユーザ登録完了',
     'password.reset.complete'    => 'パスワード変更完了',
-    'enjoy.bbs'                  => '掲示板をお楽しみ下さい。',
+    'enjoy.bbs'                  => 'ログインし掲示板をお楽しみ下さい。',
 );
 
 1;
