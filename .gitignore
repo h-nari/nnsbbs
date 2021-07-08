@@ -6,6 +6,7 @@ mojo/public/style.css
 mojo/public/app.css.map
 mojo/public/style.css.map
 mojo/public/.well-known
+mojo/templates/top/index.html.ep
 mojo/etc/nnsbbs-*.conf
 mojo/script/hypnotoad.pid
 sql/00_createdb.sql
