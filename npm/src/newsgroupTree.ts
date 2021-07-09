@@ -203,7 +203,7 @@ export class NewsgroupTree {
       ng_num,
       span({ style: 'flex-grow:1' }),
       article_num,
-      this.fold ? span({ class: 'posted-at' }, i18next.t('posted-at'), this.posted_at) : '',
+      this.fold && this.article_num > 0 ? span({ class: 'posted-at' }, i18next.t('posted-at'), this.posted_at) : '',
       this.menu.html());
   }
 
