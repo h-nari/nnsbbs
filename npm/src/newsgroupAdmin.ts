@@ -274,15 +274,21 @@ export class NewsgroupAdmin {
         })
       ),
       buttons: {
-        ok: async () => {
+        ok: () => {
           let lines = $('#new-newsgroups').val() as string;
           let bad_names: string[] = [];
           let names: any[] = [];
+          let rpl = 0;
+          let wpl = 1;
+          if (parent && parent.newsgroup) {
+            rpl = parent.newsgroup.rpl;
+            wpl = parent.newsgroup.wpl;
+          }
           for (let line0 of lines.split('\n')) {
             let line = line0.trim();
             if (line == '') continue;
             if (line.match(newsgroup_pat))
-              names.push({ name: parent ? parent.path + '.' + line : line });
+              names.push({ name: parent ? parent.path + '.' + line : line, rpl, wpl });
             else
               bad_names.push(line);
           }
@@ -294,9 +300,11 @@ export class NewsgroupAdmin {
             });
             return false;
           }
-          await get_json('/admin/api/newsgroup', { method: 'post', data: { insert: JSON.stringify(names) } });
-          await this.redisplay(true);
-          await this.setNewsgroupOrder();
+          get_json('/admin/api/newsgroup', { method: 'post', data: { insert: JSON.stringify(names) } }).then(() => {
+            this.redisplay(true).then(() => {
+              this.setNewsgroupOrder();
+            });
+          });
         },
         cancel: () => { }
       }
