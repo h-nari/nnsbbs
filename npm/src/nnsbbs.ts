@@ -36,8 +36,8 @@ export default class NnsBbs {
   public reportPage = new ReportPage(this);
   public gm = new GeometryManager('main');
   public i18next: i18n;
-  public version:string;
-  public bbs_name:string;
+  public version: string;
+  public bbs_name: string;
   public reaction_type: IReactionType;
   public ng_pane = new NewsgroupsPane('newsgroup', this);
   public titles_pane = new TitlesPane('titles', this);
@@ -67,7 +67,7 @@ export default class NnsBbs {
 
 
     // Buttons in title pane
-    this.titles_pane.toolbar.add_menu(new Menu({
+    this.titles_pane.toolbar.add_menu({
       icon: 'x-square',
       explain: 'close-titles-and-article-pane',
       action: () => {
@@ -79,23 +79,31 @@ export default class NnsBbs {
           window.history.pushState(null, '', '/bbs');
         document.title = init_data.bbs_name;
       }
-    })).add_menu(new Menu({
+    }).add_menu({
       icon: 'three-dots',
       explain: 'display-setting',
       action: (e, menu) => {
         menu.clear();
-        menu.add(new Menu({
+        menu.add({
+          name: i18next.t('newsgroup-description'),
+          with_check: true,
+          action: () => {
+            if (this.ng_pane.curNode)
+              this.ng_pane.curNode.about_newsgroup_dlg();
+          }
+        }).addSeparator();
+        
+        menu.add({
           name: i18next.t('thread-display'),
           with_check: true,
           checked: this.titles_pane.bDispTherad,
           action: (e, m) => { this.titles_pane.disp_thread(true); }
-        }));
-        menu.add(new Menu({
+        }).add({
           name: i18next.t('time-order-display'),
           with_check: true,
           checked: !this.titles_pane.bDispTherad,
           action: (e, m) => { this.titles_pane.disp_thread(false); }
-        }));
+        });
 
         let user = this.user.user;
         if (user && user.moderator) {
@@ -114,7 +122,7 @@ export default class NnsBbs {
 
         menu.expand(e);
       }
-    })).add_menu(new Menu({
+    }).add_menu({
       icon: 'align-bottom',
       explain: 'goto-end',
       action: () => {
@@ -125,14 +133,14 @@ export default class NnsBbs {
         if (h1 && h2)
           div1.scrollTop = h2 - h1 + 10;
       }
-    })).add_menu(new Menu({
+    }).add_menu({
       icon: 'align-top',
       explain: 'goto-begin',
       action: () => {
         let div = $('#' + this.titles_pane.id + ' .titles')[0];
         div.scrollTop = 0;
       }
-    })).add_menu(new Menu({
+    }).add_menu({
       icon: 'chevron-bar-down',
       explain: 'next-unread-article',
       action: async () => {
@@ -142,7 +150,7 @@ export default class NnsBbs {
         if (!a.bClosed && t.newsgroup && t.cur_article_id)
           this.select_article(t.newsgroup.n.id, t.cur_article_id);
       }
-    })).add_menu(new Menu({
+    }).add_menu({
       icon: 'chevron-bar-up',
       explain: 'previous-unread-article',
       action: () => {
@@ -152,20 +160,27 @@ export default class NnsBbs {
         if (!a.bClosed && t.newsgroup && t.cur_article_id)
           this.select_article(t.newsgroup.n.id, t.cur_article_id);
       }
-    })).add_menu(new Menu({
+    }).add_menu({
       icon: 'chat-square-text-fill',
       explain: 'post-new-article',
       action: () => {
         if (this.titles_pane.newsgroup)
           this.user.post_article_dlg(this.titles_pane.newsgroup);
       }
-    })).add_menu(new Menu({
+    }).add_menu({
       icon: 'chevron-bar-contract',
       explain: 'scroll-to-show-the-selected-line',
       action: () => {
         this.titles_pane.scroll_to_show_selected_line(true);
       }
-    }));
+    }).add_menu({
+      icon: 'question-lg',
+      explain: 'newsgroup-description',
+      action: () => {
+        if (this.ng_pane.curNode)
+          this.ng_pane.curNode.about_newsgroup_dlg();
+      }
+    });
 
     this.article_pane.toolbar.add_menu(new Menu({
       icon: 'x-square',
