@@ -292,7 +292,7 @@ export class User {
       buttons: {
         ok: {
           text: this.parent.i18next.t('post'),
-          action: async () => {
+          action: () => {
             let user_id = this.user?.id || '';
             let newsgroup_id = n.n.id;
             let reply_to = '';
@@ -308,22 +308,22 @@ export class User {
             content = 'content-type: text/plain\n\n' + content;
 
             let postArg: IPostArg = { newsgroup_id, user_id, disp_name, title, content, reply_to };
-            let r = await api_post(postArg);
-            if (attachment_list.length > 0) {
-              let fd = new FormData();
-              attachment_list.forEach(a => {
-                if (a.file)
-                  fd.append('file', a.file);
-              });
-              fd.append('newsgroup_id', newsgroup_id);
-              fd.append('article_id', r.article_id);
-              let attach = attachment_list.map(a => a.data());
-              fd.append('attach', JSON.stringify(attach));
-              let r2 = await api_attachment(fd);
-            }
-            this.parent.ng_pane.curNode = undefined;
-            this.parent.top_page(n.n.name, r.article_id);
-
+            api_post(postArg).then(r => {
+              if (attachment_list.length > 0) {
+                let fd = new FormData();
+                attachment_list.forEach(a => {
+                  if (a.file)
+                    fd.append('file', a.file);
+                });
+                fd.append('newsgroup_id', newsgroup_id);
+                fd.append('article_id', r.article_id);
+                let attach = attachment_list.map(a => a.data());
+                fd.append('attach', JSON.stringify(attach));
+                api_attachment(fd);
+              }
+              this.parent.ng_pane.curNode = undefined;
+              this.parent.top_page(n.n.name, r.article_id);
+            });
           }
         },
         close: {
