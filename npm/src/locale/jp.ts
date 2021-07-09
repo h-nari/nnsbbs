@@ -224,6 +224,7 @@ export const jp = {
     'title-is-blank': '件名が空欄です',
     'content-is-blank': '本文が空欄です',
     'no-titles-in-this-newsgroup': 'この掲示板には未だ記事が投稿されていません',
-    'top-page': 'トップページ'
+    'top-page': 'トップページ',
+    'about-this-newsgroup':'この掲示板の説明'
   }
 };

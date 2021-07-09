@@ -95,8 +95,18 @@ export class TitlesPane extends ToolbarPane {
         s += this.more_titles('forward');
       s = div({ class: 'titles' }, div({ id: this.id_lg, class: 'title-list' }, s));
     } else {
+      var c = '';
+      let curNode = this.parent.ng_pane.curNode;
+      if (curNode) {
+        curNode.toRoot(n => {
+          c = div({ class: 'sub-newsgroup' },
+            div({ class: 'name' }, n.path),
+            div({ class: 'explain' }, n.ng ? n.ng.n.comment : ''), c);
+        });
+      }
       s = div({ class: 'no-titles' },
         div(this.t('no-titles-in-this-newsgroup')),
+        div({ class: 'newsgroup-explain' }, div(this.t('about-this-newsgroup')), c),
         div(button({ class: 'btn btn-primary btn-post-article' }, this.t('post-new-article')))
       );
     }
