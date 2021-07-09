@@ -39,15 +39,15 @@
     // scroll-behavior: smooth;
     .title-list {
       margin: 5px 2px;
+      display: block;
       > div {
         cursor: pointer;
-        display: inline-flex;
+        display: flex;
         width: 100%;
-        border: none;
         text-align: left;
         font-size: 12pt;
         padding: 0px;
-        margin: -5px 0px;
+        margin: -0px 0px;
         white-space: pre;
         overflow: hidden;
         background-color: transparent;
