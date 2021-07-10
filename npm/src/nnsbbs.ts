@@ -17,13 +17,14 @@ import { div, label, option, select, span, tag } from "./tag";
 import { ReportManaget } from "./reportManager";
 import { ReportPage } from "./reportPage";
 
-export interface NnsBbsInitData {
+export interface NnsBbsConf {
   login: number;
   user: IUser;
   reaction_type: IReactionType;
   membership: IMembership;
   version: string;
   bbs_name: string;
+  wiki_url: string;
 };
 
 export default class NnsBbs {
@@ -36,23 +37,21 @@ export default class NnsBbs {
   public reportPage = new ReportPage(this);
   public gm = new GeometryManager('main');
   public i18next: i18n;
-  public version: string;
-  public bbs_name: string;
   public reaction_type: IReactionType;
   public ng_pane = new NewsgroupsPane('newsgroup', this);
   public titles_pane = new TitlesPane('titles', this);
   public article_pane = new ArticlePane('article', this);
+  public conf: NnsBbsConf;
 
-  constructor(i18next: i18n, init_data: NnsBbsInitData) {
+  constructor(i18next: i18n, init_data: NnsBbsConf) {
     this.i18next = i18next;
+    this.conf = init_data;
     this.user = new User(this, init_data.membership);
     if (init_data.login) {
       this.user.user = init_data.user;
       this.user.setting.load(init_data.user.setting);
     }
     this.reaction_type = init_data.reaction_type;
-    this.version = init_data.version;
-    this.bbs_name = init_data.bbs_name;
     this.gm.add(this.ng_pane, this.titles_pane, this.article_pane);
     this.ng_pane.expansion_ratio = 1;
     this.titles_pane.expansion_ratio = 2;

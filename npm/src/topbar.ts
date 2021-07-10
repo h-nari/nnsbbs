@@ -25,10 +25,12 @@ export class TopBar {
         a({ class: 'nav-link' + (bActive ? ' active' : '') }, opt, arg));
     };
     let path = document.location.pathname;
+    let conf = this.parent.conf;
     return tag('nav', { id: this.id, class: 'topbar nav nav-tabs' },
-      a_nav({ href: window.nnsbbs_baseURL }, this.parent.bbs_name),
+      a_nav({ href: window.nnsbbs_baseURL }, this.parent.conf.bbs_name),
       a_nav({ href: window.nnsbbs_baseURL }, this.t('top-page'), path == '/'),
       a_nav({ href: window.nnsbbs_baseURL + 'bbs' }, this.t('bbs'), path == '/bbs'),
+      conf.wiki_url ? a_nav({ href: conf.wiki_url }, 'Wiki', false) : '',
       span({ style: 'flex-grow: 10;' }),
       this.menu_login.html())
   }
@@ -135,7 +137,7 @@ export class TopBar {
       content: div({ class: 'about-dlg' },
         div(span({ class: 'label' }, 'NnsBbs:'), span({ class: 'fullname' }, 'NetNews Styleed Bulletin Board System')),
         div(span({ class: 'label' }, 'Github:'), a({ href: 'https://github.com/h-nari/nnsbbs' }, 'https://github.com/h-nari/nnsbbs')),
-        div(span({ class: 'label' }, 'version:'), span({ class: 'version' }, this.parent.version))
+        div(span({ class: 'label' }, 'version:'), span({ class: 'version' }, this.parent.conf.version))
       )
     })
   }

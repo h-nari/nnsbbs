@@ -103,6 +103,7 @@ sub init_data {
     }
     $data->{version}  = $controller->app->{npm_version};
     $data->{bbs_name} = $controller->app->config->{NAME};
+    $data->{wiki_url} = $controller->app->config->{WIKI_URL};
     return $data;
 }
 

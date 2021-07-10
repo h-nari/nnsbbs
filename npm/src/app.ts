@@ -1,4 +1,4 @@
-import NnsBbs, { NnsBbsInitData } from './nnsbbs';
+import NnsBbs, { NnsBbsConf } from './nnsbbs';
 import i18next from 'i18next';
 import { jp } from './locale/jp';
 import { en } from './locale/en';
@@ -11,7 +11,7 @@ declare global {
   }
 }
 
-declare var init_data: NnsBbsInitData;
+declare var init_data: NnsBbsConf;
 
 i18next.init({
   lng: 'jp',
