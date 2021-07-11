@@ -15,8 +15,9 @@ $(window).on('resize', () => {
 });
 
 $(window).on('popstate', e => {
-  var d = document.location.pathname.split('/');
-  var nb = window.nnsbbs;
+  let path = decodeURI(document.location.pathname);
+  let d = path.split('/');
+  let nb = window.nnsbbs;
   if (d.length == 2)
     nb.top_page();
   else if (d.length == 3)
