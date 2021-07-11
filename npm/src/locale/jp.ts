@@ -95,6 +95,7 @@ export const jp = {
     'subject': '件名',
     'body': '本文',
     'post-article': '記事投稿',
+    'confirm-article':'投稿記事の確認',
     'specify-attachments-images': '添付ファイル/画像の指定',
     'select-files': 'ファイルを選択して下さい',
     'change-user-setting': 'ユーザ情報設定',
@@ -225,6 +226,8 @@ export const jp = {
     'content-is-blank': '本文が空欄です',
     'no-titles-in-this-newsgroup': 'この掲示板には未だ記事が投稿されていません',
     'top-page': 'トップページ',
-    'about-this-newsgroup':'この掲示板の説明'
+    'about-this-newsgroup':'この掲示板の説明',
+    'content':'内容',
+    'back-to-edit':'編集に戻る'
   }
 };

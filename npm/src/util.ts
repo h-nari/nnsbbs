@@ -1,5 +1,5 @@
 import { IArticle } from "./dbif";
-import { a } from "./tag";
+import { a, div, input, label, tag } from "./tag";
 
 
 export function get_json(path: string, option = {}) {
@@ -111,4 +111,53 @@ export function url_link(content: string): string {
     return a({ href: url, target: '_blank' }, decodeURI(url));
   });
   return c2;
+}
+
+export function error_dlg(msg: string): false {
+  $.alert({
+    title: window.nnsbbs.i18next.t('post-error'),
+    content: window.nnsbbs.i18next.t(msg),
+    type: 'red'
+  })
+  return false;
+}
+
+export interface IFormGroupOpt {
+  help?: string;
+  value?: string;
+  placeholder?: string;
+  readonly?: null;
+  rows?: number;
+};
+
+export function form_input(id: string, label_str: string, opt: IFormGroupOpt) {
+  let input_part: string;
+  input_part = input({
+    id, type: 'text', readonly: opt.readonly, value: opt.value,
+    class: 'form-control', placeholder: opt.placeholder
+  });
+
+  let help = '';
+  if (opt.help)
+    help = tag('small', { id: id + 'Help', class: 'form-text text-muted' }, opt.help);
+
+  return div({ class: 'form-row' },
+    label({ for: id, class: 'col col-md-2' }, label_str),
+    div({ class: 'form-group col-md-10' }, input_part, help));
+}
+
+export function form_textarea(id: string, label_str: string, opt: IFormGroupOpt) {
+  let input_part: string;
+  input_part = tag('textarea', {
+    id, rows: opt.rows, readonly: opt.readonly,
+    class: 'form-control', placeholder: opt.placeholder
+  }, opt.value || '');
+
+  let help = '';
+  if (opt.help)
+    help = tag('small', { id: id + 'Help', class: 'form-text text-muted' }, opt.help);
+
+  return div({ class: 'form-group' },
+    div({ class: 'form-row' }, label({ for: id }, label_str), help),
+    input_part);
 }

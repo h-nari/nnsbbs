@@ -5,13 +5,11 @@ import { TitlesPane } from './titles';
 import { ArticlePane } from './article';
 import { User } from './user';
 import { GeometryManager } from "./gemotry_manager";
-import { contextMenu, closeContextMenu } from "./context_menu";
 import { i18n } from "i18next";
 import { UserAdmin } from "./userAdmin";
 import { NewsgroupAdmin } from "./newsgroupAdmin";
 import { UserInfo } from "./userInfo";
-import { api_reaction_type, api_reaction_user, api_reaction_write, api_report, api_report_type, IMembership, IReactionType, IReport, IUser } from "./dbif";
-import { ReadSet } from "./readSet";
+import { api_reaction_user, api_reaction_write, api_report, api_report_type, IMembership, IReactionType, IReport, IUser } from "./dbif";
 import { Menu } from "./menu";
 import { div, label, option, select, span, tag } from "./tag";
 import { ReportManaget } from "./reportManager";
@@ -91,7 +89,7 @@ export default class NnsBbs {
               this.ng_pane.curNode.about_newsgroup_dlg();
           }
         }).addSeparator();
-        
+
         menu.add({
           name: i18next.t('thread-display'),
           with_check: true,

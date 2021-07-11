@@ -77,3 +77,15 @@ form.edit-profile {
     }
   }
 }
+
+.post-article {
+  .content {
+    .text {
+      border: dotted black 1px;
+      border-radius: 5px;
+      margin: 5px;
+      padding: 5px;
+      white-space: pre;
+    }
+  }
+}

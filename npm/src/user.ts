@@ -1,12 +1,13 @@
-import { div, input, button, tag, label, a, span, select, option, selected, icon } from './tag';
-import { api_membership, IMembership, api_post, api_attachment, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, IPostArg, api_mail_auth, admin_api_article } from './dbif';
+import { div, input, tag, label, a, span, select, option, selected}  from './tag';
+import { api_membership, IMembership, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, api_mail_auth, admin_api_article } from './dbif';
 import { INewsGroup } from "./newsgroup";
-import { article_str, escape_html, get_json, set_i18n } from './util';
+import { article_str, escape_html, form_input, form_textarea, get_json, set_i18n } from './util';
 import { createHash } from 'sha1-uint8array';
 import NnsBbs from './nnsbbs';
 import { Attachment } from './attachemnt';
 import './jconfirm';
 import { Setting } from './setting';
+import { PostData } from './postData';
 
 
 
@@ -231,29 +232,19 @@ export class User {
     });
   }
 
-  async post_article_dlg(n: INewsGroup, a: (IArticle | null) = null) {
-    const i18next = this.parent.i18next;
-    var attachment_list: Attachment[] = [];
-    const redisplay_func = () => {
-      let htmls = attachment_list.map(a => a.html());
-      $('.post-article .attachment-area').html(div(...htmls));
-      set_i18n();
-      attachment_list.forEach(a => {
-        a.bind();
-        a.onDelete = () => {
-          attachment_list = attachment_list.filter(b => b != a);
-          redisplay_func();
-        }
-      });
-    };
-
+  async post_article_dlg(n: INewsGroup, a: (IArticle | undefined) = undefined) {
     if (!this.user) {
       if (!await this.login_dlg()) return;
     }
+    this.post_article_dlg0(new PostData(this, n, a));
+  }
 
-    if (!this.user) return;
-    if (Number(this.user.membership_id) < n.n.wpl) {
-      console.log('membership_id:', this.user.membership_id, 'wpl:', n.n.wpl);
+  async post_article_dlg0(postData: PostData) {
+    const i18next = this.parent.i18next;
+
+    if (!this.user) throw new Error('unexpected situation');
+    if (Number(this.user.membership_id) < postData.newsgroup.n.wpl) {
+      console.log('membership_id:', this.user.membership_id, 'wpl:', postData.newsgroup.n.wpl);
       let i18next = this.parent.i18next;
       $.alert({
         title: '',
@@ -264,82 +255,38 @@ export class User {
       return;
     }
 
-    let title = '';
-    let content = '';
-    if (a) {
-      if (a.title.match(/^Re:/)) title = a.title;
-      else title = 'Re:' + a.title;
-      content = this.user.signature;
-    } else {
-      content = this.user.signature;
-    }
-
-    let c = tag('form', { class: 'post-article' },
-      div({ class: 'row my-2' },
-        label({ class: 'col-2' }, i18next.t('newsgroup')),
-        div({ class: 'col-8 font-weight-bold' }, n.n.name),
-        div({ class: 'col-2' }, button({ class: 'btn btn-info btn-about-newsgroup w-100' }, i18next.t('newsgroup-description')))),
-      form_input('post-name', i18next.t('disp-name'), { value: this.user.disp_name }),
-      form_input('post-title', i18next.t('subject'), { value: title }),
-      form_post_textarea('post-content', i18next.t('body'), a, { value: content, rows: 10 }),
-      div({ class: 'attachment-area' }));
-
     $.confirm({
       title: i18next.t('post-article'),
       columnClass: 'xlarge',
       type: 'orange',
-      content: c,
+      content: postData.form_html(),
       buttons: {
         ok: {
-          text: this.parent.i18next.t('post'),
+          text: this.parent.i18next.t('confirm'),
           action: () => {
-            let user_id = this.user?.id || '';
-            let newsgroup_id = n.n.id;
-            let reply_to = '';
-            let title = $('#post-title').val() as string;
-            let disp_name = $('#post-name').val() as string;
-            let content = $('#post-content').val() as string;
-            if (title == '') return error_dlg('title-is-blank');
-            if (disp_name == '') return error_dlg('name-is-blank');
-            if (content == '') return error_dlg('content-is-blank');
-
-            if (a) reply_to = a.article_id;
-
-            content = 'content-type: text/plain\n\n' + content;
-
-            let postArg: IPostArg = { newsgroup_id, user_id, disp_name, title, content, reply_to };
-            api_post(postArg).then(r => {
-              if (attachment_list.length > 0) {
-                let fd = new FormData();
-                attachment_list.forEach(a => {
-                  if (a.file)
-                    fd.append('file', a.file);
-                });
-                fd.append('newsgroup_id', newsgroup_id);
-                fd.append('article_id', r.article_id);
-                let attach = attachment_list.map(a => a.data());
-                fd.append('attach', JSON.stringify(attach));
-                api_attachment(fd);
-              }
+            if (!postData.get_form_data()) return false;
+            this.post_confirm_dlg(postData);
+          },
+          action2: () => {
+            postData.post().then(r => {
               this.parent.ng_pane.curNode = undefined;
-              this.parent.top_page(n.n.name, r.article_id);
+              this.parent.top_page(postData.newsgroup.n.name, r.article_id);
             });
           }
         },
         close: {
           text: this.parent.i18next.t('close'),
-          action: () => { }
         }
       },
       onOpen: () => {
         set_i18n('.post-article');
         $('.btn-quote').on('click', () => {
-          if (a) quote_article('post-content', n, a);
+          if (postData.article) quote_article('post-content', postData.newsgroup, postData.article);
         });
         $('.btn-attach').on('click', () => {
           this.attachment_dlg().then(list => {
-            attachment_list.push(...list);
-            redisplay_func();
+            postData.attachment_list.push(...list);
+            postData.redisplay_attachment_list();
           });
         });
         $('.btn-about-newsgroup').on('click', e => {
@@ -348,13 +295,54 @@ export class User {
           e.stopPropagation();
           e.preventDefault();
         });
-        redisplay_func();
+        postData.redisplay_attachment_list();
         let ta = $('#post-content')[0] as HTMLTextAreaElement;
         ta.setSelectionRange(0, 0);
       }
     });
   }
 
+  post_confirm_dlg(postData: PostData) {
+    const i18next = this.parent.i18next;
+    $.confirm({
+      title: i18next.t('confirm-article'),
+      columnClass: 'xlarge',
+      type: 'read',
+      content: postData.confirm_html(),
+      buttons: {
+        ok: {
+          text: i18next.t('post'),
+          action: () => {
+            postData.post().then(r => {
+              this.parent.ng_pane.curNode = undefined;
+              this.parent.top_page(postData.newsgroup.n.name, r.article_id);
+            });
+          }
+        },
+        back: {
+          text: i18next.t('back-to-edit'),
+          action: () => {
+            this.post_article_dlg0(postData);
+          }
+        },
+        close: {
+          text: this.parent.i18next.t('close'),
+        }
+      },
+      onOpen: () => {
+        set_i18n('.post-article');
+        $('.btn-about-newsgroup').on('click', e => {
+          if (this.parent.ng_pane.curNode)
+            this.parent.ng_pane.curNode.about_newsgroup_dlg();
+          e.stopPropagation();
+          e.preventDefault();
+        });
+        postData.redisplay_attachment_list();
+      }
+    });
+  }
+
+  
   t(id: string) {
     return this.parent.i18next.t(id);
   }
@@ -502,68 +490,6 @@ export class User {
 
 }
 
-interface IFormGroupOpt {
-  help?: string;
-  value?: string;
-  placeholder?: string;
-  readonly?: null;
-  rows?: number;
-};
-
-function form_input(id: string, label_str: string, opt: IFormGroupOpt) {
-  let input_part: string;
-  input_part = input({
-    id, type: 'text', readonly: opt.readonly, value: opt.value,
-    class: 'form-control', placeholder: opt.placeholder
-  });
-
-  let help = '';
-  if (opt.help)
-    help = tag('small', { id: id + 'Help', class: 'form-text text-muted' }, opt.help);
-
-  return div({ class: 'form-row' },
-    label({ for: id, class: 'col col-md-2' }, label_str),
-    div({ class: 'form-group col-md-10' }, input_part, help));
-}
-
-function form_textarea(id: string, label_str: string, opt: IFormGroupOpt) {
-  let input_part: string;
-  input_part = tag('textarea', {
-    id, rows: opt.rows, readonly: opt.readonly,
-    class: 'form-control', placeholder: opt.placeholder
-  }, opt.value || '');
-
-  let help = '';
-  if (opt.help)
-    help = tag('small', { id: id + 'Help', class: 'form-text text-muted' }, opt.help);
-
-  return div({ class: 'form-group' },
-    div({ class: 'form-row' }, label({ for: id }, label_str), help),
-    input_part);
-}
-
-function form_post_textarea(id: string, label_str: string, a: IArticle | null, opt: IFormGroupOpt) {
-  let input_part: string;
-  input_part = tag('textarea', {
-    id, rows: opt.rows, readonly: opt.readonly,
-    class: 'form-control', placeholder: opt.placeholder
-  }, opt.value || '');
-  let reply_btn = '';
-  if (a)
-    reply_btn = button({ class: 'btn ml-2 btn-quote', type: 'button', 'title-i18n': 'quote-article' },
-      icon('chat-left-quote'));
-  let attach_btn = button({ class: 'btn ml-auto btn-attach', type: 'button', 'title-i18n': 'attach-file' },
-    icon('paperclip'));
-
-  let help = '';
-  if (opt.help)
-    help = tag('small', { id: id + 'Help', class: 'form-text text-muted' }, opt.help);
-
-  return div({ class: 'form-group' },
-    div({ class: 'd-flex' },
-      label({ for: id }, label_str), attach_btn, reply_btn),
-    input_part, help);
-}
 
 function form_membership(id: string, label_str: string, help_str: string, value: string, membership: IMembership | null): string {
   let c = '';
@@ -595,11 +521,3 @@ function quote_article(id: string, n: INewsGroup, a: IArticle) {
   ta.setRangeText(qs);
 }
 
-function error_dlg(msg: string): false {
-  $.alert({
-    title: window.nnsbbs.i18next.t('post-error'),
-    content: window.nnsbbs.i18next.t(msg),
-    type: 'red'
-  })
-  return false;
-}
