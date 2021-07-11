@@ -34,6 +34,13 @@ sub startup ($self) {
     print STDERR "*** ver: $ver\n";
     $self->{npm_version} = $ver;
 
+    $ENV{MOJO_REVSERSE_PROXY} = 1;
+    $self->hook('before_dispatch' => sub {
+                  my $self = shift;
+                  my $proto = $self->req->headers->header('X-Forwarded-Proto');
+                  $self->req->url->base->scheme($proto) if $proto;
+                });
+
     # Router
     my $r = $self->routes;
 
