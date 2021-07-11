@@ -31,6 +31,7 @@ sub startup ($self) {
     );
     my $ver = `/usr/bin/git describe`;
     chop($ver);
+    print STDERR "*** ver: $ver\n";
     $self->{npm_version} = $ver;
 
     # Router
