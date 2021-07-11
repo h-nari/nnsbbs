@@ -59,7 +59,7 @@ export class TopBar {
     });
     m.addSeparator();
     m.add({
-      name: i18next.t('Profile'),
+      name: i18next.t('user-profile'),
       action: () => { this.parent.user.profile_dlg(); }
     });
     m.add({
@@ -101,7 +101,7 @@ export class TopBar {
       name: i18next.t('login'),
       action: () => { this.parent.user.login_dlg(); }
     })).add({
-      name: i18next.t('User Registration'),
+      name: i18next.t('user-registration'),
       action: () => { this.parent.user.user_registration_dlg('MAIL_AUTH'); }
     });
     this.bModerator = false;

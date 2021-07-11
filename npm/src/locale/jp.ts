@@ -80,10 +80,10 @@ export const jp = {
     'name-format-is-incorrect': '名前の形式が正しくありません',
     'logout': 'ログアウト',
     'login': 'ログイン',
-    'Profile': 'ユーザ・プロファイル',
+    'user-profile': 'ユーザ・プロファイル',
     'user-manager': 'ユーザ管理',
     'newsgroup-manager': '掲示板管理',
-    'User Registration': 'ユーザ登録',
+    'user-registration': 'ユーザ登録',
     'email-used-to-register': '登録に使用したメールアドレス',
     'displayed-as-username': 'ユーザ名として表示されます。変更可能',
     'disp-name': '表示名',
@@ -95,7 +95,7 @@ export const jp = {
     'subject': '件名',
     'body': '本文',
     'post-article': '記事投稿',
-    'confirm-article':'投稿記事の確認',
+    'confirm-article': '投稿記事の確認',
     'specify-attachments-images': '添付ファイル/画像の指定',
     'select-files': 'ファイルを選択して下さい',
     'change-user-setting': 'ユーザ情報設定',
@@ -103,10 +103,15 @@ export const jp = {
     'email': 'メール',
     'password': 'パスワード',
     'forget-password': 'パスワードを忘れたら',
-    'user-registration': '新規ユーザ登録',
+    'new-user-registration': '新規ユーザ登録',
     'enter-email-for-authentication': '認証用のメールアドレスを入力してください。入力されたアドレスに認証用のURLが送信されます。',
     'input-email': 'メールアドレスを入力して下さい',
-    'sent-url': '入力されたメールアドレスに認証用URLを送信しました。<br/>メールを開いて、認証用URLをブラウザで開いてください。',
+    'sent-url': div(
+      div('入力されたメールアドレスに認証用URLを送信しました。'),
+      div('メールを開いて、認証用URLをブラウザで開いてください。'),
+      div('送信されたメールは迷惑メールと認識されることが多いので',
+        '迷惑メールも確認してみてください')
+    ),
     'bad-format-email': 'メールアドレスの形式が正しくありません。',
     'no-password': 'パスワードが入力されていません',
     'newsgroup': '掲示板',
@@ -202,6 +207,7 @@ export const jp = {
     'no-unread-article': '未読記事はありません',
     'no-permission-to-post': div(
       div('党員以外はこの掲示板には投稿できません。'),
+      div('党員の方はユーザ・プロフィールで党員資格を設定してください。'),
       div('参政党サポータ(無料)で投稿可能になります。'),
       div('詳しくは', a({ href: 'https://www.sanseito.jp/supporter/' },
         'こちらのページ'), 'を御覧ください')
@@ -226,8 +232,8 @@ export const jp = {
     'content-is-blank': '本文が空欄です',
     'no-titles-in-this-newsgroup': 'この掲示板には未だ記事が投稿されていません',
     'top-page': 'トップページ',
-    'about-this-newsgroup':'この掲示板の説明',
-    'content':'内容',
-    'back-to-edit':'編集に戻る'
+    'about-this-newsgroup': 'この掲示板の説明',
+    'content': '内容',
+    'back-to-edit': '編集に戻る'
   }
 };

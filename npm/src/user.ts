@@ -39,7 +39,7 @@ export class User {
               div({ class: 'col-sm-6' }, input({ type: 'password', class: 'form-control', id: 'inputPassword', placeholder: 'Password' })))),
           div({ class: 'login-links' },
             a({ href: '#', class: 'link-forget-password' }, i18next.t('forget-password')),
-            a({ href: '#', class: 'link-user-registration' }, i18next.t('user-registration'))
+            a({ href: '#', class: 'link-user-registration' }, i18next.t('new-user-registration'))
           )),
         buttons: {
           login: {
@@ -196,7 +196,7 @@ export class User {
       })
     );
     $.confirm({
-      title: 'User Profile',
+      title: i18next.t('user-profile'),
       columnClass: 'xlarge',
       type: 'orange',
       content: c,
