@@ -26,11 +26,12 @@ export class TopBar {
     };
     let path = document.location.pathname;
     let conf = this.parent.conf;
+    let top_url = conf.top_url ? conf.top_url : window.nnsbbs_baseURL;
     return tag('nav', { id: this.id, class: 'topbar nav nav-tabs' },
-      a_nav({ href: window.nnsbbs_baseURL }, this.parent.conf.bbs_name),
+      a_nav({ href: top_url }, this.parent.conf.bbs_name),
       a_nav({ href: window.nnsbbs_baseURL }, this.t('top-page'), path == '/'),
       a_nav({ href: window.nnsbbs_baseURL + 'bbs' }, this.t('bbs'), path == '/bbs'),
-      conf.wiki_url ? a_nav({ href: conf.wiki_url }, 'Wiki', false) : '',
+      conf.wiki_url ? a_nav({ href: conf.wiki_url }, 'Wiki') : '',
       span({ style: 'flex-grow: 10;' }),
       this.menu_login.html())
   }

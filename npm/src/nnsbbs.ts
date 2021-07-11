@@ -23,6 +23,7 @@ export interface NnsBbsConf {
   version: string;
   bbs_name: string;
   wiki_url: string;
+  top_url: string;
 };
 
 export default class NnsBbs {
