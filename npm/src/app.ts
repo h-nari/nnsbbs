@@ -52,7 +52,8 @@ window.onerror = function (message, source, lineno, colno, error) {
     )
   })
 }
-window.addEventListener('unhandledrejection', function (ev) {
+window.addEventListener('unhandledrejection', function (ev : PromiseRejectionEvent) {
+  console.log('ev:',ev);
   $.alert({
     title: 'Unhandled Rejection Error',
     type: 'red',

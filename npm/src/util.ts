@@ -17,8 +17,16 @@ export function get_json(path: string, option = {}) {
     }
     opt['error'] = function (xhr, ts, es) {
       console.log('get_json:', path, "error.  time:", (performance.now() - tStart).toFixed(1), "ms");
+      console.log(xhr.responseText);
       $('body').removeClass('wait');
-      reject(es);
+      reject({
+        message: 'get_json Error:',
+        stack: div(
+          div('path: ', path),
+          div('option: ', escape_html(JSON.stringify(option))),
+          div('response: ', escape_html(xhr.responseText))
+        )
+      });
     }
     $.ajax(opt);
   });

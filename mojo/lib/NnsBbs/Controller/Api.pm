@@ -203,7 +203,8 @@ sub mail_auth($self) {
         $c .= "\n";
         $c .= $self->l('ignore.if.no.idea');
 
-        NnsBbs::Mail::send( $self->app->config->{MAIL}, $email, $self->l('email.title'), $c );
+        NnsBbs::Mail::send( $self->app->config->{MAIL},
+            $email, $self->l('email.title'), $c );
 
         $self->render( json => { result => 'ok' } );
     };
