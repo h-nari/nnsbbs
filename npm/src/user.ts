@@ -1,7 +1,7 @@
 import { div, input, tag, label, a, span, select, option, selected}  from './tag';
 import { api_membership, IMembership, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, api_mail_auth, admin_api_article } from './dbif';
 import { INewsGroup } from "./newsgroup";
-import { article_str, escape_html, form_input, form_textarea, get_json, set_i18n } from './util';
+import { article_str, escape_html, form_input, form_textarea, get_json, set_i18n, url_link } from './util';
 import { createHash } from 'sha1-uint8array';
 import NnsBbs from './nnsbbs';
 import { Attachment } from './attachemnt';
@@ -361,7 +361,7 @@ export class User {
         div(
           div({ class: 'title' }, this.t('disp_name')),
           div({ class: 'disp-name' }, escape_html(d.disp_name))),
-        div({ class: 'profile' }, escape_html(d.profile)))
+        div({ class: 'profile' }, url_link(escape_html(d.profile))))
     })
   }
 
