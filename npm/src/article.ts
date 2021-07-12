@@ -30,7 +30,7 @@ export class ArticlePane extends ToolbarPane {
 
   inner_html(): string {
     let d = this.article;
-    const image_type_pat = /image\/(apng|avif|gif|jpeg|png|svg\+xml|webp)/;
+    const image_type_pat = /image\/(apng|avif|bmp|gif|ico|jpeg|png|svg\+xml|webp)/;
 
     if (d) {
       let attachment = '';

@@ -410,17 +410,13 @@ sub subsInfo($self) {
                   if ( !defined($nid)
                     || !defined($subscribe)
                     || !defined($done) );
-                if ($update) {
-                    my $sql = "update subsInfo set subscribe=?,done=?";
-                    $sql .= " where user_id=? and newsgroup_id=?";
-                    $db->execute( $sql, $subscribe, $done, $user_id, $nid );
-                }
-                else {
-                    my $sql = "insert into subsInfo";
-                    $sql .= "(user_id,newsgroup_id,subscribe,done)";
-                    $sql .= "values(?,?,?,?)";
-                    $db->execute( $sql, $user_id, $nid, $subscribe, $done );
-                }
+                my $sql =
+                  "delete from subsInfo where user_id=? and newsgroup_id=?";
+                $db->execute( $sql, $user_id, $nid );
+                $sql = "insert into subsInfo";
+                $sql .= "(user_id,newsgroup_id,subscribe,done)";
+                $sql .= "values(?,?,?,?)";
+                $db->execute( $sql, $user_id, $nid, $subscribe, $done );
                 $cnt++;
             }
             $db->commit;
