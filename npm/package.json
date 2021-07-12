@@ -1,6 +1,6 @@
 {
   "name": "nnsbbs",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "NetNews styled BBS",
   "main": "index.js",
   "scripts": {
