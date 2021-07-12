@@ -188,7 +188,7 @@ export class TitlesPane extends ToolbarPane {
     let s = div(opt,
       div({ class: 'article-rule' }, rule),
       div({ class: 'article-id' }, d.article_id),
-      div({ class: 'article-from', user_id: d.user_id }, escape_html(d.disp_name)),
+      div({ class: 'article-from', 'user-id': d.user_id, 'title-i18n': 'show-profile' }, escape_html(d.disp_name)),
       div({ class: 'article-time' }, d.date),
       div({ class: 'article-title' }, escape_html(d.title)),
       attached_file,
@@ -202,6 +202,12 @@ export class TitlesPane extends ToolbarPane {
     $(`#${this.id} .btn-post-article`).on('click', e => {
       if (this.newsgroup)
         this.parent.user.post_article_dlg(this.newsgroup);
+    });
+
+    $(`#${this.id}_lg >div .article-from`).on('click', ev => {
+      let user_id = $(ev.currentTarget).attr('user-id') as string;
+      this.parent.user.show_profile(user_id);
+      ev.stopPropagation();
     });
 
     $(`#${this.id_lg} >div`).on('click', async ev => {
