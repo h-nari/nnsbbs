@@ -30,12 +30,13 @@ export class ArticlePane extends ToolbarPane {
 
   inner_html(): string {
     let d = this.article;
+    const image_type_pat = /image\/(apng|avif|gif|jpeg|png|svg\+xml|webp)/;
 
     if (d) {
       let attachment = '';
       for (let a of d.attachment) {
         let url = window.nnsbbs_baseURL + 'attachment/' + a.file_id;
-        if (a.content_type.startsWith('image/')) {
+        if (a.content_type.match(image_type_pat)) {
           attachment += div({ class: 'image' },
             div(tag('a', { href: url }, img({ src0: url }))),
             div({ class: 'comment' }, a.comment));
