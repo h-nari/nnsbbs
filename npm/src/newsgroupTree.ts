@@ -217,8 +217,10 @@ export class NewsgroupTree {
     this.menu.bind();
     $(`.ng-tree .ng-node[path="${this.path}"]`).on('click', e => {
       if (this.ng_pane.curNode == this) {
-        if (!this.noChild())
+        if (this.hasChild())
           this.fold = !this.fold;
+        else if (this.ng_pane.clickCb)
+          this.ng_pane.clickCb(this.path);
       } else {
         this.ng_pane.curNode = this;
         if (this.ng_pane.clickCb)
