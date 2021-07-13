@@ -56,6 +56,10 @@ export default class NnsBbs {
     this.titles_pane.expansion_ratio = 2;
     this.article_pane.expansion_ratio = 4;
 
+    this.ng_pane.toolbar.onClick = () => {
+      this.title_pane_close();
+    };
+
     // buttons in newsgroup pane
     this.ng_pane.toolbar.add_menu({
       icon: 'play-fill',
@@ -63,19 +67,15 @@ export default class NnsBbs {
       action: () => { this.show_next(); }
     });
 
-
+    this.titles_pane.toolbar.onClick = () => {
+      this.article_pane_close();
+    };
     // Buttons in title pane
     this.titles_pane.toolbar.add_menu({
       icon: 'x-square',
       explain: 'close-titles-and-article-pane',
       action: () => {
-        this.titles_pane.close();
-        this.article_pane.close();
-        if (this.ng_pane.curNode)
-          window.history.pushState(null, '', '/bbs/' + this.ng_pane.curNode.path);
-        else
-          window.history.pushState(null, '', '/bbs');
-        document.title = init_data.bbs_name;
+        this.title_pane_close();
       }
     }).add_menu({
       icon: 'three-dots',
@@ -184,9 +184,7 @@ export default class NnsBbs {
       icon: 'x-square',
       explain: 'close-article',
       action: () => {
-        this.article_pane.close();
-        window.history.pushState(null, '', `/bbs/${this.ng_pane.curNode?.path}`);
-        document.title = `nnsbbs/${this.ng_pane.curNode?.path}`;
+        this.article_pane_close();
       }
     }))
     let article_menu = new Menu({
@@ -556,6 +554,22 @@ export default class NnsBbs {
         buttons: { ok: () => { resolve(false) } }
       });
     });
+  }
+
+  title_pane_close() {
+    this.titles_pane.close();
+    this.article_pane.close();
+    if (this.ng_pane.curNode)
+      window.history.pushState(null, '', '/bbs/' + this.ng_pane.curNode.path);
+    else
+      window.history.pushState(null, '', '/bbs');
+    document.title = this.conf.bbs_name;
+  }
+
+  article_pane_close() {
+    this.article_pane.close();
+    window.history.pushState(null, '', `/bbs/${this.ng_pane.curNode?.path}`);
+    document.title = `nnsbbs/${this.ng_pane.curNode?.path}`;
   }
 }
 
