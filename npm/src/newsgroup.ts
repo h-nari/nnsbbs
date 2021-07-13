@@ -239,8 +239,7 @@ export class NewsgroupsPane extends ToolbarPane {
     this.clearSubsInfo();
     for (let ng of this.newsgroups) {
       let nid = ng.n.id;
-      if (nid in h)
-        ng.subsInfo = new SubsInfo(nid, ng.n.max_id, ng.n.deleted_articles, h[nid]);
+      ng.subsInfo = new SubsInfo(nid, ng.n.max_id, ng.n.deleted_articles, h[nid]);
       this.savedSubsString[nid] = JSON.stringify(ng.subsInfo.subsElem());
     }
     this.root.sumUp(n => n.calc());

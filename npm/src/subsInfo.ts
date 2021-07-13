@@ -17,7 +17,7 @@ export class SubsInfo {
       this.readset = new ReadSet(h.done);
       this.update = true;
     } else {
-      this.subscribe = false;
+      this.subscribe = true;
       this.readset = new ReadSet();
       this.update = false;
     }
