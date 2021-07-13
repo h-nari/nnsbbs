@@ -35,25 +35,26 @@
     position: relative;
     left: 0px;
     top: 0px;
-    overflow-y: auto;
+    overflow: auto;
     // scroll-behavior: smooth;
     .title-list {
       margin: 5px 2px;
-      display: block;
+      display: inline-block;
       > div {
         cursor: pointer;
-        display: flex;
-        width: 100%;
+        display: block;
+        // width: 100%;
         text-align: left;
         font-size: 12pt;
         padding: 0px;
         margin: -0px 0px;
         white-space: pre;
-        overflow: hidden;
+        // overflow: hidden;
         background-color: transparent;
 
         > div {
           display: inline-block;
+          vertical-align: middle;
         }
 
         .article-id {
@@ -87,6 +88,8 @@
         }
 
         .article-title {
+          margin-left: 5px;
+          margin-right: 20px;
           overflow: hidden;
           flex-grow: 10;
           flex-shrink: 10;
@@ -95,12 +98,14 @@
         }
 
         .attached-file {
-          margin: 0px 10px;
+          margin-left: 5px;
+          // margin: 0px 10px;
         }
 
         .reaction {
           font-size: smaller;
           font-weight: bold;
+          margin-left: 5px;
           .icon {
             color: gray;
           }

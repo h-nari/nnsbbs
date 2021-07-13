@@ -192,7 +192,8 @@ export class TitlesPane extends ToolbarPane {
       div({ class: 'article-time' }, d.date),
       div({ class: 'article-title' }, escape_html(d.title)),
       attached_file,
-      reactions
+      reactions,
+      div({ class: 'line-end'})
     );
     return s;
   }
@@ -262,6 +263,19 @@ export class TitlesPane extends ToolbarPane {
       $(this.scroller).scrollTop(sy + y - 10);
     else if (y + lh > sh)
       $(this.scroller).scrollTop(sy + y - sh + lh);
+
+    const end = line + ' .line-end';
+    let sx = $(this.scroller).scrollLeft() || 0;
+    let sw = $(this.scroller).width() || 0;
+    let x = $(end).position().left + sx;
+
+    if (x > sw) {
+      let s = Math.ceil(x - sw + 40);
+      console.log('scrollLeft:', s);
+      setTimeout(()=>{
+        $(this.scroller).scrollLeft(s);
+      },1)
+    }
   }
 
   disp_thread(bThread: boolean) {
