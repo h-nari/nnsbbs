@@ -13,7 +13,10 @@ sub show ($self) {
     $s .= "var init_data = " . to_json( $db->init_data($self) ) . "\n";
     $s .= "console.log('init_data:', init_data);\n";
     $s .= "</script>\n";
-    $self->stash( script_part => $s );
+    $self->stash(
+        title       => $self->app->config->{NAME},
+        script_part => $s
+    );
     $self->render_maybe('top/index') or $self->redirect_to('/bbs');
 }
 
@@ -21,7 +24,10 @@ sub bbs ($self) {
     my $ua = $self->tx->req->headers->user_agent;
     print "*** UA:$ua\n";
     if ( $ua =~ /MSIE|Trident/i ) {
-        $self->stash( script_part => '' );
+        $self->stash(
+            title => $self->app->config->{NAME},
+            script_part => ''
+        );
         $self->render( template => 'top/no_ie' );
     }
     else {
@@ -38,7 +44,10 @@ sub bbs ($self) {
         $s .= "console.log('init_data:', init_data);\n";
         $s .= "</script>\n";
 
-        $self->stash( script_part => $s );
+        $self->stash(
+            title       => $self->app->config->{NAME},
+            script_part => $s
+        );
         $self->render( template => 'top/show' );
     }
 }
