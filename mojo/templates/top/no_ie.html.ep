@@ -1,0 +1,20 @@
+<div>
+<div>
+<center>
+<h3>
+<%= l('ie-cannot-display') %>
+</h3>
+</div>
+<div>
+<%= l('recommended-browsers') %>
+</div>
+
+<p>
+<div><a href="https://www.google.co.jp/chrome/">Chrome</a></div>
+<div><a href="https://www.mozilla.org/firefox/"></a>Firefox</div>
+<div><a href="https://www.microsoft.com/ja-jp/edge"></a>Edge</div>
+<div><a href="https://www.apple.com/safari/"></a>Safari</div>
+</p>
+
+</center>
+</div>

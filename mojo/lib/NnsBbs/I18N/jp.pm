@@ -53,6 +53,8 @@ our %Lexicon = (
     'user.registration.complete' => 'ユーザ登録完了',
     'password.reset.complete'    => 'パスワード変更完了',
     'enjoy.bbs'                  => 'ログインし掲示板をお楽しみ下さい。',
+    'ie-cannot-display'=> 'Internet Explorerでは、この掲示板を表示できません',
+    'recommended-browsers'=>'Chrome, Firefox, Edge, Safariなどをご使用ください'
 );
 
 1;

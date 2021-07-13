@@ -1,3 +1,4 @@
+
 package NnsBbs::Controller::Top;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use NnsBbs::Db;
@@ -9,8 +10,7 @@ sub show ($self) {
     my $db = NnsBbs::Db::new($self);
 
     my $s = "<script>\n";
-    $s .= "var init_data = "
-      . to_json( $db->init_data( $self ) ) . "\n";
+    $s .= "var init_data = " . to_json( $db->init_data($self) ) . "\n";
     $s .= "console.log('init_data:', init_data);\n";
     $s .= "</script>\n";
     $self->stash( script_part => $s );
@@ -18,21 +18,29 @@ sub show ($self) {
 }
 
 sub bbs ($self) {
-    my $newsgroup = $self->param('newsgroup') || "";
-    my $id        = $self->param('id')        || "";
-    my $db        = NnsBbs::Db::new($self);
+    my $ua = $self->tx->req->headers->user_agent;
+    print "*** UA:$ua\n";
+    if ( $ua =~ /MSIE|Trident/i ) {
+        $self->stash( script_part => '' );
+        $self->render( template => 'top/no_ie' );
+    }
+    else {
+        my $newsgroup = $self->param('newsgroup') || "";
+        my $id        = $self->param('id')        || "";
+        my $db        = NnsBbs::Db::new($self);
 
-    my $s = "<script>\n";
-    $s .= "\$(()=>{\n";
-    $s .= sprintf( '  nnsbbs.top_page("%s","%s");', $newsgroup, $id ) . "\n";
-    $s .= "});\n";
-    $s .= "var init_data = "
-      . to_json( $db->init_data( $self ) ) . "\n";
-    $s .= "console.log('init_data:', init_data);\n";
-    $s .= "</script>\n";
+        my $s = "<script>\n";
+        $s .= "\$(()=>{\n";
+        $s .=
+          sprintf( '  nnsbbs.top_page("%s","%s");', $newsgroup, $id ) . "\n";
+        $s .= "});\n";
+        $s .= "var init_data = " . to_json( $db->init_data($self) ) . "\n";
+        $s .= "console.log('init_data:', init_data);\n";
+        $s .= "</script>\n";
 
-    $self->stash( script_part => $s );
-    $self->render( template => 'top/show' );
+        $self->stash( script_part => $s );
+        $self->render( template => 'top/show' );
+    }
 }
 
 sub attachment ($self) {
