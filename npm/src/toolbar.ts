@@ -13,7 +13,7 @@ export class ToolBar {
   private close_icon_name = 'bi-caret-right-fill';
   private bOpen: boolean = true;
   private toggle_cb: IToggleCB | null = null;
-  public onClick: (() => void) | undefined;
+  public onClick: ((e: JQuery.ClickEvent) => void) | undefined;
 
   constructor(title: string = "") {
     this.id = "toolbar-" + sn++;
@@ -43,7 +43,7 @@ export class ToolBar {
 
   bind() {
     $('#' + this.id).on('click', e => {
-      if (this.onClick) this.onClick();
+      if (this.onClick) this.onClick(e);
     });
     $('#' + this.id_chk).on('click', e => {
       this.setState(!this.bOpen)

@@ -56,7 +56,9 @@ export default class NnsBbs {
     this.titles_pane.expansion_ratio = 2;
     this.article_pane.expansion_ratio = 4;
 
-    this.ng_pane.toolbar.onClick = () => {
+    this.ng_pane.toolbar.onClick = e => {
+      console.log('target:', e.currentTarget, 'e:', e);
+      this.ng_pane.select_newsgroup(undefined);
       this.title_pane_close();
     };
 
@@ -64,7 +66,10 @@ export default class NnsBbs {
     this.ng_pane.toolbar.add_menu({
       icon: 'play-fill',
       explain: 'show-next-unread-article',
-      action: () => { this.show_next(); }
+      action: e => { 
+        this.show_next();
+        e.stopPropagation();
+       }
     });
 
     this.titles_pane.toolbar.onClick = () => {
@@ -75,12 +80,13 @@ export default class NnsBbs {
       icon: 'x-square',
       explain: 'close-titles-and-article-pane',
       action: () => {
-        this.title_pane_close();
+        // this.title_pane_close();
       }
     }).add_menu({
       icon: 'three-dots',
       explain: 'display-setting',
       action: (e, menu) => {
+        e.stopPropagation();
         menu.clear();
         menu.add({
           name: i18next.t('newsgroup-description'),

@@ -44,6 +44,7 @@ export class NewsgroupsPane extends ToolbarPane {
     this.menu = new Menu({ icon: 'three-dots' });
     this.toolbar.add_menu(this.menu);
     this.menu.opt.action = (e, m) => {
+      e.stopPropagation();
       m.clear();
       m.add({
         name: this.t('show-unsubscribed-newsgroups'),
@@ -92,7 +93,10 @@ export class NewsgroupsPane extends ToolbarPane {
     }).add_menu({
       icon: 'chevron-bar-contract',
       explain: 'scroll-to-show-selected-newsgroup',
-      action: (e, m) => { this.scroll_to_show_selected_line(); }
+      action: (e, m) => {
+        this.scroll_to_show_selected_line();
+        e.stopPropagation();
+      }
     });
   }
 
@@ -183,7 +187,12 @@ export class NewsgroupsPane extends ToolbarPane {
     $(`#${this.id} .newsgroup`).scrollTop(scroll || 0);
   }
 
-  async select_newsgroup(path: string) {
+  async select_newsgroup(path: string | undefined) {
+    if (!path) {
+      this.curNode = undefined;
+      await this.redisplay();
+      return undefined;
+    }
     let node = this.root.findNewsgroup(path);
     if (node) {
       for (let n: NewsgroupTree | undefined = node.parent; n; n = n.parent)
