@@ -1,3 +1,5 @@
+import { escape_html } from "./util";
+
 export interface StrObj {
   [key: string]: string | number | boolean | null | undefined;
 }
@@ -17,11 +19,14 @@ export function tag(name: string, ...args: TagArg[]): string {
     }
   }
   for (let k in attr) {
-    if (attr[k] === undefined)
+    let v = attr[k];
+    if (v === undefined)
       continue;
     html += ' ' + k;
-    if (attr[k] !== null)
-      html += '="' + attr[k] + '"';
+    if (typeof (v) == 'string')
+      html += '="' + escape_html(v) + '"';
+    else if (typeof (v) == 'number' || typeof(v) == 'boolean')
+      html += '=' + v;
   }
   html += '>';
   for (let a of args) {

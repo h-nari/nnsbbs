@@ -5,7 +5,7 @@ import { api_attachment, api_post, IArticle, IPostArg } from "./dbif";
 import { INewsGroup } from "./newsgroup";
 import { button, div, icon, input, label, tag } from "./tag";
 import { User } from "./user";
-import { error_dlg, form_input, IFormGroupOpt, set_i18n } from "./util";
+import { error_dlg, escape_html, form_input, IFormGroupOpt, set_i18n, url_link } from "./util";
 
 export class PostData {
   public user: User;
@@ -64,11 +64,11 @@ export class PostData {
         div({ class: 'col-2' }, button({ class: 'btn btn-info btn-about-newsgroup w-100' }, i18next.t('newsgroup-description')))),
       div({ class: 'row my-1' },
         div({ class: 'col-2' }, i18next.t('disp-name')),
-        div({ class: 'col-10' }, this.disp_name)),
+        div({ class: 'col-10' }, escape_html(this.disp_name))),
       div({ class: 'row my-1' },
         div({ class: 'col-2' }, i18next.t('subject')),
-        div({ class: 'col-10' }, this.title)),
-      div({ class: 'content' }, div(i18next.t('content')), div({ class: 'text' }, this.content)),
+        div({ class: 'col-10' }, escape_html(this.title))),
+      div({ class: 'content' }, div(i18next.t('content')), div({ class: 'text' }, url_link(escape_html(this.content)))),
       div({ class: 'attachment-area' }));
   }
 
