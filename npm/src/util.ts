@@ -95,9 +95,11 @@ export function set_i18n(selector: string = '') {
     $(this).text(val);
   });
   $(selector + ' [title-i18n]').each(function () {
-    let key = $(this).attr('title-i18n') || "no-key";
-    let val = i18next.t(key);
-    $(this).attr('title', val);
+    if (!$(this).attr('data-original-title')) {
+      let key = $(this).attr('title-i18n') || "no-key";
+      let val = i18next.t(key);
+      $(this).attr('title', val);
+    }
   });
   $(selector + ' [title]').tooltip({
     delay: 100,
