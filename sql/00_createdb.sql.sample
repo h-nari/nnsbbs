@@ -2,6 +2,6 @@
 -- make database "nnnsbbs" on mysql
 -- 
 
-create database if not exists nnsbbs character set utf8;
+create database if not exists nnsbbs character set utf8mb4;
 grant all on nnsbbs.* to "www-data"@"localhost"
   identified by "set-your-database-password";

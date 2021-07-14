@@ -1,3 +1,6 @@
+$monospace: "apple color emoji", "segoe ui emoji", "noto color emoji", "android emoji", "emojisymbols",
+  "emojione mozilla", "twemoji mozilla", monospace;
+
 #article {
   overflow: hidden;
 
@@ -40,7 +43,7 @@
       background-color: #eee;
       color: #686;
       font-size: small;
-      font-family: monospace;
+      font-family: $monospace;
       margin-bottom: 5px;
       white-space: pre;
       overflow: auto;
@@ -51,7 +54,7 @@
       width: 100%;
       // background-color: white;
       white-space: pre;
-      font-family: monospace;
+      font-family: $monospace;
       padding: 5px;
     }
 

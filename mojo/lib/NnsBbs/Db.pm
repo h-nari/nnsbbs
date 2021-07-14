@@ -18,7 +18,7 @@ sub new {
         {
             RaiseError        => 1,
             AutoCommit        => 0,
-            mysql_enable_utf8 => 1
+            mysql_enable_utf8mb4 => 1,
         }
     );
     return bless { conn => $conn };

@@ -15,6 +15,12 @@
 @use "reportManager.scss";
 @use "reportPage.scss";
 
+body.nnsbbs {
+  font-family: "apple color emoji", "segoe ui emoji", "noto color emoji", "android emoji", "emojisymbols",
+  "emojione mozilla", "twemoji mozilla", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", "ヒラギノ角ゴ Pro W3",
+    "Hiragino Kaku Gothic Pro", Osaka, sans-serif;
+}
+
 BODY {
   background-color: #eee;
   cursor: auto;
