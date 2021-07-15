@@ -198,7 +198,7 @@ export class NewsgroupTree {
 
     return div({ path: this.path, class: 'ng-node d-flex' + (this == this.ng_pane.curNode ? ' selected' : '') },
       fold_icon,
-      span({ class: 'name' }, this.name),
+      span({ class: 'name' }, this.path),
       subscribe_icon,
       ng_num,
       span({ style: 'flex-grow:1' }),
