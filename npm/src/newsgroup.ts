@@ -102,7 +102,9 @@ export class NewsgroupsPane extends ToolbarPane {
       explain: 'fold-all',
       action: (e,m)=>{
         this.root.forEach(n => { n.fold = true; });
-        this.redisplay();
+        this.select_newsgroup(undefined);
+        this.parent.title_pane_close();
+        // this.redisplay();
         e.stopPropagation();
       }
     });

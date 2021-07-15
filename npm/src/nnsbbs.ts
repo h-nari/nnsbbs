@@ -57,7 +57,6 @@ export default class NnsBbs {
     this.article_pane.expansion_ratio = 4;
 
     this.ng_pane.toolbar.onClick = e => {
-      console.log('target:', e.currentTarget, 'e:', e);
       this.ng_pane.select_newsgroup(undefined);
       this.title_pane_close();
     };
