@@ -97,6 +97,14 @@ export class NewsgroupsPane extends ToolbarPane {
         this.scroll_to_show_selected_line();
         e.stopPropagation();
       }
+    }).add_menu({
+      icon: 'dash-square',
+      explain: 'fold-all',
+      action: (e,m)=>{
+        this.root.forEach(n => { n.fold = true; });
+        this.redisplay();
+        e.stopPropagation();
+      }
     });
   }
 
