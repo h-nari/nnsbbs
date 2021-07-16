@@ -111,9 +111,9 @@ sub init_data {
 sub update_session {
     my $db  = shift;
     my $sql = "delete from session";
-    $sql .= " where (subtime(now(),created_at) > '72:00:00')";
-    $sql .= " or (subtime(now(),created_at) > '24:00:00'";
-    $sql .= " and subtime(now(),last_access) > '3:00:00')";
+    $sql .= " where now()- created_at > 72 * 2400";
+    $sql .= " or (now() - created_at > 24 * 2400";
+    $sql .= " and now()-last_access > 3 * 2400)";
     $db->execute($sql);
     $db->commit;
 }

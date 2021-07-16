@@ -256,8 +256,8 @@ sub new_session {
         my ($c) = $db->select_ra( $sql, $id );
         last if $c == 0;
     }
-    $sql = "delete from session where user_id=?";
-    $db->execute( $sql, $user_id );
+    # $sql = "delete from session where user_id=?";
+    # $db->execute( $sql, $user_id );
     $sql = "insert into session (id,user_id) values(?,?)";
     $db->execute( $sql, $id, $user_id );
     $db->commit;
