@@ -17,7 +17,7 @@
 
 body.nnsbbs {
   font-family: "apple color emoji", "segoe ui emoji", "noto color emoji", "android emoji", "emojisymbols",
-  "emojione mozilla", "twemoji mozilla", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", "ヒラギノ角ゴ Pro W3",
+    "emojione mozilla", "twemoji mozilla", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", "ヒラギノ角ゴ Pro W3",
     "Hiragino Kaku Gothic Pro", Osaka, sans-serif;
 }
 
@@ -80,4 +80,8 @@ BODY.wait button {
     padding: 7px 20px;
     background-color: lightcyan;
   }
+}
+
+.jconfirm {
+  z-index: 1 !important;
 }

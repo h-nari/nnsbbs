@@ -1,4 +1,4 @@
-import { div, input, tag, label, a, span, select, option, selected}  from './tag';
+import { div, input, tag, label, a, span, select, option, selected } from './tag';
 import { api_membership, IMembership, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, api_mail_auth, admin_api_article } from './dbif';
 import { INewsGroup } from "./newsgroup";
 import { article_str, escape_html, form_input, form_textarea, get_json, set_i18n, url_link } from './util';
@@ -281,7 +281,7 @@ export class User {
       onOpen: () => {
         set_i18n('.post-article');
         $('.btn-quote').on('click', () => {
-          if (postData.article) quote_article('post-content', postData.newsgroup, postData.article);
+          if (postData.article) this.quote_article('post-content', postData.newsgroup, postData.article);
         });
         $('.btn-attach').on('click', () => {
           this.attachment_dlg().then(list => {
@@ -342,7 +342,7 @@ export class User {
     });
   }
 
-  
+
   t(id: string) {
     return this.parent.i18next.t(id);
   }
@@ -488,6 +488,23 @@ export class User {
     });
   }
 
+  quote_article(id: string, n: INewsGroup, a: IArticle) {
+    let c = $('#' + id).val();
+
+    let qs = this.parent.i18next.t('user.quote-article', {
+      article: n.n.name + ' / ' + a.article_id,
+      author: a.author,
+      datetime: a.date
+    });
+    qs += ':\n';
+
+    for (let line of a.content.trim().split('\n'))
+      qs += '> ' + line + '\n';
+
+    let ta = $('#' + id)[0] as HTMLTextAreaElement;
+    ta.setRangeText(qs);
+  }
+
 }
 
 
@@ -507,17 +524,4 @@ function form_membership(id: string, label_str: string, help_str: string, value:
   );
 }
 
-
-function quote_article(id: string, n: INewsGroup, a: IArticle) {
-  let c = $('#' + id).val();
-  let qs = 'In article ' + n.n.name + '/' + a.article_id + '\n';
-  qs += a.author + ' writes:'
-  qs += '\n';
-
-  for (let line of a.content.trim().split('\n'))
-    qs += '> ' + line + '\n';
-
-  let ta = $('#' + id)[0] as HTMLTextAreaElement;
-  ta.setRangeText(qs);
-}
 

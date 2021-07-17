@@ -2,6 +2,9 @@ import { a, div } from "../tag";
 
 export const jp = {
   translation: {
+    user: {
+      'quote-article': '<{{author}}>は {{datetime}}に [{{- article}}] で書きました'
+    },
     'show-all-newsgroups': '全ての掲示板を表示',
     'only-subscribed-newsgroups': '購読した掲示板のみ表示',
     'show-unsubscribed-newsgroups': '未購読の掲示板も表示',

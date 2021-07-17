@@ -136,7 +136,7 @@ function form_post_textarea(id: string, label_str: string, a: IArticle | undefin
     help = tag('small', { id: id + 'Help', class: 'form-text text-muted' }, opt.help);
 
   return div({ class: 'form-group' },
-    div({ class: 'd-flex' },
+    div({ class: 'd-flex post-buttons' },
       label({ for: id }, label_str), attach_btn, reply_btn),
     input_part, help);
 }
