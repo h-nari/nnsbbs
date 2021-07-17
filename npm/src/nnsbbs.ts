@@ -65,10 +65,10 @@ export default class NnsBbs {
     this.ng_pane.toolbar.add_menu({
       icon: 'play-fill',
       explain: 'show-next-unread-article',
-      action: e => { 
+      action: e => {
         this.show_next();
         e.stopPropagation();
-       }
+      }
     });
 
     this.titles_pane.toolbar.onClick = () => {
@@ -78,8 +78,9 @@ export default class NnsBbs {
     this.titles_pane.toolbar.add_menu({
       icon: 'x-square',
       explain: 'close-titles-and-article-pane',
-      action: () => {
-        // this.title_pane_close();
+      action: e => {
+        this.title_pane_close();
+        e.stopPropagation();
       }
     }).add_menu({
       icon: 'three-dots',

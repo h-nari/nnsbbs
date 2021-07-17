@@ -100,9 +100,10 @@ export class NewsgroupsPane extends ToolbarPane {
     }).add_menu({
       icon: 'dash-square',
       explain: 'fold-all',
-      action: (e,m)=>{
+      action: (e, m) => {
         this.root.forEach(n => { n.fold = true; });
         this.select_newsgroup(undefined);
+        this.toolbar.setState(true);
         this.parent.title_pane_close();
         // this.redisplay();
         e.stopPropagation();
