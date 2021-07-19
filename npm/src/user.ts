@@ -184,7 +184,7 @@ export class User {
       form_input('p-user-id', 'User ID', { value: this.user.id, readonly: null }),
       form_input('p-email', 'Email', { help: i18next.t('mail-used-to-register'), value: d.mail, readonly: null }),
       form_input('p-name', i18next.t('disp-name'), { help: i18next.t('displayed-as-username'), value: d.disp_name }),
-      form_membership('p-membership', i18next.t('membership'), i18next.t('select-your-membership'), d.membership_id, this.membership),
+      // form_membership('p-membership', i18next.t('membership'), i18next.t('select-your-membership'), d.membership_id, this.membership),
       form_textarea('p-profile', i18next.t('profile'),
         {
           help: i18next.t('fill-in-your-self-introduction'),
