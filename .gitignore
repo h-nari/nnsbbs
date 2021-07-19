@@ -10,3 +10,4 @@ mojo/templates/top/index.html.ep
 mojo/etc/nnsbbs-*.conf
 mojo/script/hypnotoad.pid
 sql/00_createdb.sql
+mojo/Makefile

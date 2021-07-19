@@ -16,8 +16,8 @@ sub new {
         $c->{USER},
         $c->{PASS},
         {
-            RaiseError        => 1,
-            AutoCommit        => 0,
+            RaiseError           => 1,
+            AutoCommit           => 0,
             mysql_enable_utf8mb4 => 1,
         }
     );
@@ -101,10 +101,12 @@ sub init_data {
             $data->{login} = 1;
         }
     }
-    $data->{version}  = $controller->app->{npm_version} || 'v0.0.0';
-    $data->{bbs_name} = $controller->app->config->{NAME} || 'nnsbbs';
+    $data->{version}  = $controller->app->{npm_version}      || 'v0.0.0';
+    $data->{bbs_name} = $controller->app->config->{NAME}     || 'nnsbbs';
     $data->{wiki_url} = $controller->app->config->{WIKI_URL} || '';
-    $data->{top_url}  = $controller->app->config->{TOP_URL} || '';
+    $data->{top_url}  = $controller->app->config->{TOP_URL}  || '';
+    $data->{enable_access_control} =
+      $controller->app->config->{ENABLE_ACCESS_CONTROL} || 0;
     return $data;
 }
 

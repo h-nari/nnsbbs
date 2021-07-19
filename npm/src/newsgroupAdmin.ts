@@ -178,8 +178,9 @@ export class NewsgroupAdmin {
           !c.hasChild() ?
             form_row('', 3,
               form_check('ng-bLocked', i18next.t('submissions-are-not-allowed'), !postable)) : '',
-          form_row(i18next.t('access-control'), 3, button({ class: 'form-row btn-permission', type: 'button' },
-            this.permission_html('Read:', 'rpl'), this.permission_html('Write:', 'wpl'))),
+          this.parent.conf.enable_access_control ?
+            form_row(i18next.t('access-control'), 3, button({ class: 'form-row btn-permission', type: 'button' },
+              this.permission_html('Read:', 'rpl'), this.permission_html('Write:', 'wpl'))) : '',
           div({ class: 'form-group' },
             label({ class: 'form-label' }, i18next.t('newsgroup-description') as string),
             tag('textarea', { class: 'form-control', id: 'ng-comment', rows: 10 }, c.newsgroup ? c.newsgroup.comment : '')),

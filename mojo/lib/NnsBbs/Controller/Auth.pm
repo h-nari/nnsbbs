@@ -148,8 +148,8 @@ sub register($self) {
             last if ( $c == 0 );
         }
         my $pwd = sha1_hex($pwd1);
-        $sql = "insert into user(id,mail,disp_name,password)";
-        $sql .= "values(?,?,?,?)";
+        $sql = "insert into user(id,mail,disp_name,password,membership_id)";
+        $sql .= "values(?,?,?,?,1)";
         $db->execute( $sql, $user_id, $email, $disp_name, $pwd );
         $self->stash(
             script_part => $s,

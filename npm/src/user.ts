@@ -184,7 +184,8 @@ export class User {
       form_input('p-user-id', 'User ID', { value: this.user.id, readonly: null }),
       form_input('p-email', 'Email', { help: i18next.t('mail-used-to-register'), value: d.mail, readonly: null }),
       form_input('p-name', i18next.t('disp-name'), { help: i18next.t('displayed-as-username'), value: d.disp_name }),
-      // form_membership('p-membership', i18next.t('membership'), i18next.t('select-your-membership'), d.membership_id, this.membership),
+      this.parent.conf.enable_access_control ?
+        form_membership('p-membership', i18next.t('membership'), i18next.t('select-your-membership'), d.membership_id, this.membership) : '',
       form_textarea('p-profile', i18next.t('profile'),
         {
           help: i18next.t('fill-in-your-self-introduction'),
@@ -209,10 +210,12 @@ export class User {
             let disp_name = $('#p-name').val() as string;
             if (disp_name != d.disp_name)
               api_profile_write({ user_id, disp_name });
-            let membership_id = $('#p-membership').val() as string;
-            if (membership_id != d.membership_id) {
-              api_profile_write({ user_id, membership_id });
-              this.user.membership_id = membership_id;
+            if (this.parent.conf.enable_access_control) {
+              let membership_id = $('#p-membership').val() as string;
+              if (membership_id != d.membership_id) {
+                api_profile_write({ user_id, membership_id });
+                this.user.membership_id = membership_id;
+              }
             }
             let profile = $('#p-profile').val() as string;
             if (profile != d.profile)

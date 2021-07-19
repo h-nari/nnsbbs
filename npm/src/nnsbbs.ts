@@ -24,6 +24,7 @@ export interface NnsBbsConf {
   bbs_name: string;
   wiki_url: string;
   top_url: string;
+  enable_access_control: 0 | 1;
 };
 
 export default class NnsBbs {
