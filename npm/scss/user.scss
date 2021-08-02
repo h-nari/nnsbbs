@@ -95,3 +95,24 @@ form.edit-profile {
     }
   }
 }
+
+.user-setting {
+  > div {
+    margin: 10px 0px;
+    padding-bottom: 3px;
+    display: flex;
+    border-bottom: solid 1px lightgray;
+    font-size: small;
+    > div:nth-child(1) {
+      display: inline-block;
+      flex: 8 0 0;
+    }
+    > div:nth-child(2) {
+      display: inline-block;
+      flex: 4 0 0;
+      select {
+        width: 100%;
+      }
+    }
+  }
+}

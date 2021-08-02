@@ -418,6 +418,7 @@ export class User {
 
   async setting_dlg() {
     let i18next = this.parent.i18next;
+    var s = this.setting.duplicateData();
     let theme_list = await api_theme_list();
     let c = select({ class: 'theme' }, ...theme_list.map(t => option({ value: t, selected: selected(this.user?.theme == t) }, t)))
 
@@ -426,25 +427,46 @@ export class User {
       type: 'green',
       columnClass: 'large',
       content: div({ class: 'user-setting overflow-hidden' },
+        div(div(i18next.t('theme')), div(c)),
         div({ class: 'row' },
-          div({ class: 'col title', i18n: 'theme' }), div({ class: 'col value' }, c))),
+          div(i18next.t('user-setting.notify-post')),
+          div(select({ class: 'select-notifyPost' },
+            option({ value: '', selected: selected(!s.notifyPost) }, i18next.t('user-setting.notify-post-none')),
+            option({ value: 0, selected: selected(s.notifyPost && s.notifyPostAt == 0) }, i18next.t('user-setting.notify-post-0am')),
+            option({ value: 6, selected: selected(s.notifyPost && s.notifyPostAt == 6) }, i18next.t('user-setting.notify-post-6am')),
+            option({ value: 12, selected: selected(s.notifyPost && s.notifyPostAt == 12) }, i18next.t('user-setting.notify-post-12am')),
+            option({ value: 18, selected: selected(s.notifyPost && s.notifyPostAt == 18) }, i18next.t('user-setting.notify-post-6pm'))
+          )
+          ))),
       onOpen: () => {
         set_i18n('.user-setting');
         $('.user-setting .theme').on('change', e => {
           let theme = $(e.currentTarget).val();
           let url = window.nnsbbs_baseURL + "theme/theme-" + theme + ".css";
-          console.log('change theme:', theme, 'url:', url);
           $('head link.theme ').attr('href', url)
+        });
+        $('.user-setting .select-notifyPost').on('change', e => {
+          let value = $(e.currentTarget).val() as string;
+          if (value == '') s.notifyPost = false;
+          else {
+            s.notifyPost = true;
+            s.notifyPostAt = parseInt(value);
+          }
         });
       },
       buttons: {
         write: {
           text: i18next.t('write'),
-          action: () => {
+          action: async () => {
             if (!this.user) return;
             let id = this.user.id;
             let theme = $('.user-setting .theme').val() as string;
-            api_user_update({ id: this.user.id, theme });
+            if (this.user.theme != theme)
+              await api_user_update({ id: this.user.id, theme });
+            if (!this.setting.isSameData(s)) {
+              this.setting.setData(s)
+              await this.setting.save();
+            }
             location.reload();
           }
         },
