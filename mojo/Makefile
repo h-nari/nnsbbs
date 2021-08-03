@@ -4,6 +4,8 @@ help:
 	@echo
 	@echo "make run    run webserver with morbo"
 	@echo "make hyp    run webserver with hypnoatede"
+	@echo "make notify run notify program"
+	@echo "make test   run test"
 	@echo
 
 run:
@@ -11,3 +13,9 @@ run:
 
 hyp:
 	NNSBBS_CONF=net-kaigi hypnotoad script/nns_bbs
+
+notify:
+	NNSBBS_CONF=net-kaigi perl script/nns_bbs notify -f -n
+
+test:
+	prove	t/readset.t

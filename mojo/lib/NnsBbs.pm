@@ -3,6 +3,12 @@ use NnsBbs::Util qw/get_theme/;
 use Mojo::Base 'Mojolicious', -signatures;
 use Data::Dumper;
 
+has commands => sub {
+    my $commands = shift->SUPER::commands;
+    push @{ $commands->namespaces }, 'NnsBbs::CLI';
+    return $commands;
+};
+
 # This method will run once at server start
 sub startup ($self) {
     my $config = $self->plugin('NotYAMLConfig');
@@ -35,11 +41,13 @@ sub startup ($self) {
     $self->{npm_version} = $ver;
 
     $ENV{MOJO_REVSERSE_PROXY} = 1;
-    $self->hook('before_dispatch' => sub {
-                  my $self = shift;
-                  my $proto = $self->req->headers->header('X-Forwarded-Proto');
-                  $self->req->url->base->scheme($proto) if $proto;
-                });
+    $self->hook(
+        'before_dispatch' => sub {
+            my $self  = shift;
+            my $proto = $self->req->headers->header('X-Forwarded-Proto');
+            $self->req->url->base->scheme($proto) if $proto;
+        }
+    );
 
     # Router
     my $r = $self->routes;
