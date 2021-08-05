@@ -7,7 +7,9 @@ help:
 	@echo
 
 run:
-	NNSBBS_CONF=sanseito morbo script/nns_bbs
+	NNSBBS_CONF=net-kaigi morbo script/nns_bbs
 
 hyp:
-	NNSBBS_CONF=sanseito hypnotoad script/nns_bbs
+	NNSBBS_CONF=net-kaigi hypnotoad script/nns_bbs
+stop:
+	NNSBBS_CONF=net-kaigi hypnotoad -s script/nns_bbs
