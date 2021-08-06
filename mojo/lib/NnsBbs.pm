@@ -28,12 +28,13 @@ sub startup ($self) {
         theme => sub {
             my $c = shift;
             return get_theme($c);
-        },
-        l => sub {
-            my $c      = shift;
-            my $str_id = shift;
-            return $c->l($str_id);
         }
+        # ,
+        # l => sub {
+        #     my $c      = shift;
+        #     my $str_id = shift;
+        #     return $c->l($str_id);
+        # }
     );
     my $ver = `/usr/bin/git describe`;
     chop($ver);

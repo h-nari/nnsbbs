@@ -52,9 +52,22 @@ our %Lexicon = (
     'user.registration'          => 'ユーザ登録',
     'user.registration.complete' => 'ユーザ登録完了',
     'password.reset.complete'    => 'パスワード変更完了',
-    'enjoy.bbs'                  => 'ログインし掲示板をお楽しみ下さい。',
-    'ie-cannot-display'=> 'Internet Explorerでは、この掲示板を表示できません',
-    'recommended-browsers'=>'Chrome, Firefox, Edge, Safariなどをご使用ください'
+    'enjoy.bbs' => 'ログインし掲示板をお楽しみ下さい。',
+    'ie-cannot-display' =>
+      'Internet Explorerでは、この掲示板を表示できません',
+    'recommended-browsers' =>
+      'Chrome, Firefox, Edge, Safariなどをご使用ください',
+    'notify.mail.subject' => '[_2]掲示板 未読記事が[_1]件あります',
+    'notify.mail.preamble' => join( "\n",
+        "このメールは[_1]の参加者に",
+        "掲示板の未読記事をお知らせするメールです。",
+        "\n" ),
+    'notify.mail.postamble' => join( "\n",
+        "\nこのメールの配信を止めたい場合は、",
+        "[_1]",
+        "のURLよりログインし「設定」で",
+        "通知を止めるとしてください。",
+        "\n" )
 );
 
 1;

@@ -3,8 +3,11 @@ use Mojo::Base 'Mojolicious::Command';
 use Mojo::JSON qw(decode_json encode_json);
 use Getopt::Long qw(GetOptionsFromArray :config no_auto_abbrev no_ignore_case);
 use NnsBbs::Db;
+use NnsBbs::Mail;
+use NnsBbs::ReadSet;
+use NnsBbs::Util qw(tag);
 use Data::Dumper;
-
+use Encode;
 has description => "send notify mails\n";
 
 has usage => <<EOF;
@@ -18,6 +21,7 @@ options:
 EOF
 
 sub run {
+
     my ( $self, @args ) = @_;
     GetOptionsFromArray(
         \@args,
@@ -39,8 +43,11 @@ sub run {
     }
     print "hh=$hh\n";
 
-    my $app = $self->app;
-    my $db  = NnsBbs::Db::new($app);
+    my $app      = $self->app;
+    my $db       = NnsBbs::Db::new($app);
+    my $url_base = $app->config->{TOP_URL};
+    my $ctlr     = $app->build_controller;
+    $ctlr->languages('jp');
 
     # 各掲示板の投稿状況取得
 
@@ -48,6 +55,8 @@ sub run {
     $sql .= " where not bDeleted";
     $sql .= " order by ord";
     my $ng_list = $db->select_aa($sql);
+
+    # TODO:: deleted_articleの情報取得
 
     # ユーザ毎の処理
 
@@ -66,22 +75,50 @@ sub run {
                 $sql = "select newsgroup_id as nid,done from subsInfo";
                 $sql .= " where user_id=? and subscribe";
                 my $subs = $db->select_hh( $sql, 'nid', $user_id );
-                my $c    = &make_notify_content( $ng_list, $subs );
+                my ( $n, $c ) =
+                  &make_notify_content( $ng_list, $subs, $url_base );
+                if ( $n > 0 ) {
+                    my $to = $mail;
+                    my $subject =
+                      $ctlr->l( 'notify.mail.subject', $n,
+                        $app->config->{NAME} );
+                    my $content = $ctlr->l('notify.mail.preamble', $app->config->{NAME});
+                    $content .= $c;
+                    $content .= $ctlr->l('notify.mail.postamble',$app->config->{TOP_URL});
+                    if ($no_send) {
+                        print "TO:$to\n";
+                        print encode( 'utf-8', "SUBJECT: $subject\n" );
+                        print encode( 'utf-8', "CONTENT:\n$content\n" );
+                    }
+                    else {
+                        Nnsbbs::Mail::send( $app->config->{MAIL},
+                            $to, $subject, $content );
+                    }
+                }
             }
         }
     }
 }
 
 sub make_notify_content {
-    my ( $ng_list, $subs ) = @_;
+    my ( $ng_list, $subs, $url_base ) = @_;
+    my $content = "";
+    my $n       = 0;
     for my $ng (@$ng_list) {
         my ( $nid, $name, $max_id ) = @$ng;
         my $si = $subs->{$nid};
         if ($si) {
-            my $done = $si->{done};
-            print "nid:$nid name:$name max_id:$max_id done:$done\n";
+            my $done   = $si->{done};
+            my $rs     = NnsBbs::ReadSet->new($done);
+            my $unread = $max_id - $rs->count;
+            if ( $unread > 0 ) {
+                $n += $unread;
+                $content .= "  $name [$unread]\n";
+                $content .= "    ${url_base}bbs/$name\n";
+            }
         }
     }
+    return ( $n, $content );
 }
 
 1;

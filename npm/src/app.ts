@@ -48,12 +48,13 @@ window.onerror = function (message, source, lineno, colno, error) {
       div({ class: 'loc' },
         'at', span({ class: 'source' }, source),
         'line:', span({ class: 'lineno' }, lineno),
-        ' col:', span({ class: 'colno' }, colno))
+        ' col:', span({ class: 'colno' }, colno)),
+      div({ class: 'stack' }, error?.stack)
     )
   })
 }
-window.addEventListener('unhandledrejection', function (ev : PromiseRejectionEvent) {
-  console.log('ev:',ev);
+window.addEventListener('unhandledrejection', function (ev: PromiseRejectionEvent) {
+  console.log('ev:', ev);
   $.alert({
     title: 'Unhandled Rejection Error',
     type: 'red',

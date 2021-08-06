@@ -3,7 +3,7 @@ use NnsBbs::Controller::Auth;
 use String::Random;
 
 use Exporter 'import';
-our @EXPORT_OK = qw/access_level get_theme random_id/;
+our @EXPORT_OK = qw/access_level get_theme random_id tag/;
 
 sub access_level {
     my $c  = shift;    # Mojo::Controller
@@ -42,5 +42,27 @@ sub get_theme {
 sub random_id {
     my $length = shift || 12;
     return String::Random->new->randregex("[A-Za-z0-9]{$length}");
+}
+
+sub tag {
+    my $name = shift;
+    my $str  = "<$name";
+    for my $arg (@_) {
+        if ( ref($arg) eq 'HASH' ) {
+            while ( my ( $key, $value ) = each %$arg ) {
+                $str .= ' ';
+                $str .= $key;
+                $str .= '="';
+                $str .= $value;
+                $str .= '"';
+            }
+        }
+    }
+    $str .= '>';
+    for my $arg (@_) {
+        $str .= $arg if ( ref($arg) eq '' );
+    }
+    $str .= "</$name>";
+    return $str;
 }
 1;
