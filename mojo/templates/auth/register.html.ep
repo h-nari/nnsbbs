@@ -49,6 +49,15 @@
         <small id="password1-help" class="form-text text-muted"><%= l('password.for.confirm.explain') %></small>
       </div>  
     </div>
+    <% if($bReg){ %>
+    <div class="form-group row">
+      <label for="accept-email" class="col-sm-2"><%= l('accept.email')%></label>
+      <div class="col-sm-10 col form-check">
+        <input type="checkbox" class="form-check-input" id="accept-email" name="accept_email" aria-describedby="accept-email-help" checked>
+        <small id="accept-email-help" class="form-text text-muted"><%= l('accept.email.explain', $bbs_name)%> </small>
+      </div>  
+    </div>
+    <% } %>
     <button type="submit" class="btn btn-primary offset-sm-10 col-sm-2"><%= l( $bReg ? 'user.registration': 'change.password') %></button>
     <input type="hidden" name="bReg" value="<%= $bReg %>">
   </form>

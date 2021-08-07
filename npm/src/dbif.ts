@@ -319,6 +319,7 @@ export function api_user_update(d: ArgUserUpdate) {
 export type NotifyPostValue = 'none' | '0' | '6' | '12' | '18';
 export interface UserAttr {
   notifyPost?: NotifyPostValue;
+  acceptEmail?: 'yes' | 'no';
 }
 export function api_user_attr(id: string) {
   return get_json('/api/user_attr', { data: { id } }) as Promise<UserAttr>;

@@ -1,5 +1,5 @@
 import { div, input, tag, label, a, span, select, option, selected } from './tag';
-import { api_membership, IMembership, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, api_mail_auth, admin_api_article, api_user_attr, api_user_attr_set, NotifyPostValue } from './dbif';
+import { api_membership, IMembership, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, api_mail_auth, admin_api_article, api_user_attr, api_user_attr_set, NotifyPostValue, UserAttr } from './dbif';
 import { INewsGroup } from "./newsgroup";
 import { article_str, escape_html, form_input, form_textarea, get_json, set_i18n, url_link } from './util';
 import { createHash } from 'sha1-uint8array';
@@ -438,8 +438,10 @@ export class User {
             option({ value: '6', selected: selected(attr.notifyPost == '6') }, i18next.t('user-setting.notify-post-6am')),
             option({ value: '12', selected: selected(attr.notifyPost == '12') }, i18next.t('user-setting.notify-post-12am')),
             option({ value: '18', selected: selected(attr.notifyPost == '18') }, i18next.t('user-setting.notify-post-6pm'))
-          )
           ))),
+        div({ class: 'accept-email' },
+          div(i18next.t('user-setting.accept-email', { from: this.parent.conf.bbs_name })),
+          div(input({ type: 'checkbox', checked: selected(attr.acceptEmail == 'yes') })))),
       onOpen: () => {
         set_i18n('.user-setting');
         $('.user-setting .theme').on('change', e => {
@@ -457,9 +459,15 @@ export class User {
             let theme = $('.user-setting .theme').val() as string;
             if (this.user.theme != theme)
               await api_user_update({ id: this.user.id, theme });
-            let notifyPost = $('.user-setting .select-notifyPost').val() as NotifyPostValue;
-            console.log('notifyPost:', notifyPost);
-            await api_user_attr_set(id, { notifyPost });
+
+            let attr: UserAttr = {};
+            attr.notifyPost = $('.user-setting .select-notifyPost').val() as NotifyPostValue;
+            if ($('.user-setting .accept-email input').prop('checked'))
+              attr.acceptEmail = "yes";
+            else
+              attr.acceptEmail = "no";
+            await api_user_attr_set(id, attr);
+
             location.reload();
           }
         },

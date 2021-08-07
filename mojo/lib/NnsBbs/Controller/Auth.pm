@@ -57,7 +57,8 @@ sub mail_auth($self) {
             email     => '',
             disp_name => '',
             pwd1      => '',
-            pwd2      => ''
+            pwd2      => '',
+            bbs_name  => $self->app->config->{NAME}
         );
         $self->render( template => 'auth/register' );
     }
@@ -69,13 +70,14 @@ sub mail_auth($self) {
 
 # User register
 sub register($self) {
-    my $id        = $self->param('auth-id');
-    my $email     = $self->param('email');
-    my $disp_name = $self->param('disp_name');
-    my $pwd1      = $self->param('password1');
-    my $pwd2      = $self->param('password2');
-    my $bReg      = $self->param('bReg');
-    my $conf      = $self->app->config;
+    my $id          = $self->param('auth-id');
+    my $email       = $self->param('email');
+    my $disp_name   = $self->param('disp_name');
+    my $pwd1        = $self->param('password1');
+    my $pwd2        = $self->param('password2');
+    my $bReg        = $self->param('bReg');
+    my $acceptEmail = $self->param('accept_email');
+    my $conf        = $self->app->config;
 
     # check parameters
     my $db     = NnsBbs::Db::new($self);
@@ -135,7 +137,8 @@ sub register($self) {
             email     => $email,
             disp_name => $disp_name,
             pwd1      => $pwd1,
-            pwd2      => $pwd2
+            pwd2      => $pwd2,
+            bbs_name  => $conf->{NAME}
         );
         $self->render( template => 'auth/register' );
     }
@@ -151,6 +154,11 @@ sub register($self) {
         $sql = "insert into user(id,mail,disp_name,password,membership_id)";
         $sql .= "values(?,?,?,?,1)";
         $db->execute( $sql, $user_id, $email, $disp_name, $pwd );
+        if ( $acceptEmail eq "on" ) {
+            $sql = "insert into user_attr(user_id,attr,value)";
+            $sql .= "values(?,'acceptEmail','yes')";
+            $db->execute( $sql, $user_id );
+        }
         $self->stash(
             script_part => $s,
             title       => $conf->{NAME},
@@ -256,6 +264,7 @@ sub new_session {
         my ($c) = $db->select_ra( $sql, $id );
         last if $c == 0;
     }
+
     # $sql = "delete from session where user_id=?";
     # $db->execute( $sql, $user_id );
     $sql = "insert into session (id,user_id) values(?,?)";

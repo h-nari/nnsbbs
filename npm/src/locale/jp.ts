@@ -12,6 +12,7 @@ export const jp = {
       'notify-post-6am': '午前6時にメールする',
       'notify-post-12am': '午前12時にメールする',
       'notify-post-6pm': '午後6時にメールする',
+      'accept-email': '{{from}}からのお知らせメールを受け取る'
     },
     'show-all-newsgroups': '全ての掲示板を表示',
     'only-subscribed-newsgroups': '購読した掲示板のみ表示',
