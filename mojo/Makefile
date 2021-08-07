@@ -19,3 +19,5 @@ notify:
 
 test:
 	prove	t/readset.t
+stop:
+	NNSBBS_CONF=net-kaigi hypnotoad -s script/nns_bbs
