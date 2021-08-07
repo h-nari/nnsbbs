@@ -586,4 +586,45 @@ sub user($self) {
     $self->render( text => $@, status => '400' ) if $@;
 }
 
+sub user_attr($self) {
+    eval {
+        my $id = $self->param('id');
+        die "parameter id required" unless $id;
+        my $attr = $self->param('attr');
+        my $db   = NnsBbs::Db::new($self);
+        my ( $level, $moderator, $admin, $user_id ) =
+          access_level( $self, $db );
+        die "no write permission" unless $moderator || $id == $user_id;
+
+        my $sql = "select attr,value from user_attr";
+        $sql .= " where user_id=?";
+        my $hh = $db->select_hh( $sql, 'attr', $user_id );
+        unless ($attr) {
+            my $user_attr = {};
+            while ( my ( $k, $v ) = each %$hh ) {
+                $user_attr->{$k} = $v->{value};
+            }
+            $self->render( json => $user_attr );
+        }
+        else {
+            my $data = from_json($attr);
+            while ( my ( $k, $v ) = each %$data ) {
+                if ( $hh->{$k} ) {
+                    $sql = "update user_attr set value=?";
+                    $sql .= " where user_id=? and attr=?";
+                    $db->execute( $sql, $v, $id, $k );
+                }
+                else {
+                    $sql = "insert into user_attr(attr,value,user_id)";
+                    $sql .= "values(?,?,?)";
+                    $db->execute( $sql, $k, $v, $id );
+                }
+            }
+            $db->commit;
+            $self->render( json => { result => 'ok' } );
+        }
+    };
+    $self->render( text => $@, status => '400' ) if $@;
+}
+
 1;

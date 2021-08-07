@@ -313,6 +313,19 @@ export interface ArgUserUpdate {
 export function api_user_update(d: ArgUserUpdate) {
   return get_json('/api/user', { method: 'post', data: { update: JSON.stringify(d) } }) as Promise<IResult>;
 }
+//
+// api/user_attr
+//
+export type NotifyPostValue = 'none' | '0' | '6' | '12' | '18';
+export interface UserAttr {
+  notifyPost?: NotifyPostValue;
+}
+export function api_user_attr(id: string) {
+  return get_json('/api/user_attr', { data: { id } }) as Promise<UserAttr>;
+}
+export function api_user_attr_set(id: string, attr: UserAttr) {
+  return get_json('/api/user_attr', { method: 'post', data: { id, attr: JSON.stringify(attr) } }) as Promise<IResult>;
+}
 
 //
 //  admin/api/user

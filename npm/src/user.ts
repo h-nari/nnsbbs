@@ -1,5 +1,5 @@
 import { div, input, tag, label, a, span, select, option, selected } from './tag';
-import { api_membership, IMembership, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, api_mail_auth, admin_api_article } from './dbif';
+import { api_membership, IMembership, IArticle, api_profile_write, api_login, api_profile_read, IUser, api_logout, api_theme_list, api_user_update, api_mail_auth, admin_api_article, api_user_attr, api_user_attr_set, NotifyPostValue } from './dbif';
 import { INewsGroup } from "./newsgroup";
 import { article_str, escape_html, form_input, form_textarea, get_json, set_i18n, url_link } from './util';
 import { createHash } from 'sha1-uint8array';
@@ -418,7 +418,9 @@ export class User {
 
   async setting_dlg() {
     let i18next = this.parent.i18next;
-    var s = this.setting.duplicateData();
+    // var s = this.setting.duplicateData();
+    if (!this.user) return;
+    let attr = await api_user_attr(this.user.id);
     let theme_list = await api_theme_list();
     let c = select({ class: 'theme' }, ...theme_list.map(t => option({ value: t, selected: selected(this.user?.theme == t) }, t)))
 
@@ -431,11 +433,11 @@ export class User {
         div({ class: 'row' },
           div(i18next.t('user-setting.notify-post')),
           div(select({ class: 'select-notifyPost' },
-            option({ value: '', selected: selected(!s.notifyPost) }, i18next.t('user-setting.notify-post-none')),
-            option({ value: 0, selected: selected(s.notifyPost && s.notifyPostAt == 0) }, i18next.t('user-setting.notify-post-0am')),
-            option({ value: 6, selected: selected(s.notifyPost && s.notifyPostAt == 6) }, i18next.t('user-setting.notify-post-6am')),
-            option({ value: 12, selected: selected(s.notifyPost && s.notifyPostAt == 12) }, i18next.t('user-setting.notify-post-12am')),
-            option({ value: 18, selected: selected(s.notifyPost && s.notifyPostAt == 18) }, i18next.t('user-setting.notify-post-6pm'))
+            option({ value: 'none', selected: selected(!attr.notifyPost || attr.notifyPost == 'none') }, i18next.t('user-setting.notify-post-none')),
+            option({ value: '0', selected: selected(attr.notifyPost == '0') }, i18next.t('user-setting.notify-post-0am')),
+            option({ value: '6', selected: selected(attr.notifyPost == '6') }, i18next.t('user-setting.notify-post-6am')),
+            option({ value: '12', selected: selected(attr.notifyPost == '12') }, i18next.t('user-setting.notify-post-12am')),
+            option({ value: '18', selected: selected(attr.notifyPost == '18') }, i18next.t('user-setting.notify-post-6pm'))
           )
           ))),
       onOpen: () => {
@@ -444,14 +446,6 @@ export class User {
           let theme = $(e.currentTarget).val();
           let url = window.nnsbbs_baseURL + "theme/theme-" + theme + ".css";
           $('head link.theme ').attr('href', url)
-        });
-        $('.user-setting .select-notifyPost').on('change', e => {
-          let value = $(e.currentTarget).val() as string;
-          if (value == '') s.notifyPost = false;
-          else {
-            s.notifyPost = true;
-            s.notifyPostAt = parseInt(value);
-          }
         });
       },
       buttons: {
@@ -463,10 +457,9 @@ export class User {
             let theme = $('.user-setting .theme').val() as string;
             if (this.user.theme != theme)
               await api_user_update({ id: this.user.id, theme });
-            if (!this.setting.isSameData(s)) {
-              this.setting.setData(s)
-              await this.setting.save();
-            }
+            let notifyPost = $('.user-setting .select-notifyPost').val() as NotifyPostValue;
+            console.log('notifyPost:', notifyPost);
+            await api_user_attr_set(id, { notifyPost });
             location.reload();
           }
         },

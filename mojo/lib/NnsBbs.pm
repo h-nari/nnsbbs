@@ -75,6 +75,7 @@ sub startup ($self) {
     $r->any('/api/membership')->to('api#membership');
     $r->any('/api/theme')->to('api#theme');
     $r->any('/api/user')->to('api#user');
+    $r->any('/api/user_attr')->to('api#user_attr');
     $r->any('/api/login')->to('auth#api_login');
     $r->any('/api/logout')->to('auth#api_logout');
     $r->any('/api/session')->to('auth#api_session');

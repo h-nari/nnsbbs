@@ -60,40 +60,40 @@ sub run {
 
     # ユーザ毎の処理
 
-    $sql = "select id,mail,setting from user";
+    $sql = "select id,mail,value as notifyPost";
+    $sql .= " from user as u,user_attr as a";
+    $sql .= " where u.id=a.user_id and a.attr='notifyPost'";
+    $sql .= " and a.value != 'none'";
     my $aa = $db->select_aa($sql);
     for my $ar (@$aa) {
 
-        my ( $user_id, $mail, $setting ) = @$ar;
-        if ($setting) {
-            my $d = decode_json $setting;
-            if ( $d->{notifyPost} && ( $force || $d->{notifyPostAt} == $hh ) ) {
-                print "notify\n";
+        my ( $user_id, $mail, $notifyPost ) = @$ar;
+        if ( $force || $notifyPost == $hh ) {
+            print "notify\n";
 
-                # 購読情報を取得
+            # 購読情報を取得
 
-                $sql = "select newsgroup_id as nid,done from subsInfo";
-                $sql .= " where user_id=? and subscribe";
-                my $subs = $db->select_hh( $sql, 'nid', $user_id );
-                my ( $n, $c ) =
-                  &make_notify_content( $ng_list, $subs, $url_base );
-                if ( $n > 0 ) {
-                    my $to = $mail;
-                    my $subject =
-                      $ctlr->l( 'notify.mail.subject', $n,
-                        $app->config->{NAME} );
-                    my $content = $ctlr->l('notify.mail.preamble', $app->config->{NAME});
-                    $content .= $c;
-                    $content .= $ctlr->l('notify.mail.postamble',$app->config->{TOP_URL});
-                    if ($no_send) {
-                        print "TO:$to\n";
-                        print encode( 'utf-8', "SUBJECT: $subject\n" );
-                        print encode( 'utf-8', "CONTENT:\n$content\n" );
-                    }
-                    else {
-                        Nnsbbs::Mail::send( $app->config->{MAIL},
-                            $to, $subject, $content );
-                    }
+            $sql = "select newsgroup_id as nid,done from subsInfo";
+            $sql .= " where user_id=? and subscribe";
+            my $subs = $db->select_hh( $sql, 'nid', $user_id );
+            my ( $n, $c ) = &make_notify_content( $ng_list, $subs, $url_base );
+            if ( $n > 0 ) {
+                my $to = $mail;
+                my $subject =
+                  $ctlr->l( 'notify.mail.subject', $n, $app->config->{NAME} );
+                my $content =
+                  $ctlr->l( 'notify.mail.preamble', $app->config->{NAME} );
+                $content .= $c;
+                $content .=
+                  $ctlr->l( 'notify.mail.postamble', $app->config->{TOP_URL} );
+                if ($no_send) {
+                    print "TO:$to\n";
+                    print encode( 'utf-8', "SUBJECT: $subject\n" );
+                    print encode( 'utf-8', "CONTENT:\n$content\n" );
+                }
+                else {
+                    Nnsbbs::Mail::send( $app->config->{MAIL},
+                        $to, $subject, $content );
                 }
             }
         }
