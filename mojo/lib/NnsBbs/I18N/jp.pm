@@ -57,7 +57,7 @@ our %Lexicon = (
       'Internet Explorerでは、この掲示板を表示できません',
     'recommended-browsers' =>
       'Chrome, Firefox, Edge, Safariなどをご使用ください',
-    'notify.mail.subject' => '[_2]掲示板 未読記事が[_1]件あります',
+    'notify.mail.subject' => '[_2]掲示板に未読記事が[_1]件あります',
     'notify.mail.preamble' => join( "\n",
         "このメールは[_1]の参加者に",
         "掲示板の未読記事をお知らせするメールです。",

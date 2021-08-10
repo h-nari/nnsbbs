@@ -8,6 +8,7 @@ use NnsBbs::ReadSet;
 use NnsBbs::Util qw(tag);
 use Data::Dumper;
 use Encode;
+use URI::Escape;
 has description => "send notify mails\n";
 
 has usage => <<EOF;
@@ -92,7 +93,7 @@ sub run {
                     print encode( 'utf-8', "CONTENT:\n$content\n" );
                 }
                 else {
-                    Nnsbbs::Mail::send( $app->config->{MAIL},
+                    NnsBbs::Mail::send( $app->config->{MAIL},
                         $to, $subject, $content );
                 }
             }
@@ -112,9 +113,11 @@ sub make_notify_content {
             my $rs     = NnsBbs::ReadSet->new($done);
             my $unread = $max_id - $rs->count;
             if ( $unread > 0 ) {
+                my $url = "${url_base}bbs/";
+                $url .= uri_escape_utf8($name);
                 $n += $unread;
-                $content .= "  $name [$unread]\n";
-                $content .= "    ${url_base}bbs/$name\n";
+                $content .= "  $name [未読${unread}件]\n";
+                $content .= "    $url\n";
             }
         }
     }

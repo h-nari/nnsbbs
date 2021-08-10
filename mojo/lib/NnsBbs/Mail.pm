@@ -21,7 +21,7 @@ sub send {
     my $subject_orig = shift;
     my $content_orig = shift;
  
-    my $from = $conf->{FROM} || $SMTP_CONF->{from} ;
+    my $from = encode('utf-8', $conf->{FROM} || $SMTP_CONF->{from}) ;
     my $return_path = $conf->{RETURN_PATH} || $SMTP_CONF->{return_path};
 
     my $subject = Encode::encode( 'MIME-Header-ISO_2022_JP', $subject_orig );
