@@ -358,9 +358,9 @@ export class User {
       type: 'green',
       columnClass: 'large',
       content: div({ class: 'show-profile' },
-        div(
+        /* div(
           div({ class: 'title' }, this.t('membership')),
-          div({ class: 'membership' }, this.membership ? this.membership[d.membership_id].name : '')),
+          div({ class: 'membership' }, this.membership ? this.membership[d.membership_id].name : '')), */
         div(
           div({ class: 'title' }, this.t('disp_name')),
           div({ class: 'disp-name' }, escape_html(d.disp_name))),
