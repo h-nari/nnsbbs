@@ -33,7 +33,7 @@ export class GeometryManager {
     let size = n;
     if (!size) {
       size = $(window).height() || 800;
-      size -= 80;
+      size -= 30;
     }
     this.totalSize = size;
     $('#' + this.id).css('height', size + 'px');

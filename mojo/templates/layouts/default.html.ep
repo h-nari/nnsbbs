@@ -12,7 +12,7 @@
   </head>
   <body class="nnsbbs"> 
     <script src="<%= url_for('/jquery-3.6.0.min.js') %>"></script>
-    <div id="whole-page" class="container">
+    <div id="whole-page">
       <%= content %>
     </div> 
     <script src="<%= url_for('/jquery-ui-1.12.1/jquery-ui.min.js') %>"></script>
