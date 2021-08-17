@@ -80,6 +80,9 @@ form.edit-profile {
 }
 
 .post-article {
+  textarea#post-content {
+    font-family:  MyEmojiFont, monospace;
+  }
   .content {
     .text {
       border: dotted black 1px;
