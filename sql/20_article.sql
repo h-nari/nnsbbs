@@ -14,7 +14,9 @@ create table article (
   created_at    datetime     default now(),  -- Post time
   deleted_at    datetime,
   delete_reason text         default "",
-  content       longtext     not null        -- body of article
+  content       longtext     not null        -- body of article,
+  revised_by    integer      default 0,
+  bReplied      boolean      default false
 );
 
 create index article_idx on article (newsgroup_id, id);
