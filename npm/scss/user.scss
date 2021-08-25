@@ -41,7 +41,7 @@ form.edit-profile {
   .profile {
     margin: 5px;
     padding: 5px;
-    white-space: pre;
+    white-space: pre-wrap;
   }
 }
 
@@ -68,6 +68,7 @@ form.edit-profile {
     font-weight: bold;
   }
   .ban {
+
     input {
       margin-right: 10px;
     }
