@@ -14,8 +14,8 @@ create table  newsgroup (
   posted_at      datetime     default now(),     -- last post time
   locked_at      datetime,
   deleted_at     datetime,
-  deleted_reason text default "",
+  deleted_reason text default (""),
   ord            integer      default 0,         -- Value for determining the display order.
-  comment        text         default ""         -- Newsgroups Description２  
+  comment        text         default ("")         -- Newsgroups Description２  
 );
 

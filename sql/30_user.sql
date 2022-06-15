@@ -15,11 +15,11 @@ create table user (
   admin         boolean       default false,
   bBanned       boolean       default false,
   banned_at     datetime,  
-  banned_reason text          default "",
-  profile       text          default "",      
-  signature     text          default "",
+  banned_reason text          default (""),
+  profile       text          default (""),      
+  signature     text          default (""),
   theme         varchar(255)  default "00-default",
-  setting       text          default ""
+  setting       text          default ("")
 );
 create unique index user_mail on user(mail);
 

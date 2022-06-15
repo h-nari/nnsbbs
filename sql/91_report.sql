@@ -43,8 +43,8 @@ create table report (
   article_id          int                not null,      -- article to be reported
   notifier            varchar(255) ,                    -- notifier of this report
   want_response       boolean            default false, -- notifier want response
-  detail              text               default "",
-  treatment_detail    text               default "",
+  detail              text               default (""),
+  treatment_detail    text               default (""),
   treated_by          varchar(255),                     -- who treat this report
   treated_at          datetime ,
   created_at          datetime           default now(),

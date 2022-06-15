@@ -13,7 +13,7 @@ create table article (
   bDeleted      boolean      default false,  -- delete flag
   created_at    datetime     default now(),  -- Post time
   deleted_at    datetime,
-  delete_reason text         default "",
+  delete_reason text         default (""),
   content       longtext     not null        -- body of article
 );
 

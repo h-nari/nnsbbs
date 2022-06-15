@@ -8,7 +8,7 @@ create table attached_file (
   content_type    varchar(255)    not null,
   user_id         varchar(255)    not null,
   deleted         boolean         default false,
-  delete_reason   text            default "",
+  delete_reason   text            default (""),
   data            longblob,
   created_at      datetime        default now()
 );
@@ -18,7 +18,7 @@ create table  attachment (
   file_id       varchar(255)   not null,
   newsgroup_id  int            not null,
   article_id    int            not null,
-  comment       text           default "",
+  comment       text           default (""),
   ord           int            default 0,
   created_at    datetime       default now()
 );
