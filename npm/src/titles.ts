@@ -1,5 +1,5 @@
 import { escape_html, set_i18n } from "./util";
-import { div, button, span, icon } from "./tag";
+import { div, button, span, icon, iif } from "./tag";
 import { ToolbarPane } from "./pane";
 import { ReadSet } from "./readSet";
 import { INewsGroup } from "./newsgroup";
@@ -152,12 +152,16 @@ export class TitlesPane extends ToolbarPane {
   }
 
   thread_html(t: ITitle, rule1: string = '', rule2: string = '') {
+    if (t.revised_by != '0' && t.children === undefined) return '';
     let s = this.title_html(t, rule1);
     if (t.children) {
       for (let i = 0; i < t.children.length; i++) {
-        let r1 = rule2 + (i < t.children.length - 1 ? '┣' : '┗');
-        let r2 = rule2 + (i < t.children.length - 1 ? '┃' : '  ');
-        s += this.thread_html(t.children[i], r1, r2);
+        let c = t.children[i];
+        if (c.revised_by == '0' || c.children !== undefined) {
+          let r1 = rule2 + (i < t.children.length - 1 ? '┣' : '┗');
+          let r2 = rule2 + (i < t.children.length - 1 ? '┃' : '  ');
+          s += this.thread_html(c, r1, r2);
+        }
       }
     }
     return s;
@@ -191,9 +195,10 @@ export class TitlesPane extends ToolbarPane {
       div({ class: 'article-from', 'user-id': d.user_id, 'title-i18n': 'show-profile' }, escape_html(d.disp_name)),
       div({ class: 'article-time' }, d.date),
       div({ class: 'article-title' }, escape_html(d.title)),
+      iif(d.revised_by != '0', div({ class: 'article-revised' }, `[記事 ${d.revised_by}で訂正]`)),
       attached_file,
       reactions,
-      div({ class: 'line-end'})
+      div({ class: 'line-end' })
     );
     return s;
   }
@@ -272,9 +277,9 @@ export class TitlesPane extends ToolbarPane {
     if (x > sw) {
       let s = Math.ceil(x - sw + 40);
       console.log('scrollLeft:', s);
-      setTimeout(()=>{
+      setTimeout(() => {
         $(this.scroller).scrollLeft(s);
-      },1)
+      }, 1)
     }
   }
 

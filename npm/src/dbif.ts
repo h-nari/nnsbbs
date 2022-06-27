@@ -38,6 +38,7 @@ export interface ITitle {
   date: string;
   user_id: string;
   disp_name: string;
+  revised_by: string;
   reply_to: string;
   title: string;
   children?: ITitle[];
@@ -143,6 +144,7 @@ export interface IPostArg {
   title: string;
   content: string;
   reply_to?: string;
+  revise?: string;
 }
 
 interface IPostResult {

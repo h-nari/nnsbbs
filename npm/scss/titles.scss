@@ -40,7 +40,7 @@
     .title-list {
       margin: 5px 2px;
       display: inline-block;
-      min-width: 100%;
+      min-width: 99%;
       > div {
         cursor: pointer;
         display: block;
@@ -96,6 +96,11 @@
           flex-shrink: 10;
           font-weight: bold;
           position: relative;
+        }
+
+        .article-revised {
+          font-size: small;
+          color: red;
         }
 
         .attached-file {

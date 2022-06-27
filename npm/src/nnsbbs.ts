@@ -14,6 +14,7 @@ import { Menu } from "./menu";
 import { div, label, option, select, span, tag } from "./tag";
 import { ReportManaget } from "./reportManager";
 import { ReportPage } from "./reportPage";
+import { PostData } from "./postData";
 
 export interface NnsBbsConf {
   login: number;
@@ -197,6 +198,9 @@ export default class NnsBbs {
     let article_menu = new Menu({
       icon: 'three-dots',
       action: (e, menu) => {
+        let newsgroup = this.titles_pane.newsgroup;
+        let article = this.article_pane.article;
+        let user = this.user.user;
         menu.clear();
         menu.add({
           icon: 'card-heading',
@@ -208,8 +212,8 @@ export default class NnsBbs {
           icon: 'reply-fill',
           name: i18next.t('reply-to-article'),
           action: () => {
-            if (this.titles_pane.newsgroup && this.article_pane.article)
-              this.user.post_article_dlg(this.titles_pane.newsgroup, this.article_pane.article);
+            if (newsgroup && article)
+              this.user.post_article_dlg(newsgroup, article);
           }
         }).add({
           icon: 'exclamation-diamond',
@@ -218,9 +222,17 @@ export default class NnsBbs {
             this.report_dlg();
           }
         });
-        let newsgroup = this.titles_pane.newsgroup;
-        let article = this.article_pane.article;
-        let user = this.user.user;
+        if (newsgroup && article && user && (article.user_id == user.id || user.moderator)) {
+          menu.add({
+            icon: 'pencil',
+            name: i18next.t('revise-article'),
+            action: () => {
+              if (newsgroup && article) {
+                this.user.post_article_dlg0(new PostData(this.user, newsgroup, article, 'revise'));
+              }
+            }
+          })
+        }
         if (newsgroup && article && user && user.moderator) {
           menu.addSeparator();
           menu.add({
