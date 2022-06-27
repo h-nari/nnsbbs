@@ -259,7 +259,7 @@ export class User {
     }
 
     $.confirm({
-      title: i18next.t('post-article'),
+      title: i18next.t(postData.type + '-article'),
       columnClass: 'xlarge',
       type: 'orange',
       content: postData.form_html(),
@@ -308,7 +308,7 @@ export class User {
   post_confirm_dlg(postData: PostData) {
     const i18next = this.parent.i18next;
     $.confirm({
-      title: i18next.t('confirm-article'),
+      title: i18next.t('confirm-' + postData.type),
       columnClass: 'xlarge',
       type: 'read',
       content: postData.confirm_html(),
@@ -483,7 +483,7 @@ export class User {
     $.confirm({
       title: i18next.t('ban-article'),
       type: 'red',
-      columnClass: 'medium',
+      columnClass: 'xlarge',
       content: div({ class: 'article-ban-dlg' },
         div({ class: 'row' },
           div({ class: 'col-4 label' }, i18next.t('target-article'), ':'),

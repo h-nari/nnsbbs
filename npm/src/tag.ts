@@ -25,7 +25,7 @@ export function tag(name: string, ...args: TagArg[]): string {
     html += ' ' + k;
     if (typeof (v) == 'string')
       html += '="' + escape_html(v) + '"';
-    else if (typeof (v) == 'number' || typeof(v) == 'boolean')
+    else if (typeof (v) == 'number' || typeof (v) == 'boolean')
       html += '=' + v;
   }
   html += '>';
@@ -39,10 +39,12 @@ export function tag(name: string, ...args: TagArg[]): string {
   return html;
 }
 
-
-
 export function selected(b: boolean): null | undefined {
   return b ? null : undefined;
+}
+
+export function iif(b: boolean, trueValue: string, falseValue: string = '') {
+  return b ? trueValue : falseValue;
 }
 
 export function div(...args: TagArg[]): string {

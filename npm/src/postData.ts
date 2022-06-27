@@ -16,14 +16,26 @@ export class PostData {
   public content: string;
   public disp_name: string;
   public reply_to: string;
+  public revise: string = '';    // 修正対象のarticle_id
   public content_type = 'text/plain';
+  public type: 'post' | 'reply' | 'revise' = 'post';
 
-  constructor(user: User, newsgroup: INewsGroup, article: IArticle | undefined = undefined) {
+  constructor(user: User, newsgroup: INewsGroup, article: IArticle | undefined = undefined, type: 'revise' | undefined = undefined) {
     this.user = user;
     this.newsgroup = newsgroup;
     this.article = article;
+
     if (!user.user) throw new Error('Unexpected situation');
-    if (article) {
+    if (type === 'revise') {
+      if (!article) throw new Error('article is undefined');
+      this.type = 'revise';
+      this.title = article.title;
+      this.content = article.content;
+      this.reply_to = article.reply_to;
+      this.revise = article.article_id;
+    }
+    else if (article) {
+      this.type = 'reply';
       if (article.title.match(/^Re:/)) this.title = article.title;
       else this.title = 'Re:' + article.title;
       this.content = user.user.signature;
@@ -47,8 +59,8 @@ export class PostData {
     return tag('form', { class: 'post-article' },
       div({ class: 'row my-2' },
         label({ class: 'col-2' }, i18next.t('newsgroup')),
-        div({ class: 'col-8 font-weight-bold' }, this.newsgroup.n.name),
-        div({ class: 'col-2' }, button({ class: 'btn btn-info btn-about-newsgroup w-100' }, i18next.t('newsgroup-description')))),
+        div({ class: 'col-6 font-weight-bold' }, this.newsgroup.n.name),
+        div({ class: 'col-4' }, button({ class: 'btn btn-info btn-about-newsgroup w-100' }, i18next.t('newsgroup-description')))),
       form_input('post-name', i18next.t('disp-name'), { value: this.disp_name }),
       form_input('post-title', i18next.t('subject'), { value: this.title }),
       form_post_textarea('post-content', i18next.t('body'), this.article, { value: this.content, rows: 10 }),
@@ -60,8 +72,8 @@ export class PostData {
     return tag('div', { class: 'post-article' },
       div({ class: 'row my-1' },
         label({ class: 'col-2' }, i18next.t('newsgroup')),
-        div({ class: 'col-8 font-weight-bold' }, this.newsgroup.n.name),
-        div({ class: 'col-2' }, button({ class: 'btn btn-info btn-about-newsgroup w-100' }, i18next.t('newsgroup-description')))),
+        div({ class: 'col-6 font-weight-bold' }, this.newsgroup.n.name),
+        div({ class: 'col-4' }, button({ class: 'btn btn-info btn-about-newsgroup w-100' }, i18next.t('newsgroup-description')))),
       div({ class: 'row my-1' },
         div({ class: 'col-2' }, i18next.t('disp-name')),
         div({ class: 'col-10' }, escape_html(this.disp_name))),
@@ -100,7 +112,7 @@ export class PostData {
     let newsgroup_id = this.newsgroup.n.id;
     let content = `content-type: ${this.content_type}\n\n${this.content}`;
 
-    let postArg: IPostArg = { newsgroup_id, user_id, disp_name: this.disp_name, title: this.title, content, reply_to: this.reply_to };
+    let postArg: IPostArg = { newsgroup_id, user_id, disp_name: this.disp_name, title: this.title, content, reply_to: this.reply_to, revise: this.revise };
     let r = await api_post(postArg);
     if (this.attachment_list.length > 0) {
       let fd = new FormData();

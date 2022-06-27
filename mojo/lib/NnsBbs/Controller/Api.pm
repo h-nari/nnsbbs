@@ -58,6 +58,7 @@ sub titles($self) {
           if ( ( !defined($rpl) || $rpl > $level ) && !$moderator );
         my $sql = "select id as article_id ,title,reply_to";
         $sql .= ",created_at as date,user_id,disp_name,bDeleted";
+        $sql .= ",revised_by";
         $sql .= " from article";
         $sql .= " where newsgroup_id = ?";
 
@@ -275,6 +276,7 @@ sub post_article {
     my $disp_name     = $self->param('disp_name');
     my $content       = $self->param('content');
     my $reply_to      = $self->param('reply_to') || 0;
+    my $revise        = $self->param('revise') || 0;
     my @missing_param = ();
 
     eval {
@@ -309,6 +311,17 @@ sub post_article {
             $title,     $reply_to,     $user_id,
             $disp_name, $ip,           $content
         );
+
+        if ($revise) {    # 記事訂正の場合
+            $sql = "select revised_by from article where id=? for update";
+            my ($revised_by) = $db->select_ra( $sql, $revise );
+            die "revised article $revise not found"
+              unless defined($revised_by);
+            die "article $revise is already revised by $revised_by"
+              if $revised_by;
+            $sql = "update article set revised_by=? where id=?";
+            $db->execute( $sql, $article_id, $revise );
+        }
         $db->commit;
         $self->render(
             json => {
