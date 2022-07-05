@@ -319,8 +319,9 @@ sub post_article {
               unless defined($revised_by);
             die "article $revise is already revised by $revised_by"
               if $revised_by;
-            $sql = "update article set revised_by=? where id=?";
-            $db->execute( $sql, $article_id, $revise );
+            $sql =
+              "update article set revised_by=? where newsgroup_id=? and id=?";
+            $db->execute( $sql, $article_id, $newsgroup_id, $revise );
         }
         $db->commit;
         $self->render(
