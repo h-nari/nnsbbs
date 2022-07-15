@@ -29,12 +29,13 @@ sub startup ($self) {
             my $c = shift;
             return get_theme($c);
         }
-        # ,
-        # l => sub {
-        #     my $c      = shift;
-        #     my $str_id = shift;
-        #     return $c->l($str_id);
-        # }
+
+          # ,
+          # l => sub {
+          #     my $c      = shift;
+          #     my $str_id = shift;
+          #     return $c->l($str_id);
+          # }
     );
     my $ver = `/usr/bin/git describe`;
     chop($ver);
@@ -47,6 +48,14 @@ sub startup ($self) {
             my $self  = shift;
             my $proto = $self->req->headers->header('X-Forwarded-Proto');
             $self->req->url->base->scheme($proto) if $proto;
+        }
+    );
+
+    $self->hook(
+        'after_dispatch' => sub {
+            my $c = shift;
+            $c->res->headers->header( 'Access-Control-Allow-Origin' => '*' );
+            $c->res->headers->access_control_allow_origin('*');
         }
     );
 
