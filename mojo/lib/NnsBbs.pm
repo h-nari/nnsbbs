@@ -55,9 +55,13 @@ sub startup ($self) {
         'after_dispatch' => sub {
             my $c = shift;
             $c->res->headers->header( 'Access-Control-Allow-Origin' => '*' );
-            $c->res->headers->access_control_allow_origin('*');
-        }
-    );
+            $c->res->headers->access_control_allow_origin('https://nri.mydns.jp');
+            $c->res->headers->add('Access-Control-Allow-Credentials'=>'true');
+          }
+               );
+    $self->sessions->cookie_name('nnsbbs');
+    $self->sessions->samesite('None');
+    $self->sessions->secure(1);
 
     # Router
     my $r = $self->routes;
